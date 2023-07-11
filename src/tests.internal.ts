@@ -45,5 +45,5 @@ const buildResponseMocker =
 export const mockResponse = buildResponseMocker(
   (sourceUrl: string, response: Response) => {
     jest.spyOn(response, "url", "get").mockReturnValue(sourceUrl);
-  }
+  },
 );

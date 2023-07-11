@@ -52,7 +52,7 @@ import { DataFactory } from "../rdfjs.internal";
  */
 export function getPropertyAll(thing: Thing): UrlString[] {
   return Object.keys(thing.predicates).filter(
-    (predicate) => getTerm(thing, predicate) !== null
+    (predicate) => getTerm(thing, predicate) !== null,
   );
 }
 
@@ -67,7 +67,7 @@ export function getPropertyAll(thing: Thing): UrlString[] {
  */
 export function getUrl(
   thing: Thing,
-  property: Url | UrlString
+  property: Url | UrlString,
 ): UrlString | null {
   internal_throwIfNotThing(thing);
   if (!internal_isValidUrl(property)) {
@@ -94,7 +94,7 @@ export const getIri = getUrl;
  */
 export function getUrlAll(
   thing: Thing,
-  property: Url | UrlString
+  property: Url | UrlString,
 ): UrlString[] {
   internal_throwIfNotThing(thing);
   if (!internal_isValidUrl(property)) {
@@ -103,7 +103,7 @@ export function getUrlAll(
   const predicateUrl = internal_toIriString(property);
   return (
     thing.predicates[predicateUrl]?.namedNodes?.map((iri) =>
-      isLocalNodeIri(iri) ? `#${getLocalNodeName(iri)}` : iri
+      isLocalNodeIri(iri) ? `#${getLocalNodeName(iri)}` : iri,
     ) ?? []
   );
 }
@@ -121,13 +121,13 @@ export const getIriAll = getUrlAll;
  */
 export function getBoolean(
   thing: Thing,
-  property: Url | UrlString
+  property: Url | UrlString,
 ): boolean | null {
   internal_throwIfNotThing(thing);
   const literalString = getLiteralOfType(
     thing,
     property,
-    xmlSchemaTypes.boolean
+    xmlSchemaTypes.boolean,
   );
 
   if (literalString === null) {
@@ -148,13 +148,13 @@ export function getBoolean(
  */
 export function getBooleanAll(
   thing: Thing,
-  property: Url | UrlString
+  property: Url | UrlString,
 ): boolean[] {
   internal_throwIfNotThing(thing);
   const literalStrings = getLiteralAllOfType(
     thing,
     property,
-    xmlSchemaTypes.boolean
+    xmlSchemaTypes.boolean,
   );
 
   return literalStrings
@@ -173,13 +173,13 @@ export function getBooleanAll(
  */
 export function getDatetime(
   thing: Thing,
-  property: Url | UrlString
+  property: Url | UrlString,
 ): Date | null {
   internal_throwIfNotThing(thing);
   const literalString = getLiteralOfType(
     thing,
     property,
-    xmlSchemaTypes.dateTime
+    xmlSchemaTypes.dateTime,
   );
 
   if (literalString === null) {
@@ -200,13 +200,13 @@ export function getDatetime(
  */
 export function getDatetimeAll(
   thing: Thing,
-  property: Url | UrlString
+  property: Url | UrlString,
 ): Date[] {
   internal_throwIfNotThing(thing);
   const literalStrings = getLiteralAllOfType(
     thing,
     property,
-    xmlSchemaTypes.dateTime
+    xmlSchemaTypes.dateTime,
   );
 
   return literalStrings
@@ -251,7 +251,7 @@ export function getDateAll(thing: Thing, property: Url | UrlString): Date[] {
   const literalStrings = getLiteralAllOfType(
     thing,
     property,
-    xmlSchemaTypes.date
+    xmlSchemaTypes.date,
   );
 
   return literalStrings
@@ -295,7 +295,7 @@ export function getTimeAll(thing: Thing, property: Url | UrlString): Time[] {
   const literalStrings = getLiteralAllOfType(
     thing,
     property,
-    xmlSchemaTypes.time
+    xmlSchemaTypes.time,
   );
 
   return literalStrings
@@ -314,13 +314,13 @@ export function getTimeAll(thing: Thing, property: Url | UrlString): Time[] {
  */
 export function getDecimal(
   thing: Thing,
-  property: Url | UrlString
+  property: Url | UrlString,
 ): number | null {
   internal_throwIfNotThing(thing);
   const literalString = getLiteralOfType(
     thing,
     property,
-    xmlSchemaTypes.decimal
+    xmlSchemaTypes.decimal,
   );
 
   if (literalString === null) {
@@ -341,13 +341,13 @@ export function getDecimal(
  */
 export function getDecimalAll(
   thing: Thing,
-  property: Url | UrlString
+  property: Url | UrlString,
 ): number[] {
   internal_throwIfNotThing(thing);
   const literalStrings = getLiteralAllOfType(
     thing,
     property,
-    xmlSchemaTypes.decimal
+    xmlSchemaTypes.decimal,
   );
 
   return literalStrings
@@ -366,13 +366,13 @@ export function getDecimalAll(
  */
 export function getInteger(
   thing: Thing,
-  property: Url | UrlString
+  property: Url | UrlString,
 ): number | null {
   internal_throwIfNotThing(thing);
   const literalString = getLiteralOfType(
     thing,
     property,
-    xmlSchemaTypes.integer
+    xmlSchemaTypes.integer,
   );
 
   if (literalString === null) {
@@ -393,13 +393,13 @@ export function getInteger(
  */
 export function getIntegerAll(
   thing: Thing,
-  property: Url | UrlString
+  property: Url | UrlString,
 ): number[] {
   internal_throwIfNotThing(thing);
   const literalStrings = getLiteralAllOfType(
     thing,
     property,
-    xmlSchemaTypes.integer
+    xmlSchemaTypes.integer,
   );
 
   return literalStrings
@@ -419,7 +419,7 @@ export function getIntegerAll(
  */
 export function getStringEnglish(
   thing: Thing,
-  property: Url | UrlString
+  property: Url | UrlString,
 ): string | null {
   return getStringWithLocale(thing, property, "en");
 }
@@ -437,7 +437,7 @@ export function getStringEnglish(
 export function getStringWithLocale(
   thing: Thing,
   property: Url | UrlString,
-  locale: string
+  locale: string,
 ): string | null {
   internal_throwIfNotThing(thing);
   if (!internal_isValidUrl(property)) {
@@ -450,7 +450,7 @@ export function getStringWithLocale(
     (existingLocale) =>
       existingLocale.toLowerCase() === locale.toLowerCase() &&
       Array.isArray(langStrings[existingLocale]) &&
-      langStrings[existingLocale].length > 0
+      langStrings[existingLocale].length > 0,
   );
   return typeof matchingLocale === "string"
     ? langStrings[matchingLocale][0]
@@ -468,7 +468,7 @@ export function getStringWithLocale(
  */
 export function getStringEnglishAll(
   thing: Thing,
-  property: Url | UrlString
+  property: Url | UrlString,
 ): string[] {
   return getStringWithLocaleAll(thing, property, "en");
 }
@@ -486,7 +486,7 @@ export function getStringEnglishAll(
 export function getStringWithLocaleAll(
   thing: Thing,
   property: Url | UrlString,
-  locale: string
+  locale: string,
 ): string[] {
   internal_throwIfNotThing(thing);
   if (!internal_isValidUrl(property)) {
@@ -499,7 +499,7 @@ export function getStringWithLocaleAll(
     (existingLocale) =>
       existingLocale.toLowerCase() === locale.toLowerCase() &&
       Array.isArray(langStrings[existingLocale]) &&
-      langStrings[existingLocale].length > 0
+      langStrings[existingLocale].length > 0,
   );
   return typeof matchingLocale === "string"
     ? [...langStrings[matchingLocale]]
@@ -516,7 +516,7 @@ export function getStringWithLocaleAll(
  */
 export function getStringByLocaleAll(
   thing: Thing,
-  property: Url | UrlString
+  property: Url | UrlString,
 ): Map<string, string[]> {
   internal_throwIfNotThing(thing);
   if (!internal_isValidUrl(property)) {
@@ -528,7 +528,7 @@ export function getStringByLocaleAll(
     Object.entries(stringsByLocale).map(([locale, values]) => [
       locale,
       [...values],
-    ])
+    ]),
   );
 }
 
@@ -543,13 +543,13 @@ export function getStringByLocaleAll(
  */
 export function getStringNoLocale(
   thing: Thing,
-  property: Url | UrlString
+  property: Url | UrlString,
 ): string | null {
   internal_throwIfNotThing(thing);
   const literalString = getLiteralOfType(
     thing,
     property,
-    xmlSchemaTypes.string
+    xmlSchemaTypes.string,
   );
 
   return literalString;
@@ -566,13 +566,13 @@ export function getStringNoLocale(
  */
 export function getStringNoLocaleAll(
   thing: Thing,
-  property: Url | UrlString
+  property: Url | UrlString,
 ): string[] {
   internal_throwIfNotThing(thing);
   const literalStrings = getLiteralAllOfType(
     thing,
     property,
-    xmlSchemaTypes.string
+    xmlSchemaTypes.string,
   );
 
   return literalStrings;
@@ -587,7 +587,7 @@ export function getStringNoLocaleAll(
  */
 export function getNamedNode(
   thing: Thing,
-  property: Url | UrlString
+  property: Url | UrlString,
 ): NamedNode | null {
   const iriString = getIri(thing, property);
 
@@ -607,7 +607,7 @@ export function getNamedNode(
  */
 export function getNamedNodeAll(
   thing: Thing,
-  property: Url | UrlString
+  property: Url | UrlString,
 ): NamedNode[] {
   const iriStrings = getIriAll(thing, property);
 
@@ -623,7 +623,7 @@ export function getNamedNodeAll(
  */
 export function getLiteral(
   thing: Thing,
-  property: Url | UrlString
+  property: Url | UrlString,
 ): Literal | null {
   internal_throwIfNotThing(thing);
   if (!internal_isValidUrl(property)) {
@@ -635,12 +635,12 @@ export function getLiteral(
   if (locales.length > 0) {
     const nonEmptyLocale = locales.find(
       (locale) =>
-        Array.isArray(langStrings[locale]) && langStrings[locale].length > 0
+        Array.isArray(langStrings[locale]) && langStrings[locale].length > 0,
     );
     if (typeof nonEmptyLocale === "string") {
       return DataFactory.literal(
         langStrings[nonEmptyLocale][0],
-        nonEmptyLocale
+        nonEmptyLocale,
       );
     }
   }
@@ -652,12 +652,12 @@ export function getLiteral(
     const nonEmptyDataType = dataTypes.find(
       (dataType) =>
         Array.isArray(otherLiterals[dataType]) &&
-        otherLiterals[dataType].length > 0
+        otherLiterals[dataType].length > 0,
     );
     if (typeof nonEmptyDataType === "string") {
       return DataFactory.literal(
         otherLiterals[nonEmptyDataType][0],
-        DataFactory.namedNode(nonEmptyDataType)
+        DataFactory.namedNode(nonEmptyDataType),
       );
     }
   }
@@ -674,7 +674,7 @@ export function getLiteral(
  */
 export function getLiteralAll(
   thing: Thing,
-  property: Url | UrlString
+  property: Url | UrlString,
 ): Literal[] {
   internal_throwIfNotThing(thing);
   if (!internal_isValidUrl(property)) {
@@ -688,7 +688,7 @@ export function getLiteralAll(
   for (const locale of locales) {
     const stringsInLocale = langStrings[locale];
     const localeLiterals = stringsInLocale.map((langString) =>
-      DataFactory.literal(langString, locale)
+      DataFactory.literal(langString, locale),
     );
     literals = literals.concat(localeLiterals);
   }
@@ -700,7 +700,7 @@ export function getLiteralAll(
     const values = otherLiterals[dataType];
     const typeNode = DataFactory.namedNode(dataType);
     const dataTypeLiterals = values.map((value) =>
-      DataFactory.literal(value, typeNode)
+      DataFactory.literal(value, typeNode),
     );
     literals = literals.concat(dataTypeLiterals);
   }
@@ -718,7 +718,7 @@ export function getLiteralAll(
  */
 export function getTerm(
   thing: Thing,
-  property: Url | UrlString
+  property: Url | UrlString,
 ): Quad_Object | null {
   internal_throwIfNotThing(thing);
   const namedNode = getNamedNode(thing, property);
@@ -753,7 +753,7 @@ export function getTerm(
  */
 export function getTermAll(
   thing: Thing,
-  property: Url | UrlString
+  property: Url | UrlString,
 ): Quad_Object[] {
   internal_throwIfNotThing(thing);
   const namedNodes = getNamedNodeAll(thing, property);
@@ -784,7 +784,7 @@ export function getTermAll(
 function getLiteralOfType<Datatype extends XmlSchemaTypeIri>(
   thing: Thing,
   property: Url | UrlString,
-  literalType: Datatype
+  literalType: Datatype,
 ): string | null {
   if (!internal_isValidUrl(property)) {
     throw new ValidPropertyUrlExpectedError(property);
@@ -802,7 +802,7 @@ function getLiteralOfType<Datatype extends XmlSchemaTypeIri>(
 function getLiteralAllOfType<Datatype extends XmlSchemaTypeIri>(
   thing: Thing,
   property: Url | UrlString,
-  literalType: Datatype
+  literalType: Datatype,
 ): string[] {
   if (!internal_isValidUrl(property)) {
     throw new ValidPropertyUrlExpectedError(property);

@@ -30,7 +30,7 @@ import { addPolicyUrl } from "../policy/addPolicyUrl";
 
 /** @hidden */
 export function setDefaultAgentMatcherPolicyThingIfNotExist<
-  T extends WithAccessibleAcr
+  T extends WithAccessibleAcr,
 >(resource: T, name: DefaultAccessControlName, mode: keyof AccessModes): T {
   const policyUrl = getDefaultAgentMatcherPolicyUrl(resource, name, mode);
 

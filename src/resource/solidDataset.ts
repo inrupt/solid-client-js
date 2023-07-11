@@ -163,14 +163,14 @@ export type ParseOptions = {
  */
 export async function responseToSolidDataset(
   response: Response,
-  parseOptions: Partial<ParseOptions> = {}
+  parseOptions: Partial<ParseOptions> = {},
 ): Promise<SolidDataset & WithServerResourceInfo> {
   if (internal_isUnsuccessfulResponse(response)) {
     throw new FetchError(
       `Fetching the SolidDataset at [${response.url}] failed: [${
         response.status
       }] [${response.statusText}] ${await response.text()}.`,
-      response
+      response,
     );
   }
 
@@ -184,8 +184,8 @@ export async function responseToSolidDataset(
   if (contentType === null) {
     throw new Error(
       `Could not determine the content type of the Resource at [${getSourceUrl(
-        resourceInfo
-      )}].`
+        resourceInfo,
+      )}].`,
     );
   }
 
@@ -194,10 +194,10 @@ export async function responseToSolidDataset(
   if (typeof parser === "undefined") {
     throw new Error(
       `The Resource at [${getSourceUrl(
-        resourceInfo
+        resourceInfo,
       )}] has a MIME type of [${mimeType}], but the only parsers available are for the following MIME types: [${Object.keys(
-        parsers
-      ).join(", ")}].`
+        parsers,
+      ).join(", ")}].`,
     );
   }
 
@@ -219,9 +219,9 @@ export async function responseToSolidDataset(
         reject(
           new Error(
             `Encountered an error parsing the Resource at [${getSourceUrl(
-              resourceInfo
-            )}] with content type [${contentType}]: ${error}`
-          )
+              resourceInfo,
+            )}] with content type [${contentType}]: ${error}`,
+          ),
         );
       });
       parser.onQuad((quad) => {
@@ -253,8 +253,8 @@ export async function responseToSolidDataset(
         const quadsWithoutChainBlankNodeSubjects = quadsWithBlankNodes.filter(
           (quad) =>
             chainBlankNodes.every(
-              (chainBlankNode) => !chainBlankNode.equals(quad.subject)
-            )
+              (chainBlankNode) => !chainBlankNode.equals(quad.subject),
+            ),
         );
         solidDataset = quadsWithoutChainBlankNodeSubjects.reduce(
           (datasetAcc, quad) =>
@@ -262,7 +262,7 @@ export async function responseToSolidDataset(
               otherQuads: allQuads,
               chainBlankNodes,
             }),
-          solidDataset
+          solidDataset,
         );
         const solidDatasetWithResourceInfo: SolidDataset &
           WithServerResourceInfo = freeze({
@@ -273,7 +273,7 @@ export async function responseToSolidDataset(
       });
 
       parser.parse(data, resourceInfo);
-    }
+    },
   );
 
   return parsingPromise;
@@ -294,7 +294,7 @@ export async function getSolidDataset(
   url: UrlString | Url,
   options: Partial<
     typeof internal_defaultFetchOptions & ParseOptions
-  > = internal_defaultFetchOptions
+  > = internal_defaultFetchOptions,
 ): Promise<SolidDataset & WithServerResourceInfo> {
   url = internal_toIriString(url);
   const config = {
@@ -316,7 +316,7 @@ export async function getSolidDataset(
       `Fetching the Resource at [${url}] failed: [${response.status}] [${
         response.statusText
       }] ${await response.text()}.`,
-      response
+      response,
     );
   }
   const solidDataset = await responseToSolidDataset(response, options);
@@ -335,15 +335,15 @@ type UpdateableDataset = SolidDataset &
  * @hidden
  */
 async function prepareSolidDatasetUpdate(
-  solidDataset: UpdateableDataset
+  solidDataset: UpdateableDataset,
 ): Promise<RequestInit> {
   const deleteStatement =
     solidDataset.internal_changeLog.deletions.length > 0
       ? `DELETE DATA {${(
           await triplesToTurtle(
             solidDataset.internal_changeLog.deletions.map(
-              getNamedNodesForLocalNodes
-            )
+              getNamedNodesForLocalNodes,
+            ),
           )
         ).trim()}};`
       : "";
@@ -352,8 +352,8 @@ async function prepareSolidDatasetUpdate(
       ? `INSERT DATA {${(
           await triplesToTurtle(
             solidDataset.internal_changeLog.additions.map(
-              getNamedNodesForLocalNodes
-            )
+              getNamedNodesForLocalNodes,
+            ),
           )
         ).trim()}};`
       : "";
@@ -375,13 +375,13 @@ async function prepareSolidDatasetUpdate(
  */
 async function prepareSolidDatasetCreation(
   solidDataset: SolidDataset,
-  options?: Partial<{ prefixes: Record<string, string> }>
+  options?: Partial<{ prefixes: Record<string, string> }>,
 ): Promise<RequestInit> {
   return {
     method: "PUT",
     body: await triplesToTurtle(
       toRdfJsQuads(solidDataset).map(getNamedNodesForLocalNodes),
-      options
+      options,
     ),
     headers: {
       "Content-Type": "text/turtle",
@@ -421,7 +421,7 @@ export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
   solidDataset: Dataset,
   options: Partial<
     typeof internal_defaultFetchOptions & { prefixes: Record<string, string> }
-  > = internal_defaultFetchOptions
+  > = internal_defaultFetchOptions,
 ): Promise<Dataset & WithServerResourceInfo & WithChangeLog> {
   url = internal_toIriString(url);
   const config = {
@@ -440,16 +440,16 @@ export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
   if (internal_isUnsuccessfulResponse(response)) {
     const diagnostics = isUpdate(datasetWithChangelog, url)
       ? `The changes that were sent to the Pod are listed below.\n\n${changeLogAsMarkdown(
-          datasetWithChangelog
+          datasetWithChangelog,
         )}`
       : `The SolidDataset that was sent to the Pod is listed below.\n\n${solidDatasetAsMarkdown(
-          datasetWithChangelog
+          datasetWithChangelog,
         )}`;
     throw new FetchError(
       `Storing the Resource at [${url}] failed: [${response.status}] [${
         response.statusText
       }] ${await response.text()}.\n\n${diagnostics}`,
-      response
+      response,
     );
   }
 
@@ -482,7 +482,7 @@ export async function deleteSolidDataset(
   solidDataset: Url | UrlString | WithResourceInfo,
   options: Partial<
     typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  > = internal_defaultFetchOptions,
 ): Promise<void> {
   const config = {
     ...internal_defaultFetchOptions,
@@ -498,7 +498,7 @@ export async function deleteSolidDataset(
       `Deleting the SolidDataset at [${url}] failed: [${response.status}] [${
         response.statusText
       }] ${await response.text()}.`,
-      response
+      response,
     );
   }
 }
@@ -525,7 +525,7 @@ export async function createContainerAt(
     typeof internal_defaultFetchOptions & {
       initialContent: SolidDataset;
     }
-  > = internal_defaultFetchOptions
+  > = internal_defaultFetchOptions,
 ): Promise<SolidDataset & WithServerResourceInfo> {
   url = internal_toIriString(url);
   url = url.endsWith("/") ? url : `${url}/`;
@@ -538,7 +538,7 @@ export async function createContainerAt(
     method: "PUT",
     body: config.initialContent
       ? await triplesToTurtle(
-          toRdfJsQuads(config.initialContent).map(getNamedNodesForLocalNodes)
+          toRdfJsQuads(config.initialContent).map(getNamedNodesForLocalNodes),
         )
       : undefined,
     headers: {
@@ -558,7 +558,7 @@ export async function createContainerAt(
       `Creating the ${containerType} Container at [${url}] failed: [${
         response.status
       }] [${response.statusText}] ${await response.text()}.`,
-      response
+      response,
     );
   }
 
@@ -576,7 +576,7 @@ export async function createContainerAt(
 
 function isSourceIriEqualTo(
   dataset: SolidDataset & WithResourceInfo,
-  iri: IriString
+  iri: IriString,
 ): boolean {
   return (
     normalizeServerSideIri(dataset.internal_resourceInfo.sourceIri) ===
@@ -586,7 +586,7 @@ function isSourceIriEqualTo(
 
 function isUpdate(
   solidDataset: SolidDataset,
-  url: UrlString
+  url: UrlString,
 ): solidDataset is UpdateableDataset {
   return (
     hasChangelog(solidDataset) &&
@@ -626,7 +626,7 @@ type SaveInContainerOptions = Partial<
 export async function saveSolidDatasetInContainer(
   containerUrl: UrlString | Url,
   solidDataset: SolidDataset,
-  options: SaveInContainerOptions = internal_defaultFetchOptions
+  options: SaveInContainerOptions = internal_defaultFetchOptions,
 ): Promise<SolidDataset & WithResourceInfo> {
   const config = {
     ...internal_defaultFetchOptions,
@@ -635,7 +635,7 @@ export async function saveSolidDatasetInContainer(
   containerUrl = internal_toIriString(containerUrl);
 
   const rawTurtle = await triplesToTurtle(
-    toRdfJsQuads(solidDataset).map(getNamedNodesForLocalNodes)
+    toRdfJsQuads(solidDataset).map(getNamedNodesForLocalNodes),
   );
   const headers: RequestInit["headers"] = {
     "Content-Type": "text/turtle",
@@ -656,9 +656,9 @@ export async function saveSolidDatasetInContainer(
         response.status
       }] [${response.statusText}] ${await response.text()}.\n\n` +
         `The SolidDataset that was sent to the Pod is listed below.\n\n${solidDatasetAsMarkdown(
-          solidDataset
+          solidDataset,
         )}`,
-      response
+      response,
     );
   }
 
@@ -666,7 +666,7 @@ export async function saveSolidDatasetInContainer(
 
   if (!internalResourceInfo.location) {
     throw new Error(
-      "Could not determine the location of the newly saved SolidDataset."
+      "Could not determine the location of the newly saved SolidDataset.",
     );
   }
 
@@ -694,7 +694,7 @@ export async function saveSolidDatasetInContainer(
   });
 
   const resourceWithResolvedIris = resolveLocalIrisInSolidDataset(
-    resourceWithResourceInfo
+    resourceWithResourceInfo,
   );
 
   return resourceWithResolvedIris;
@@ -730,7 +730,7 @@ export async function saveSolidDatasetInContainer(
  */
 export async function createContainerInContainer(
   containerUrl: UrlString | Url,
-  options: SaveInContainerOptions = internal_defaultFetchOptions
+  options: SaveInContainerOptions = internal_defaultFetchOptions,
 ): Promise<SolidDataset & WithResourceInfo> {
   containerUrl = internal_toIriString(containerUrl);
   const config = {
@@ -755,7 +755,7 @@ export async function createContainerInContainer(
       `Creating an empty Container in the Container at [${containerUrl}] failed: [${
         response.status
       }] [${response.statusText}] ${await response.text()}.`,
-      response
+      response,
     );
   }
 
@@ -763,7 +763,7 @@ export async function createContainerInContainer(
 
   if (!internalResourceInfo.location) {
     throw new Error(
-      "Could not determine the location of the newly created Container."
+      "Could not determine the location of the newly created Container.",
     );
   }
   try {
@@ -800,14 +800,14 @@ export async function deleteContainer(
   container: Url | UrlString | WithResourceInfo,
   options: Partial<
     typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  > = internal_defaultFetchOptions,
 ): Promise<void> {
   const url = hasResourceInfo(container)
     ? internal_toIriString(getSourceUrl(container))
     : internal_toIriString(container);
   if (!isContainer(container)) {
     throw new Error(
-      `You're trying to delete the Container at [${url}], but Container URLs should end in a \`/\`. Are you sure this is a Container?`
+      `You're trying to delete the Container at [${url}], but Container URLs should end in a \`/\`. Are you sure this is a Container?`,
     );
   }
 
@@ -822,7 +822,7 @@ export async function deleteContainer(
       `Deleting the Container at [${url}] failed: [${response.status}] [${
         response.statusText
       }] ${await response.text()}.`,
-      response
+      response,
     );
   }
 }
@@ -853,7 +853,7 @@ function isChildResource(a: string, b: string): boolean {
  */
 
 export function getContainedResourceUrlAll(
-  solidDataset: SolidDataset & WithResourceInfo
+  solidDataset: SolidDataset & WithResourceInfo,
 ): UrlString[] {
   const containerUrl = getSourceUrl(solidDataset);
   const container = getThing(solidDataset, containerUrl);
@@ -884,7 +884,7 @@ export function getContainedResourceUrlAll(
  * @since unreleased
  */
 export function validateContainedResourceAll(
-  solidDataset: SolidDataset & WithResourceInfo
+  solidDataset: SolidDataset & WithResourceInfo,
 ): { isValid: boolean; invalidContainedResources: string[] } {
   const containerUrl = getSourceUrl(solidDataset);
   const container = getThing(solidDataset, containerUrl);
@@ -932,7 +932,7 @@ export function solidDatasetAsMarkdown(solidDataset: SolidDataset): string {
       if (hasChangelog(solidDataset)) {
         readableSolidDataset += `\n${getReadableChangeLogSummary(
           solidDataset,
-          thing
+          thing,
         )}\n`;
       }
     });
@@ -951,7 +951,7 @@ export function solidDatasetAsMarkdown(solidDataset: SolidDataset): string {
  * @since 0.3.0
  */
 export function changeLogAsMarkdown(
-  solidDataset: SolidDataset & WithChangeLog
+  solidDataset: SolidDataset & WithChangeLog,
 ): string {
   if (!hasResourceInfo(solidDataset)) {
     return "This is a newly initialized SolidDataset, so there is no source to compare it to.";
@@ -964,13 +964,13 @@ export function changeLogAsMarkdown(
     return (
       `## Changes compared to ${getSourceUrl(solidDataset)}\n\n` +
       `This SolidDataset has not been modified since it was fetched from ${getSourceUrl(
-        solidDataset
+        solidDataset,
       )}.\n`
     );
   }
 
   let readableChangeLog = `## Changes compared to ${getSourceUrl(
-    solidDataset
+    solidDataset,
   )}\n`;
 
   const changeLogsByThingAndProperty =
@@ -1001,7 +1001,7 @@ export function changeLogAsMarkdown(
 }
 
 function sortChangeLogByThingAndProperty(
-  solidDataset: WithChangeLog & WithResourceInfo
+  solidDataset: WithChangeLog & WithResourceInfo,
 ) {
   const changeLogsByThingAndProperty: Record<
     UrlString,
@@ -1023,7 +1023,7 @@ function sortChangeLogByThingAndProperty(
       deleted: [],
     };
     changeLogsByThingAndProperty[thingUrl][propertyUrl].deleted.push(
-      deletion.object
+      deletion.object,
     );
   });
   solidDataset.internal_changeLog.additions.forEach((addition) => {
@@ -1042,7 +1042,7 @@ function sortChangeLogByThingAndProperty(
       deleted: [],
     };
     changeLogsByThingAndProperty[thingUrl][propertyUrl].added.push(
-      addition.object
+      addition.object,
     );
   });
 
@@ -1051,16 +1051,16 @@ function sortChangeLogByThingAndProperty(
 
 function getReadableChangeLogSummary(
   solidDataset: WithChangeLog,
-  thing: Thing
+  thing: Thing,
 ): string {
   const subject = DataFactory.namedNode(thing.url);
   const nrOfAdditions = solidDataset.internal_changeLog.additions.reduce(
     (count, addition) => (addition.subject.equals(subject) ? count + 1 : count),
-    0
+    0,
   );
   const nrOfDeletions = solidDataset.internal_changeLog.deletions.reduce(
     (count, deletion) => (deletion.subject.equals(subject) ? count + 1 : count),
-    0
+    0,
   );
   const additionString =
     nrOfAdditions === 1
@@ -1090,7 +1090,7 @@ function getNamedNodeFromLocalNode(node: LocalNode | NamedNode): NamedNode {
 }
 
 function resolveLocalIrisInSolidDataset<
-  Dataset extends SolidDataset & WithResourceInfo
+  Dataset extends SolidDataset & WithResourceInfo,
 >(solidDataset: Dataset): Dataset {
   const resourceIri = getSourceUrl(solidDataset);
   const defaultGraph = solidDataset.graphs.default;
@@ -1099,7 +1099,7 @@ function resolveLocalIrisInSolidDataset<
   const updatedDefaultGraph = thingIris.reduce((graphAcc, thingIri) => {
     const resolvedThing = resolveLocalIrisInThing(
       graphAcc[thingIri],
-      resourceIri
+      resourceIri,
     );
 
     const resolvedThingIri = isLocalNodeIri(thingIri)
@@ -1124,7 +1124,7 @@ function resolveLocalIrisInSolidDataset<
 
 function resolveLocalIrisInThing(
   thing: Thing,
-  baseIri: IriString
+  baseIri: IriString,
 ): ThingPersisted {
   const predicateIris = Object.keys(thing.predicates);
   const updatedPredicates = predicateIris.reduce(
@@ -1138,8 +1138,8 @@ function resolveLocalIrisInThing(
         namedNodes.map((namedNode) =>
           isLocalNodeIri(namedNode)
             ? `${baseIri}#${getLocalNodeName(namedNode)}`
-            : namedNode
-        )
+            : namedNode,
+        ),
       );
       const updatedPredicate = freeze({
         ...predicatesAcc[predicateIri],
@@ -1150,7 +1150,7 @@ function resolveLocalIrisInThing(
         [predicateIri]: updatedPredicate,
       });
     },
-    thing.predicates
+    thing.predicates,
   );
 
   return freeze({
@@ -1206,7 +1206,7 @@ export async function getWellKnownSolid(
   url: UrlString | Url,
   options: Partial<
     typeof internal_defaultFetchOptions & ParseOptions
-  > = internal_defaultFetchOptions
+  > = internal_defaultFetchOptions,
 ): Promise<SolidDataset & WithServerResourceInfo> {
   const urlString = internal_toIriString(url);
 
@@ -1214,7 +1214,7 @@ export async function getWellKnownSolid(
   try {
     const wellKnownSolidUrl = new URL(
       "/.well-known/solid",
-      new URL(urlString).origin
+      new URL(urlString).origin,
     ).href;
 
     return await getSolidDataset(wellKnownSolidUrl, {
@@ -1239,7 +1239,7 @@ export async function getWellKnownSolid(
   if (rootResource !== null) {
     const wellKnownSolidUrl = new URL(
       ".well-known/solid",
-      rootResource.endsWith("/") ? rootResource : `${rootResource}/`
+      rootResource.endsWith("/") ? rootResource : `${rootResource}/`,
     ).href;
     return getSolidDataset(wellKnownSolidUrl, {
       ...options,
@@ -1250,6 +1250,6 @@ export async function getWellKnownSolid(
   }
 
   throw new Error(
-    "Could not determine storage root or well-known solid resource."
+    "Could not determine storage root or well-known solid resource.",
   );
 }

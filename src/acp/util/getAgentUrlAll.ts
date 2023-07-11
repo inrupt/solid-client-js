@@ -34,7 +34,7 @@ export function getAgentUrlAll(acr: WithAccessibleAcr): string[] {
         })
         .reduce((flatArray, agentArray) => {
           return flatArray.concat(agentArray);
-        }, [])
-    )
+        }, []),
+    ),
   );
 }

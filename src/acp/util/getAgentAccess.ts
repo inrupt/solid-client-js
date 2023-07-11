@@ -34,7 +34,7 @@ import { getDenyModes } from "../policy/getDenyModes";
 function isAgentMatched(
   acr: WithAccessibleAcr,
   policy: ThingPersisted,
-  webId: string
+  webId: string,
 ): boolean {
   // TODO: Proper solution
   // Finalise, release and use the TypeScript ACP Solid library
@@ -80,7 +80,7 @@ function isAgentMatched(
 function reduceModes(
   policy: ThingPersisted,
   modes: AccessModes,
-  type: "control" | "resource"
+  type: "control" | "resource",
 ): AccessModes {
   const allowed = getAllowModes(policy);
   const denied = getDenyModes(policy);
@@ -112,7 +112,7 @@ function reduceModes(
  */
 export async function getAgentAccess<T extends WithAccessibleAcr>(
   resourceWithAcr: T,
-  webId: WebId
+  webId: WebId,
 ): Promise<AccessModes> {
   // TODO: add support for external resources
   let resourceAccess = {

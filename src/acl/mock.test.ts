@@ -75,7 +75,7 @@ describe("addMockResourceAclTo", () => {
     const mockedResourceAcl = getResourceAcl(mockedDatasetWithMockedAcl);
 
     expect(getSourceIri(mockedResourceAcl)).toBe(
-      "https://some.pod/arbitrary-location.acl"
+      "https://some.pod/arbitrary-location.acl",
     );
   });
 });

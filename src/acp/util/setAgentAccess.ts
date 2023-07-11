@@ -40,12 +40,12 @@ function setAgentAccessMode<T extends WithAccessibleAcr>(
   webId: WebId,
   name: DefaultAccessControlName,
   mode: keyof AccessModes,
-  operation: "add" | "remove"
+  operation: "add" | "remove",
 ): T {
   const matcherUrl = getDefaultAgentMatcherPolicyMatcherUrl(
     resourceWithAcr,
     name,
-    mode
+    mode,
   );
 
   // Set default Matcher if not exists
@@ -53,20 +53,20 @@ function setAgentAccessMode<T extends WithAccessibleAcr>(
     setDefaultAgentMatcherPolicyMatcherThingIfNotExist(
       resourceWithAcr,
       name,
-      mode
+      mode,
     );
 
   const defaultAgentMatcherThing =
     getThing(
       getAccessControlResource(resourceWithDefaultAgentMatcher),
-      matcherUrl
+      matcherUrl,
     ) ?? createThing({ url: matcherUrl });
 
   return setAccessControlResourceThing<T>(
     resourceWithDefaultAgentMatcher,
     operation === "add"
       ? addAgent(defaultAgentMatcherThing, webId)
-      : removeAgent(defaultAgentMatcherThing, webId)
+      : removeAgent(defaultAgentMatcherThing, webId),
   );
 }
 
@@ -81,7 +81,7 @@ function setAgentAccessMode<T extends WithAccessibleAcr>(
 export async function setAgentAccess<T extends WithAccessibleAcr>(
   resourceWithAcr: T,
   webId: WebId,
-  access: Partial<AccessModes>
+  access: Partial<AccessModes>,
 ): Promise<T> {
   const agentAccessModes = await getAgentAccess(resourceWithAcr, webId);
 
@@ -95,7 +95,7 @@ export async function setAgentAccess<T extends WithAccessibleAcr>(
       webId,
       DEFAULT_ACCESS_CONTROL,
       "read",
-      access.read ? "add" : "remove"
+      access.read ? "add" : "remove",
     );
   }
   if (
@@ -107,7 +107,7 @@ export async function setAgentAccess<T extends WithAccessibleAcr>(
       webId,
       DEFAULT_ACCESS_CONTROL,
       "append",
-      access.append ? "add" : "remove"
+      access.append ? "add" : "remove",
     );
   }
   if (
@@ -119,7 +119,7 @@ export async function setAgentAccess<T extends WithAccessibleAcr>(
       webId,
       DEFAULT_ACCESS_CONTROL,
       "write",
-      access.write ? "add" : "remove"
+      access.write ? "add" : "remove",
     );
   }
   if (
@@ -131,7 +131,7 @@ export async function setAgentAccess<T extends WithAccessibleAcr>(
       webId,
       DEFAULT_ACR_ACCESS_CONTROL,
       "controlRead",
-      access.controlRead ? "add" : "remove"
+      access.controlRead ? "add" : "remove",
     );
   }
   if (
@@ -143,7 +143,7 @@ export async function setAgentAccess<T extends WithAccessibleAcr>(
       webId,
       DEFAULT_ACR_ACCESS_CONTROL,
       "controlWrite",
-      access.controlWrite ? "add" : "remove"
+      access.controlWrite ? "add" : "remove",
     );
   }
 

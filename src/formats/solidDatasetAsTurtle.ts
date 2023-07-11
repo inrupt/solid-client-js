@@ -38,7 +38,7 @@ export async function solidDatasetAsTurtle(
   options?: {
     prefixes?: Record<string, string>;
     thing?: string;
-  }
+  },
 ): Promise<string> {
   const { prefixes = defaultPrefixes, thing } = { ...options };
   const writer = new Writer({ format: "application/turtle", prefixes });

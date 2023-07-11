@@ -39,7 +39,7 @@ import { setModes } from "../internal/setModes";
  */
 export function setDenyModes<T extends ThingPersisted>(
   policy: T,
-  modes: AccessModes
+  modes: AccessModes,
 ): T {
   return setModes(policy, modes, ACP.deny);
 }

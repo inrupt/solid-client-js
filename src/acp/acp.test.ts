@@ -53,8 +53,8 @@ jest.mock("../fetcher.ts", () => ({
     Promise.resolve(
       new Response(undefined, {
         headers: { Location: "https://arbitrary.pod/resource" },
-      })
-    )
+      }),
+    ),
   ),
 }));
 
@@ -106,7 +106,7 @@ describe("getSolidDatasetWithAcr", () => {
     });
 
     expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
-      "https://some.pod/resource"
+      "https://some.pod/resource",
     );
   });
 
@@ -114,7 +114,7 @@ describe("getSolidDatasetWithAcr", () => {
     const mockFetch = jest
       .fn<typeof fetch>()
       .mockResolvedValue(
-        new Response(undefined, { headers: { "Content-Type": "text/turtle" } })
+        new Response(undefined, { headers: { "Content-Type": "text/turtle" } }),
       );
 
     await getSolidDatasetWithAcr("https://some.pod/resource", {
@@ -136,14 +136,14 @@ describe("getSolidDatasetWithAcr", () => {
               "Content-Type": "text/turtle",
             },
           },
-          "https://some.pod/resource"
-        )
+          "https://some.pod/resource",
+        ),
       )
       .mockResolvedValueOnce(new Response("Not allowed", { status: 401 }));
 
     const fetchedDataset = await getSolidDatasetWithAcr(
       "https://some.pod/resource",
-      { fetch: mockFetch }
+      { fetch: mockFetch },
     );
 
     expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
@@ -153,7 +153,7 @@ describe("getSolidDatasetWithAcr", () => {
 
   it("attaches the fetched ACR to the returned SolidDataset", async () => {
     const mockedSolidDataset = mockSolidDatasetFrom(
-      "https://arbitrary.pod/resource"
+      "https://arbitrary.pod/resource",
     );
     mockedSolidDataset.internal_resourceInfo.linkedResources = {
       [acp.accessControl]: ["https://arbitrary.pod/resource?ext=acr"],
@@ -166,14 +166,14 @@ describe("getSolidDatasetWithAcr", () => {
     });
     const mockedGetSolidDataset = jest.spyOn(
       SolidDatasetModule,
-      "getSolidDataset"
+      "getSolidDataset",
     );
     mockedGetSolidDataset
       .mockResolvedValueOnce(mockedSolidDataset)
       .mockResolvedValueOnce(mockedAcr);
 
     const fetchedDataset = await getSolidDatasetWithAcr(
-      "https://some.pod/resource"
+      "https://some.pod/resource",
     );
 
     expect(fetchedDataset.internal_acp.acr).toStrictEqual(mockedAcr);
@@ -181,7 +181,7 @@ describe("getSolidDatasetWithAcr", () => {
 
   it('returns the ACR even if it is exposed via a rel="acl" Link header on the given Resource', async () => {
     const mockedSolidDataset = mockSolidDatasetFrom(
-      "https://arbitrary.pod/resource"
+      "https://arbitrary.pod/resource",
     );
     const acrUrl = "https://arbitrary.pod/resource?ext=acr";
     mockedSolidDataset.internal_resourceInfo.linkedResources = {
@@ -199,7 +199,7 @@ describe("getSolidDatasetWithAcr", () => {
     };
     const mockedGetSolidDataset = jest.spyOn(
       SolidDatasetModule,
-      "getSolidDataset"
+      "getSolidDataset",
     );
     mockedGetSolidDataset
       .mockResolvedValueOnce(mockedSolidDataset)
@@ -208,7 +208,7 @@ describe("getSolidDatasetWithAcr", () => {
     mockedGetResourceInfo.mockResolvedValueOnce(mockedAcr);
 
     const fetchedDataset = await getSolidDatasetWithAcr(
-      "https://some.pod/resource"
+      "https://some.pod/resource",
     );
 
     expect(fetchedDataset.internal_acp.acr).toStrictEqual(mockedAcr);
@@ -216,7 +216,7 @@ describe("getSolidDatasetWithAcr", () => {
 
   it("returns nothing if the linked ACL is not an ACP ACR", async () => {
     const mockedSolidDataset = mockSolidDatasetFrom(
-      "https://arbitrary.pod/resource"
+      "https://arbitrary.pod/resource",
     );
     const acrUrl = "https://arbitrary.pod/resource?ext=acr";
     mockedSolidDataset.internal_resourceInfo.linkedResources = {
@@ -229,14 +229,14 @@ describe("getSolidDatasetWithAcr", () => {
     const mockedNonAcr = mockSolidDatasetFrom("https://arbitrary.pod/resource");
     const mockedGetSolidDataset = jest.spyOn(
       SolidDatasetModule,
-      "getSolidDataset"
+      "getSolidDataset",
     );
     mockedGetSolidDataset.mockResolvedValueOnce(mockedSolidDataset);
     const mockedGetResourceInfo = jest.spyOn(ResourceModule, "getResourceInfo");
     mockedGetResourceInfo.mockResolvedValueOnce(mockedNonAcr);
 
     const fetchedDataset = await getSolidDatasetWithAcr(
-      "https://some.pod/resource"
+      "https://some.pod/resource",
     );
 
     expect(fetchedDataset.internal_acp.acr).toBeNull();
@@ -252,7 +252,7 @@ describe("getFileWithAcr", () => {
     await getFileWithAcr("https://some.pod/resource");
 
     expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
-      "https://some.pod/resource"
+      "https://some.pod/resource",
     );
   });
 
@@ -277,8 +277,8 @@ describe("getFileWithAcr", () => {
               Link: `<https://some.pod/acr.ttl>; rel="${acp.accessControl}"`,
             },
           },
-          "https://some.pod/resource"
-        )
+          "https://some.pod/resource",
+        ),
       )
       .mockResolvedValueOnce(new Response("Not allowed", { status: 401 }));
 
@@ -302,7 +302,7 @@ describe("getFileWithAcr", () => {
             [acp.accessControl]: ["https://some.pod/resource?ext=acr"],
           },
         },
-      }
+      },
     );
     const mockedAcr = mockAcr("https://some.pod/resource", {
       policies: [],
@@ -314,7 +314,7 @@ describe("getFileWithAcr", () => {
     mockedGetFile.mockResolvedValueOnce(mockedFile);
     const mockedGetSolidDataset = jest.spyOn(
       SolidDatasetModule,
-      "getSolidDataset"
+      "getSolidDataset",
     );
     mockedGetSolidDataset.mockResolvedValueOnce(mockedAcr);
 
@@ -333,7 +333,7 @@ describe("getResourceInfoWithAcr", () => {
     await getResourceInfoWithAcr("https://some.pod/resource");
 
     expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
-      "https://some.pod/resource"
+      "https://some.pod/resource",
     );
   });
 
@@ -367,12 +367,12 @@ describe("getResourceInfoWithAcr", () => {
     mockedGetResourceInfo.mockResolvedValueOnce(mockedResourceInfo);
     const mockedGetSolidDataset = jest.spyOn(
       SolidDatasetModule,
-      "getSolidDataset"
+      "getSolidDataset",
     );
     mockedGetSolidDataset.mockResolvedValueOnce(mockedAcr);
 
     const fetchedResourceInfo = await getResourceInfoWithAcr(
-      "https://some.pod/resource"
+      "https://some.pod/resource",
     );
 
     expect(fetchedResourceInfo.internal_acp.acr).toStrictEqual(mockedAcr);
@@ -389,14 +389,14 @@ describe("getResourceInfoWithAcr", () => {
               Link: `<https://some.pod/acr.ttl>; rel="${acp.accessControl}"`,
             },
           },
-          "https://some.pod/resource"
-        )
+          "https://some.pod/resource",
+        ),
       )
       .mockResolvedValueOnce(mockResponse("Not allowed", { status: 401 }));
 
     const fetchedResourceInfo = await getResourceInfoWithAcr(
       "https://some.pod/resource",
-      { fetch: mockFetch }
+      { fetch: mockFetch },
     );
 
     expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
@@ -524,7 +524,7 @@ describe("getSolidDatasetWithAccessDatasets", () => {
     expect(mockedGetSolidDataset).toHaveBeenCalledTimes(1);
     expect(mockedGetSolidDataset).toHaveBeenLastCalledWith(
       "https://some.pod/resource",
-      expect.anything()
+      expect.anything(),
     );
   });
 
@@ -536,7 +536,7 @@ describe("getSolidDatasetWithAccessDatasets", () => {
     };
     const mockedGetSolidDataset = jest.spyOn(
       SolidDatasetModule,
-      "getSolidDataset"
+      "getSolidDataset",
     );
     mockedGetSolidDataset.mockResolvedValueOnce(mockDataset);
 
@@ -545,7 +545,7 @@ describe("getSolidDatasetWithAccessDatasets", () => {
     expect(mockedGetSolidDataset).toHaveBeenCalledTimes(2);
     expect(mockedGetSolidDataset).toHaveBeenLastCalledWith(
       "https://some.pod/resource.acl",
-      expect.anything()
+      expect.anything(),
     );
   });
 
@@ -556,7 +556,7 @@ describe("getSolidDatasetWithAccessDatasets", () => {
     };
     const mockedGetSolidDataset = jest.spyOn(
       SolidDatasetModule,
-      "getSolidDataset"
+      "getSolidDataset",
     );
     mockedGetSolidDataset.mockResolvedValueOnce(mockDataset);
 
@@ -565,7 +565,7 @@ describe("getSolidDatasetWithAccessDatasets", () => {
     expect(mockedGetSolidDataset).toHaveBeenCalledTimes(2);
     expect(mockedGetSolidDataset).toHaveBeenLastCalledWith(
       "https://some.pod/resource?ext=acr",
-      expect.anything()
+      expect.anything(),
     );
   });
 
@@ -573,7 +573,7 @@ describe("getSolidDatasetWithAccessDatasets", () => {
     const mockDataset = mockSolidDatasetFrom("https://arbitrary.pod/resource");
     const mockedGetSolidDataset = jest.spyOn(
       SolidDatasetModule,
-      "getSolidDataset"
+      "getSolidDataset",
     );
     mockedGetSolidDataset.mockResolvedValueOnce(mockDataset);
 
@@ -590,7 +590,7 @@ describe("getSolidDatasetWithAccessDatasets", () => {
     };
     const mockedGetSolidDataset = jest.spyOn(
       SolidDatasetModule,
-      "getSolidDataset"
+      "getSolidDataset",
     );
     mockedGetSolidDataset.mockResolvedValueOnce(mockDataset);
     const mockedFetcher = jest
@@ -605,12 +605,12 @@ describe("getSolidDatasetWithAccessDatasets", () => {
     expect(mockedGetSolidDataset).toHaveBeenNthCalledWith(
       1,
       "https://some.pod/resource",
-      expect.objectContaining({ fetch: mockedFetcher })
+      expect.objectContaining({ fetch: mockedFetcher }),
     );
     expect(mockedGetSolidDataset).toHaveBeenNthCalledWith(
       2,
       "https://some.pod/resource.acl",
-      expect.objectContaining({ fetch: mockedFetcher })
+      expect.objectContaining({ fetch: mockedFetcher }),
     );
   });
 
@@ -621,7 +621,7 @@ describe("getSolidDatasetWithAccessDatasets", () => {
     };
     const mockedGetSolidDataset = jest.spyOn(
       SolidDatasetModule,
-      "getSolidDataset"
+      "getSolidDataset",
     );
     mockedGetSolidDataset.mockResolvedValueOnce(mockDataset);
     const mockedFetcher = jest
@@ -636,12 +636,12 @@ describe("getSolidDatasetWithAccessDatasets", () => {
     expect(mockedGetSolidDataset).toHaveBeenNthCalledWith(
       1,
       "https://some.pod/resource",
-      expect.objectContaining({ fetch: mockedFetcher })
+      expect.objectContaining({ fetch: mockedFetcher }),
     );
     expect(mockedGetSolidDataset).toHaveBeenNthCalledWith(
       2,
       "https://some.pod/resource?ext=acr",
-      expect.objectContaining({ fetch: mockedFetcher })
+      expect.objectContaining({ fetch: mockedFetcher }),
     );
   });
 });
@@ -655,7 +655,7 @@ describe("getFileWithAccessDatasets", () => {
     expect(mockedGetFile).toHaveBeenCalledTimes(1);
     expect(mockedGetFile).toHaveBeenLastCalledWith(
       "https://some.pod/resource",
-      expect.anything()
+      expect.anything(),
     );
   });
 
@@ -671,7 +671,7 @@ describe("getFileWithAccessDatasets", () => {
     });
     const mockedGetSolidDataset = jest.spyOn(
       SolidDatasetModule,
-      "getSolidDataset"
+      "getSolidDataset",
     );
     const mockedGetFile = jest.spyOn(FileModule, "getFile");
     mockedGetFile.mockResolvedValueOnce(mockFile);
@@ -681,7 +681,7 @@ describe("getFileWithAccessDatasets", () => {
     expect(mockedGetSolidDataset).toHaveBeenCalledTimes(1);
     expect(mockedGetSolidDataset).toHaveBeenLastCalledWith(
       "https://some.pod/resource.acl",
-      expect.anything()
+      expect.anything(),
     );
   });
 
@@ -697,7 +697,7 @@ describe("getFileWithAccessDatasets", () => {
     });
     const mockedGetSolidDataset = jest.spyOn(
       SolidDatasetModule,
-      "getSolidDataset"
+      "getSolidDataset",
     );
     const mockedGetFile = jest.spyOn(FileModule, "getFile");
     mockedGetFile.mockResolvedValueOnce(mockFile);
@@ -707,7 +707,7 @@ describe("getFileWithAccessDatasets", () => {
     expect(mockedGetSolidDataset).toHaveBeenCalledTimes(1);
     expect(mockedGetSolidDataset).toHaveBeenLastCalledWith(
       "https://some.pod/resource?ext=acr",
-      expect.anything()
+      expect.anything(),
     );
   });
 
@@ -721,7 +721,7 @@ describe("getFileWithAccessDatasets", () => {
     });
     const mockedGetSolidDataset = jest.spyOn(
       SolidDatasetModule,
-      "getSolidDataset"
+      "getSolidDataset",
     );
     const mockedGetFile = jest.spyOn(FileModule, "getFile");
     mockedGetFile.mockResolvedValueOnce(mockFile);
@@ -742,7 +742,7 @@ describe("getFileWithAccessDatasets", () => {
     });
     const mockedGetSolidDataset = jest.spyOn(
       SolidDatasetModule,
-      "getSolidDataset"
+      "getSolidDataset",
     );
     const mockedGetFile = jest.spyOn(FileModule, "getFile");
     mockedGetFile.mockResolvedValueOnce(mockFile);
@@ -757,12 +757,12 @@ describe("getFileWithAccessDatasets", () => {
     expect(mockedGetFile).toHaveBeenCalledTimes(1);
     expect(mockedGetFile).toHaveBeenLastCalledWith(
       "https://some.pod/resource",
-      expect.objectContaining({ fetch: mockedFetcher })
+      expect.objectContaining({ fetch: mockedFetcher }),
     );
     expect(mockedGetSolidDataset).toHaveBeenCalledTimes(1);
     expect(mockedGetSolidDataset).toHaveBeenLastCalledWith(
       "https://some.pod/resource.acl",
-      expect.objectContaining({ fetch: mockedFetcher })
+      expect.objectContaining({ fetch: mockedFetcher }),
     );
   });
 
@@ -778,7 +778,7 @@ describe("getFileWithAccessDatasets", () => {
     });
     const mockedGetSolidDataset = jest.spyOn(
       SolidDatasetModule,
-      "getSolidDataset"
+      "getSolidDataset",
     );
     const mockedGetFile = jest.spyOn(FileModule, "getFile");
     mockedGetFile.mockResolvedValueOnce(mockFile);
@@ -793,12 +793,12 @@ describe("getFileWithAccessDatasets", () => {
     expect(mockedGetFile).toHaveBeenCalledTimes(1);
     expect(mockedGetFile).toHaveBeenLastCalledWith(
       "https://some.pod/resource",
-      expect.objectContaining({ fetch: mockedFetcher })
+      expect.objectContaining({ fetch: mockedFetcher }),
     );
     expect(mockedGetSolidDataset).toHaveBeenCalledTimes(1);
     expect(mockedGetSolidDataset).toHaveBeenLastCalledWith(
       "https://some.pod/resource?ext=acr",
-      expect.objectContaining({ fetch: mockedFetcher })
+      expect.objectContaining({ fetch: mockedFetcher }),
     );
   });
 });
@@ -812,7 +812,7 @@ describe("getResourceInfoWithAccessDatasets", () => {
     expect(mockedGetResourceInfo).toHaveBeenCalledTimes(1);
     expect(mockedGetResourceInfo).toHaveBeenLastCalledWith(
       "https://some.pod/resource",
-      expect.anything()
+      expect.anything(),
     );
   });
 
@@ -827,7 +827,7 @@ describe("getResourceInfoWithAccessDatasets", () => {
     };
     const mockedGetSolidDataset = jest.spyOn(
       SolidDatasetModule,
-      "getSolidDataset"
+      "getSolidDataset",
     );
     const mockedGetResourceInfo = jest.spyOn(ResourceModule, "getResourceInfo");
     mockedGetResourceInfo.mockResolvedValueOnce(mockResourceInfo);
@@ -837,7 +837,7 @@ describe("getResourceInfoWithAccessDatasets", () => {
     expect(mockedGetSolidDataset).toHaveBeenCalledTimes(1);
     expect(mockedGetSolidDataset).toHaveBeenLastCalledWith(
       "https://some.pod/resource.acl",
-      expect.anything()
+      expect.anything(),
     );
   });
 
@@ -853,7 +853,7 @@ describe("getResourceInfoWithAccessDatasets", () => {
     };
     const mockedGetSolidDataset = jest.spyOn(
       SolidDatasetModule,
-      "getSolidDataset"
+      "getSolidDataset",
     );
     const mockedGetResourceInfo = jest.spyOn(ResourceModule, "getResourceInfo");
     mockedGetResourceInfo.mockResolvedValueOnce(mockResourceInfo);
@@ -863,7 +863,7 @@ describe("getResourceInfoWithAccessDatasets", () => {
     expect(mockedGetSolidDataset).toHaveBeenCalledTimes(1);
     expect(mockedGetSolidDataset).toHaveBeenLastCalledWith(
       "https://some.pod/resource?ext=acr",
-      expect.anything()
+      expect.anything(),
     );
   });
 
@@ -877,7 +877,7 @@ describe("getResourceInfoWithAccessDatasets", () => {
     };
     const mockedGetSolidDataset = jest.spyOn(
       SolidDatasetModule,
-      "getSolidDataset"
+      "getSolidDataset",
     );
     const mockedGetResourceInfo = jest.spyOn(ResourceModule, "getResourceInfo");
     mockedGetResourceInfo.mockResolvedValueOnce(mockResourceInfo);
@@ -898,7 +898,7 @@ describe("getResourceInfoWithAccessDatasets", () => {
     };
     const mockedGetSolidDataset = jest.spyOn(
       SolidDatasetModule,
-      "getSolidDataset"
+      "getSolidDataset",
     );
     const mockedGetResourceInfo = jest.spyOn(ResourceModule, "getResourceInfo");
     mockedGetResourceInfo.mockResolvedValueOnce(mockResourceInfo);
@@ -916,12 +916,12 @@ describe("getResourceInfoWithAccessDatasets", () => {
     expect(mockedGetResourceInfo).toHaveBeenCalledTimes(1);
     expect(mockedGetResourceInfo).toHaveBeenLastCalledWith(
       "https://some.pod/",
-      expect.objectContaining({ fetch: mockedFetcher })
+      expect.objectContaining({ fetch: mockedFetcher }),
     );
     expect(mockedGetSolidDataset).toHaveBeenCalledTimes(1);
     expect(mockedGetSolidDataset).toHaveBeenLastCalledWith(
       "https://some.pod/.acl",
-      expect.objectContaining({ fetch: mockedFetcher })
+      expect.objectContaining({ fetch: mockedFetcher }),
     );
   });
 
@@ -937,7 +937,7 @@ describe("getResourceInfoWithAccessDatasets", () => {
     };
     const mockedGetSolidDataset = jest.spyOn(
       SolidDatasetModule,
-      "getSolidDataset"
+      "getSolidDataset",
     );
     const mockedGetResourceInfo = jest.spyOn(ResourceModule, "getResourceInfo");
     mockedGetResourceInfo.mockResolvedValueOnce(mockResourceInfo);
@@ -952,12 +952,12 @@ describe("getResourceInfoWithAccessDatasets", () => {
     expect(mockedGetResourceInfo).toHaveBeenCalledTimes(1);
     expect(mockedGetResourceInfo).toHaveBeenLastCalledWith(
       "https://some.pod/resource",
-      expect.objectContaining({ fetch: mockedFetcher })
+      expect.objectContaining({ fetch: mockedFetcher }),
     );
     expect(mockedGetSolidDataset).toHaveBeenCalledTimes(1);
     expect(mockedGetSolidDataset).toHaveBeenLastCalledWith(
       "https://some.pod/resource?ext=acr",
-      expect.objectContaining({ fetch: mockedFetcher })
+      expect.objectContaining({ fetch: mockedFetcher }),
     );
   });
 });
@@ -969,13 +969,13 @@ describe("saveAcrFor", () => {
     };
 
     mockedFetcher.fetch.mockResolvedValue(
-      mockResponse(undefined, undefined, "https://arbitrary.pod/resource")
+      mockResponse(undefined, undefined, "https://arbitrary.pod/resource"),
     );
 
     const mockedAcr = mockAcr("https://arbitrary.pod/resource");
     const mockedResource = addMockAcrTo(
       mockSolidDatasetFrom("https://arbitrary.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
 
     await saveAcrFor(mockedResource);
@@ -987,12 +987,12 @@ describe("saveAcrFor", () => {
     const mockFetch = jest
       .fn<typeof fetch>()
       .mockResolvedValue(
-        mockResponse(undefined, undefined, "https://arbitrary.pod/resource")
+        mockResponse(undefined, undefined, "https://arbitrary.pod/resource"),
       );
     const mockedAcr = mockAcr("https://arbitrary.pod/resource");
     const mockedResource = addMockAcrTo(
       mockSolidDatasetFrom("https://arbitrary.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
 
     await saveAcrFor(mockedResource, {
@@ -1010,12 +1010,12 @@ describe("saveAcrFor", () => {
     const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(mockedResponse);
     const mockedSaveSolidDatasetAt = jest.spyOn(
       SolidDatasetModule,
-      "saveSolidDatasetAt"
+      "saveSolidDatasetAt",
     );
     const mockedAcr = mockAcr("https://some.pod/resource");
     const mockedResource = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
 
     await saveAcrFor(mockedResource, {
@@ -1026,19 +1026,19 @@ describe("saveAcrFor", () => {
     expect(mockedSaveSolidDatasetAt).toHaveBeenCalledWith(
       "https://some.pod/resource?ext=acr",
       mockedAcr,
-      expect.objectContaining({ fetch: mockFetch })
+      expect.objectContaining({ fetch: mockFetch }),
     );
   });
 
   it("attaches the saved ACR to the returned Resource", async () => {
     const mockedSaveSolidDatasetAt = jest.spyOn(
       SolidDatasetModule,
-      "saveSolidDatasetAt"
+      "saveSolidDatasetAt",
     );
     const mockedAcr = mockAcr("https://some.pod/resource");
     const mockedResource = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     const fakeReturnedAcr = { fake: "ACR" } as any;
     mockedSaveSolidDatasetAt.mockResolvedValueOnce(fakeReturnedAcr);
@@ -1052,7 +1052,7 @@ describe("saveAcrFor", () => {
 describe("isAcpControlled", () => {
   it("returns true if a resource advertizes its linked ACP using an acp:accessControl Link header", async () => {
     const mockedSolidDataset = mockSolidDatasetFrom(
-      "https://arbitrary.pod/resource"
+      "https://arbitrary.pod/resource",
     );
     mockedSolidDataset.internal_resourceInfo.linkedResources = {
       [acp.accessControl]: ["https://arbitrary.pod/resource?ext=acr"],
@@ -1066,19 +1066,19 @@ describe("isAcpControlled", () => {
     const mockedGetResourceInfo = jest.spyOn(ResourceModule, "getResourceInfo");
     const mockedGetSolidDataset = jest.spyOn(
       SolidDatasetModule,
-      "getSolidDataset"
+      "getSolidDataset",
     );
     mockedGetResourceInfo.mockResolvedValueOnce(mockedSolidDataset);
     mockedGetSolidDataset.mockResolvedValueOnce(mockedAcr);
 
     await expect(isAcpControlled("https://some.pod/resource")).resolves.toBe(
-      true
+      true,
     );
   });
 
   it("returns true if a resource advertizes its linked ACP using an 'acl' Link header", async () => {
     const mockedSolidDataset = mockSolidDatasetFrom(
-      "https://arbitrary.pod/resource"
+      "https://arbitrary.pod/resource",
     );
     const acrUrl = "https://arbitrary.pod/resource?ext=acr";
     mockedSolidDataset.internal_resourceInfo.linkedResources = {
@@ -1096,7 +1096,7 @@ describe("isAcpControlled", () => {
     };
     const mockedGetSolidDataset = jest.spyOn(
       SolidDatasetModule,
-      "getSolidDataset"
+      "getSolidDataset",
     );
     mockedGetSolidDataset.mockResolvedValueOnce(mockedAcr);
     const mockedGetResourceInfo = jest.spyOn(ResourceModule, "getResourceInfo");
@@ -1105,13 +1105,13 @@ describe("isAcpControlled", () => {
       .mockResolvedValueOnce(mockedAcr);
 
     await expect(isAcpControlled("https://some.pod/resource")).resolves.toBe(
-      true
+      true,
     );
   });
 
   it("returns false if a resource advertizes a linked ACL using an 'acl' Link header", async () => {
     const mockedSolidDataset = mockSolidDatasetFrom(
-      "https://arbitrary.pod/resource"
+      "https://arbitrary.pod/resource",
     );
     const aclUrl = "https://arbitrary.pod/resource?ext=acl";
     mockedSolidDataset.internal_resourceInfo.linkedResources = {
@@ -1126,7 +1126,7 @@ describe("isAcpControlled", () => {
     });
     const mockedGetSolidDataset = jest.spyOn(
       SolidDatasetModule,
-      "getSolidDataset"
+      "getSolidDataset",
     );
     mockedGetSolidDataset.mockResolvedValueOnce(mockedAcr);
     const mockedGetResourceInfo = jest.spyOn(ResourceModule, "getResourceInfo");
@@ -1135,7 +1135,7 @@ describe("isAcpControlled", () => {
       .mockResolvedValueOnce(mockedAcr);
 
     await expect(isAcpControlled("https://some.pod/resource")).resolves.toBe(
-      false
+      false,
     );
   });
 });
@@ -1143,7 +1143,7 @@ describe("isAcpControlled", () => {
 describe("getLinkedAcrUrl", () => {
   it("returns the IRI of an ACR linked with the ACP vocab predicate", () => {
     const mockedSolidDataset = mockSolidDatasetFrom(
-      "https://arbitrary.pod/resource"
+      "https://arbitrary.pod/resource",
     );
     const acrUrl = "https://arbitrary.pod/resource?ext=acl";
     mockedSolidDataset.internal_resourceInfo.linkedResources = {
@@ -1154,7 +1154,7 @@ describe("getLinkedAcrUrl", () => {
 
   it("returns the IRI of an ACR linked with the 'acl' link rel", () => {
     const mockedSolidDataset = mockSolidDatasetFrom(
-      "https://arbitrary.pod/resource"
+      "https://arbitrary.pod/resource",
     );
     const acrUrl = "https://arbitrary.pod/resource?ext=acl";
     mockedSolidDataset.internal_resourceInfo.linkedResources = {
@@ -1165,14 +1165,14 @@ describe("getLinkedAcrUrl", () => {
 
   it("returns undefined if no ACR is linked", () => {
     const mockedSolidDataset = mockSolidDatasetFrom(
-      "https://arbitrary.pod/resource"
+      "https://arbitrary.pod/resource",
     );
     expect(getLinkedAcrUrl(mockedSolidDataset)).toBeUndefined();
   });
 
   it("returns undefined if the given resource has no server information", () => {
     expect(
-      getLinkedAcrUrl(undefined as unknown as WithServerResourceInfo)
+      getLinkedAcrUrl(undefined as unknown as WithServerResourceInfo),
     ).toBeUndefined();
   });
 });

@@ -49,13 +49,13 @@ describe("The Parser", () => {
       DataFactory.namedNode("https://example.com/some-path#someSubject"),
       DataFactory.namedNode(rdf.type),
       DataFactory.namedNode(foaf.Person),
-      undefined
+      undefined,
     );
     const expectedTriple2 = DataFactory.quad(
       DataFactory.namedNode("https://example.com/some-path#someSubject"),
       DataFactory.namedNode(foaf.name),
       DataFactory.literal("Some name"),
-      undefined
+      undefined,
     );
 
     // Our RDF parser will use a very specific implementation, which may use a
@@ -101,14 +101,14 @@ describe("triplesToTurtle", () => {
         DataFactory.namedNode("https://vincentt.inrupt.net/profile/card#me"),
         DataFactory.namedNode(foaf.name),
         DataFactory.literal("Vincent"),
-        undefined
+        undefined,
       ),
     ];
 
     const turtle = await triplesToTurtle(triples);
 
     expect(turtle.trim()).toBe(
-      '<https://vincentt.inrupt.net/profile/card#me> <http://xmlns.com/foaf/0.1/name> "Vincent".'
+      '<https://vincentt.inrupt.net/profile/card#me> <http://xmlns.com/foaf/0.1/name> "Vincent".',
     );
   });
 
@@ -118,14 +118,14 @@ describe("triplesToTurtle", () => {
         DataFactory.namedNode("https://vincentt.inrupt.net/profile/card#me"),
         DataFactory.namedNode(foaf.name),
         DataFactory.literal("Vincent"),
-        DataFactory.namedNode("https://vincentt.inrupt.net/profile/card")
+        DataFactory.namedNode("https://vincentt.inrupt.net/profile/card"),
       ),
     ];
 
     const turtle = await triplesToTurtle(triples);
 
     expect(turtle.trim()).toBe(
-      '<https://vincentt.inrupt.net/profile/card#me> <http://xmlns.com/foaf/0.1/name> "Vincent".'
+      '<https://vincentt.inrupt.net/profile/card#me> <http://xmlns.com/foaf/0.1/name> "Vincent".',
     );
   });
 
@@ -135,7 +135,7 @@ describe("triplesToTurtle", () => {
         DataFactory.namedNode("https://vincentt.inrupt.net/profile/card#me"),
         DataFactory.namedNode(foaf.name),
         DataFactory.literal("Vincent"),
-        undefined
+        undefined,
       ),
     ];
 
@@ -144,10 +144,10 @@ describe("triplesToTurtle", () => {
     });
 
     expect(turtle.trim()).toContain(
-      "@prefix foaf: <http://xmlns.com/foaf/0.1/>"
+      "@prefix foaf: <http://xmlns.com/foaf/0.1/>",
     );
     expect(turtle.trim()).toContain(
-      '<https://vincentt.inrupt.net/profile/card#me> foaf:name "Vincent".'
+      '<https://vincentt.inrupt.net/profile/card#me> foaf:name "Vincent".',
     );
   });
 });

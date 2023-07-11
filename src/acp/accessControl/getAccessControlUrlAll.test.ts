@@ -43,7 +43,7 @@ describe("getAccessControlUrlAll()", () => {
           DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
           [[ACP.accessControl, [TEST_URL.accessControl1]]],
         ],
-      ])
+      ]),
     );
 
     expect(getAccessControlUrlAll(resource)).toStrictEqual([
@@ -63,7 +63,7 @@ describe("getAccessControlUrlAll()", () => {
             ],
           ],
         ],
-      ])
+      ]),
     );
 
     expect(getAccessControlUrlAll(resource)).toStrictEqual([

@@ -29,7 +29,7 @@ async function getDataset(ttl: string): Promise<SolidDataset> {
   return responseToSolidDataset(
     new Response(ttl, {
       headers: { "Content-Type": "text/turtle" },
-    })
+    }),
   );
 }
 
@@ -59,7 +59,7 @@ describe("solidDatasetAsTurtle", () => {
     await expect(datasetAsTurtle).resolves.toContain("a foaf:Person");
     await expect(datasetAsTurtle).resolves.toContain(' Joe"@en');
     await expect(datasetAsTurtle).resolves.toContain(
-      ":predicate <https://example.org/blank_node_object>"
+      ":predicate <https://example.org/blank_node_object>",
     );
   });
 
@@ -70,7 +70,7 @@ describe("solidDatasetAsTurtle", () => {
     await expect(datasetAsTurtle).resolves.toContain("a foaf:Person");
     await expect(datasetAsTurtle).resolves.toContain(' Joe"@en');
     await expect(datasetAsTurtle).resolves.not.toContain(
-      ":predicate <https://example.org/blank_node_object>"
+      ":predicate <https://example.org/blank_node_object>",
     );
   });
 

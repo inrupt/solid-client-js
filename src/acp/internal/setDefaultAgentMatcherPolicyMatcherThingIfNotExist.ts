@@ -55,38 +55,38 @@ export const DEFAULT_POLICY_MATCHER_PREDICATE = ACP.anyOf;
  * @hidden
  * */
 export function setDefaultAgentMatcherPolicyMatcherThingIfNotExist<
-  T extends WithAccessibleAcr
+  T extends WithAccessibleAcr,
 >(resource: T, name: DefaultAccessControlName, mode: keyof AccessModes): T {
   const policyUrl = getDefaultAgentMatcherPolicyUrl(resource, name, mode);
   const matcherUrl = getDefaultAgentMatcherPolicyMatcherUrl(
     resource,
     name,
-    mode
+    mode,
   );
 
   let defaultAgentMatcherPolicyThing = getThing(
     getAccessControlResource(resource),
-    policyUrl
+    policyUrl,
   );
 
   if (!defaultAgentMatcherPolicyThing) {
     resource = setDefaultAgentMatcherPolicyThingIfNotExist(
       resource,
       name,
-      mode
+      mode,
     );
     defaultAgentMatcherPolicyThing = createThing({ url: policyUrl });
     defaultAgentMatcherPolicyThing = setModes(
       defaultAgentMatcherPolicyThing,
       { [mode]: true } as unknown as AccessModes,
-      ACP.allow
+      ACP.allow,
     );
   }
 
   // Get the Default Access Control Agent Matcher Policy Matcher Thing or create it and return
   const agentMatcherPolicyUrlAll = getIriAll(
     defaultAgentMatcherPolicyThing,
-    DEFAULT_POLICY_MATCHER_PREDICATE
+    DEFAULT_POLICY_MATCHER_PREDICATE,
   );
 
   if (!agentMatcherPolicyUrlAll.includes(matcherUrl)) {
@@ -96,7 +96,7 @@ export function setDefaultAgentMatcherPolicyMatcherThingIfNotExist<
 
     return setAccessControlResourceThing(
       resource,
-      defaultAgentMatcherPolicyThing
+      defaultAgentMatcherPolicyThing,
     );
   }
 

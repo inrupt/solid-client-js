@@ -43,7 +43,7 @@ export function addMockAclRuleQuads(
     | "http://www.w3.org/ns/auth/acl#agent"
     | "http://www.w3.org/ns/auth/acl#agentGroup"
     | "http://www.w3.org/ns/auth/acl#agentClass"
-    | "http://www.w3.org/ns/auth/acl#origin" = "http://www.w3.org/ns/auth/acl#agent"
+    | "http://www.w3.org/ns/auth/acl#origin" = "http://www.w3.org/ns/auth/acl#agent",
 ): AclDataset {
   let newControl: Thing = createThing({
     name: encodeURIComponent(agent) + Math.random(),
@@ -54,7 +54,7 @@ export function addMockAclRuleQuads(
   newControl = addIri(
     newControl,
     "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-    "http://www.w3.org/ns/auth/acl#Authorization"
+    "http://www.w3.org/ns/auth/acl#Authorization",
   );
   let resourceRelation: IriString = "http://www.w3.org/ns/auth/acl#accessTo";
   if (type === "default") {
@@ -69,28 +69,28 @@ export function addMockAclRuleQuads(
     newControl = addIri(
       newControl,
       "http://www.w3.org/ns/auth/acl#mode",
-      "http://www.w3.org/ns/auth/acl#Read"
+      "http://www.w3.org/ns/auth/acl#Read",
     );
   }
   if (access.append) {
     newControl = addIri(
       newControl,
       "http://www.w3.org/ns/auth/acl#mode",
-      "http://www.w3.org/ns/auth/acl#Append"
+      "http://www.w3.org/ns/auth/acl#Append",
     );
   }
   if (access.write) {
     newControl = addIri(
       newControl,
       "http://www.w3.org/ns/auth/acl#mode",
-      "http://www.w3.org/ns/auth/acl#Write"
+      "http://www.w3.org/ns/auth/acl#Write",
     );
   }
   if (access.control) {
     newControl = addIri(
       newControl,
       "http://www.w3.org/ns/auth/acl#mode",
-      "http://www.w3.org/ns/auth/acl#Control"
+      "http://www.w3.org/ns/auth/acl#Control",
     );
   }
 
@@ -100,7 +100,7 @@ export function addMockAclRuleQuads(
 
 export function setMockAclUrl<T extends WithServerResourceInfo>(
   resource: T,
-  aclUrl: UrlString
+  aclUrl: UrlString,
 ): T & WithAccessibleAcl {
   const resourceWithAclUrl: typeof resource & WithAccessibleAcl = Object.assign(
     internal_cloneResource(resource),
@@ -109,7 +109,7 @@ export function setMockAclUrl<T extends WithServerResourceInfo>(
         ...resource.internal_resourceInfo,
         aclUrl,
       },
-    }
+    },
   );
 
   return resourceWithAclUrl;

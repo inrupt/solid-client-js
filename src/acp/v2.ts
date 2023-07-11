@@ -194,7 +194,7 @@ export function previousSetPublicSignature(rule: Rule, enable: boolean): Rule {
 /** @deprecated Replaced by [[setAuthenticated]] */
 export function previousSetAuthenticatedSignature(
   rule: Rule,
-  enable: boolean
+  enable: boolean,
 ): Rule {
   return enable ? setAuthenticated(rule) : removeAuthenticated(rule);
 }

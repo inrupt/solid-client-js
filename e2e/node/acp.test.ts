@@ -125,7 +125,7 @@ describe("An ACP Solid server", () => {
       session,
       sessionContainer,
       sessionResource,
-      fetchOptions
+      fetchOptions,
     );
   });
 
@@ -136,12 +136,12 @@ describe("An ACP Solid server", () => {
   it("can read ACP access controls", async () => {
     const resourceWithAcr = await acp.getSolidDatasetWithAcr(
       sessionResource,
-      fetchOptions
+      fetchOptions,
     );
     expect(resourceWithAcr).toBeDefined();
     if (!hasAccessibleAcr(resourceWithAcr)) {
       throw new Error(
-        `${getSourceUrl(resourceWithAcr)} has no accessible ACR.`
+        `${getSourceUrl(resourceWithAcr)} has no accessible ACR.`,
       );
     }
     const accessControlUrlArray = getAccessControlUrlAll(resourceWithAcr);
@@ -152,7 +152,7 @@ describe("An ACP Solid server", () => {
   // eslint-disable-next-line jest/no-disabled-tests
   it.skip("understands an Access Control Resource's default agent access", async () => {
     expect(
-      await getAgentAccess(sessionResource, session.info.webId!, fetchOptions)
+      await getAgentAccess(sessionResource, session.info.webId!, fetchOptions),
     ).toEqual({
       read: true,
       append: false,
@@ -168,11 +168,11 @@ describe("An ACP Solid server", () => {
       sessionResource,
       agent,
       { read: true },
-      fetchOptions
+      fetchOptions,
     );
     expect(agentAccess).toStrictEqual(READ_ONLY_ACCESS);
     expect(
-      await getAgentAccess(sessionResource, agent, fetchOptions)
+      await getAgentAccess(sessionResource, agent, fetchOptions),
     ).toStrictEqual(READ_ONLY_ACCESS);
   });
 
@@ -183,32 +183,32 @@ describe("An ACP Solid server", () => {
       sessionResource,
       alice,
       { read: true },
-      fetchOptions
+      fetchOptions,
     );
     const bobAccess = await setAgentAccess(
       sessionResource,
       bob,
       { append: true },
-      fetchOptions
+      fetchOptions,
     );
     expect(bobAccess).toStrictEqual(APPEND_ONLY_ACCESS);
     expect(aliceAccess).toStrictEqual(READ_ONLY_ACCESS);
     expect(
-      await getAgentAccess(sessionResource, alice, fetchOptions)
+      await getAgentAccess(sessionResource, alice, fetchOptions),
     ).toStrictEqual(READ_ONLY_ACCESS);
     expect(
-      await getAgentAccess(sessionResource, bob, fetchOptions)
+      await getAgentAccess(sessionResource, bob, fetchOptions),
     ).toStrictEqual(APPEND_ONLY_ACCESS);
 
     const bobUpdatedAccess = await setAgentAccess(
       sessionResource,
       bob,
       { read: true },
-      fetchOptions
+      fetchOptions,
     );
     expect(bobUpdatedAccess).toStrictEqual(READ_AND_APPEND_ACCESS);
     expect(
-      await getAgentAccess(sessionResource, bob, fetchOptions)
+      await getAgentAccess(sessionResource, bob, fetchOptions),
     ).toStrictEqual(READ_AND_APPEND_ACCESS);
   });
 
@@ -221,14 +221,14 @@ describe("An ACP Solid server", () => {
       sessionResource,
       alice,
       { append: true },
-      fetchOptions
+      fetchOptions,
     );
     expect(aliceAccess).toStrictEqual(APPEND_ONLY_ACCESS);
     expect(
-      await getAgentAccess(sessionResource, alice, fetchOptions)
+      await getAgentAccess(sessionResource, alice, fetchOptions),
     ).toStrictEqual(APPEND_ONLY_ACCESS);
     expect(
-      await getAgentAccess(sessionResource, bob, fetchOptions)
+      await getAgentAccess(sessionResource, bob, fetchOptions),
     ).toStrictEqual(NO_ACCESS);
 
     const headResponse = await session.fetch(sessionResource, {
@@ -252,7 +252,7 @@ describe("An ACP Solid server", () => {
 
     const datasetWithAcr = await acp_ess_2.getSolidDatasetWithAcr(
       sessionResource,
-      { fetch: session.fetch }
+      { fetch: session.fetch },
     );
 
     if (!datasetWithAcr.internal_acp.acr) {
@@ -264,10 +264,10 @@ describe("An ACP Solid server", () => {
     });
 
     expect(
-      await getAgentAccess(sessionResource, alice, fetchOptions)
+      await getAgentAccess(sessionResource, alice, fetchOptions),
     ).toStrictEqual(APPEND_ONLY_ACCESS);
     expect(
-      await getAgentAccess(sessionResource, bob, fetchOptions)
+      await getAgentAccess(sessionResource, bob, fetchOptions),
     ).toStrictEqual(APPEND_ONLY_ACCESS);
   });
 
@@ -280,7 +280,7 @@ describe("An ACP Solid server", () => {
       : legacy_getPublicAccess;
 
     await expect(
-      getSolidDataset(sessionResource, fetchOptions)
+      getSolidDataset(sessionResource, fetchOptions),
     ).resolves.toEqual(expect.objectContaining({ graphs: { default: {} } }));
 
     await expect(getSolidDataset(sessionResource)).rejects.toThrow();
@@ -288,21 +288,21 @@ describe("An ACP Solid server", () => {
     const access = await setPublicAccess(
       sessionResource,
       { read: true },
-      fetchOptions
+      fetchOptions,
     );
 
     expect(access).toStrictEqual(READ_ONLY_ACCESS);
     expect(await getPublicAccess(sessionResource, fetchOptions)).toStrictEqual(
-      READ_ONLY_ACCESS
+      READ_ONLY_ACCESS,
     );
 
     try {
       await expect(getSolidDataset(sessionResource)).resolves.toEqual(
-        expect.objectContaining({ graphs: { default: {} } })
+        expect.objectContaining({ graphs: { default: {} } }),
       );
     } catch (e) {
       console.error(
-        `"Making a resource public with the universal API fails in environment ${env.environment}`
+        `"Making a resource public with the universal API fails in environment ${env.environment}`,
       );
     }
   });
@@ -313,11 +313,11 @@ describe("An ACP Solid server", () => {
       sessionResource,
       agent,
       ALL_ACCESS,
-      fetchOptions
+      fetchOptions,
     );
     expect(agentAccess).toStrictEqual(ALL_ACCESS);
     expect(
-      await getAgentAccess(sessionResource, agent, fetchOptions)
+      await getAgentAccess(sessionResource, agent, fetchOptions),
     ).toStrictEqual(ALL_ACCESS);
   });
 
@@ -328,11 +328,11 @@ describe("An ACP Solid server", () => {
       sessionResource,
       agent,
       READ_AND_APPEND_ACCESS,
-      fetchOptions
+      fetchOptions,
     );
     expect(removedAgentAccess).toStrictEqual(READ_AND_APPEND_ACCESS);
     expect(
-      await getAgentAccess(sessionResource, agent, fetchOptions)
+      await getAgentAccess(sessionResource, agent, fetchOptions),
     ).toStrictEqual(READ_AND_APPEND_ACCESS);
   });
 });

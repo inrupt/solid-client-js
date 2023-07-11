@@ -68,7 +68,7 @@ export async function getSolidDatasetWithAcr(
   url: Url | UrlString,
   options: Partial<
     typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  > = internal_defaultFetchOptions,
 ): Promise<SolidDataset & WithServerResourceInfo & WithAcp> {
   const urlString = internal_toIriString(url);
   const config = {
@@ -97,7 +97,7 @@ export async function getFileWithAcr(
   url: Url | UrlString,
   options: Partial<
     typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  > = internal_defaultFetchOptions,
 ): Promise<File & WithAcp> {
   const urlString = internal_toIriString(url);
   const config = {
@@ -127,7 +127,7 @@ export async function getResourceInfoWithAcr(
   url: Url | UrlString,
   options: Partial<
     typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  > = internal_defaultFetchOptions,
 ): Promise<WithServerResourceInfo & WithAcp> {
   const urlString = internal_toIriString(url);
   const config = {
@@ -161,7 +161,7 @@ export async function getSolidDatasetWithAccessDatasets(
   url: Url | UrlString,
   options: Partial<
     typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  > = internal_defaultFetchOptions,
 ): Promise<SolidDataset & (WithAcp | WithAcl)> {
   const urlString = internal_toIriString(url);
   const config = {
@@ -199,7 +199,7 @@ export async function getFileWithAccessDatasets(
   url: Url | UrlString,
   options: Partial<
     typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  > = internal_defaultFetchOptions,
 ): Promise<File & (WithAcp | WithAcl)> {
   const urlString = internal_toIriString(url);
   const config = {
@@ -237,7 +237,7 @@ export async function getResourceInfoWithAccessDatasets(
   url: Url | UrlString,
   options: Partial<
     typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  > = internal_defaultFetchOptions,
 ): Promise<WithServerResourceInfo & (WithAcp | WithAcl)> {
   const urlString = internal_toIriString(url);
   const config = {
@@ -269,7 +269,7 @@ export async function saveAcrFor<ResourceExt extends WithAccessibleAcr>(
   resource: ResourceExt,
   options: Partial<
     typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  > = internal_defaultFetchOptions,
 ): Promise<ResourceExt> {
   const acr = internal_getAcr(resource);
   const config = {
@@ -307,7 +307,7 @@ export type WithAccessibleAcr = WithAcp & {
  * @since 1.6.0
  */
 export function hasAccessibleAcr(
-  resource: WithAcp
+  resource: WithAcp,
 ): resource is WithAccessibleAcr {
   return (
     typeof resource.internal_acp === "object" &&
@@ -319,7 +319,7 @@ export function hasAccessibleAcr(
 
 async function fetchAcr(
   resource: WithServerResourceInfo,
-  options: Partial<typeof internal_defaultFetchOptions>
+  options: Partial<typeof internal_defaultFetchOptions>,
 ): Promise<WithAcp> {
   let acrUrl: UrlString | undefined;
   if (hasLinkedAcr(resource)) {
@@ -338,7 +338,7 @@ async function fetchAcr(
     try {
       aclResourceInfo = await getResourceInfo(
         resource.internal_resourceInfo.aclUrl,
-        options
+        options,
       );
     } catch (e) {
       // Since both ACL and ACR will be discovered through the same header, we
@@ -401,7 +401,7 @@ async function fetchAcr(
  * @since 1.6.0
  */
 export function getReferencedPolicyUrlAll(
-  withAcr: WithAccessibleAcr
+  withAcr: WithAccessibleAcr,
 ): UrlString[] {
   const policyUrls: UrlString[] = getPolicyUrlAll(withAcr)
     .map(normalizeServerSideIri)
@@ -425,7 +425,7 @@ export async function isAcpControlled(
   resource: Url | UrlString,
   options: Partial<
     typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  > = internal_defaultFetchOptions,
 ): Promise<boolean> {
   const urlString = internal_toIriString(resource);
   const config = {
@@ -449,7 +449,7 @@ export async function isAcpControlled(
  * @since 1.15.0
  */
 export function getLinkedAcrUrl<Resource extends WithServerResourceInfo>(
-  resource: Resource
+  resource: Resource,
 ): UrlString | undefined {
   if (!hasServerResourceInfo(resource)) {
     return undefined;

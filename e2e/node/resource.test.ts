@@ -98,7 +98,7 @@ describe("Authenticated end-to-end", () => {
       session,
       sessionContainer,
       sessionResource,
-      fetchOptions
+      fetchOptions,
     );
   });
 
@@ -116,7 +116,7 @@ describe("Authenticated end-to-end", () => {
     const firstSavedDataset = await getSolidDataset(datasetUrl, fetchOptions);
     const firstSavedThing = getThing(
       firstSavedDataset,
-      `${datasetUrl}#e2e-test-thing`
+      `${datasetUrl}#e2e-test-thing`,
     )!;
     expect(firstSavedThing).not.toBeNull();
     expect(getBoolean(firstSavedThing, arbitraryPredicate)).toBe(true);
@@ -128,18 +128,18 @@ describe("Authenticated end-to-end", () => {
     const secondSavedDataset = await getSolidDataset(datasetUrl, fetchOptions);
     const secondSavedThing = getThing(
       secondSavedDataset,
-      `${datasetUrl}#e2e-test-thing`
+      `${datasetUrl}#e2e-test-thing`,
     )!;
     expect(secondSavedThing).not.toBeNull();
     expect(getBoolean(secondSavedThing, arbitraryPredicate)).toBe(false);
 
     await deleteSolidDataset(datasetUrl, fetchOptions);
     await expect(() =>
-      getSolidDataset(datasetUrl, fetchOptions)
+      getSolidDataset(datasetUrl, fetchOptions),
     ).rejects.toEqual(
       expect.objectContaining({
         statusCode: 404,
-      })
+      }),
     );
   });
 
@@ -149,7 +149,7 @@ describe("Authenticated end-to-end", () => {
     const sessionFile = await overwriteFile(
       fileUrl,
       Buffer.from("test"),
-      fetchOptions
+      fetchOptions,
     );
     const sessionDataset = await getSolidDataset(sessionResource, fetchOptions);
 
@@ -165,7 +165,7 @@ describe("Authenticated end-to-end", () => {
     const sessionFile = await overwriteFile(
       fileUrl,
       NodeBuffer.from("test"),
-      fetchOptions
+      fetchOptions,
     );
     const sessionDataset = await getSolidDataset(sessionResource, fetchOptions);
 
@@ -186,7 +186,7 @@ describe("Authenticated end-to-end", () => {
       new NodeBlob(["test"], {
         type: "text/plain",
       }) as unknown as globalThis.Blob,
-      fetchOptions
+      fetchOptions,
     );
     const sessionDataset = await getSolidDataset(sessionResource, fetchOptions);
 
@@ -210,11 +210,11 @@ describe("Authenticated end-to-end", () => {
         new Blob(["test"], {
           type: "text/plain",
         }),
-        fetchOptions
+        fetchOptions,
       );
       const sessionDataset = await getSolidDataset(
         sessionResource,
-        fetchOptions
+        fetchOptions,
       );
 
       // Eslint isn't detecting the fact that this is inside an it statement
@@ -225,7 +225,7 @@ describe("Authenticated end-to-end", () => {
       expect(isRawData(sessionFile)).toBe(true);
 
       await deleteFile(fileUrl, fetchOptions);
-    }
+    },
   );
 
   // Cannot use file constructor in Node 18 and below
@@ -240,11 +240,11 @@ describe("Authenticated end-to-end", () => {
         // of Blob does not have the prototype property expected
         // by the lib.dom.ts
         new File(["test"], fileUrl, { type: "text/plain" }),
-        fetchOptions
+        fetchOptions,
       );
       const sessionDataset = await getSolidDataset(
         sessionResource,
-        fetchOptions
+        fetchOptions,
       );
 
       // Eslint isn't detecting the fact that this is inside an it statement
@@ -255,7 +255,7 @@ describe("Authenticated end-to-end", () => {
       expect(isRawData(sessionFile)).toBe(true);
 
       await deleteFile(fileUrl, fetchOptions);
-    }
+    },
   );
 
   // Cannot use node file constructor in Node 16 and below (https://github.com/feross/buffer/issues/325)
@@ -270,11 +270,11 @@ describe("Authenticated end-to-end", () => {
         // of Blob does not have the prototype property expected
         // by the lib.dom.ts
         new NodeFile(["test"], fileUrl, { type: "text/plain" }),
-        fetchOptions
+        fetchOptions,
       );
       const sessionDataset = await getSolidDataset(
         sessionResource,
-        fetchOptions
+        fetchOptions,
       );
 
       // Eslint isn't detecting the fact that this is inside an it statement
@@ -285,7 +285,7 @@ describe("Authenticated end-to-end", () => {
       expect(isRawData(sessionFile)).toBe(true);
 
       await deleteFile(fileUrl, fetchOptions);
-    }
+    },
   );
 
   it("can create and remove Containers", async () => {
@@ -295,12 +295,12 @@ describe("Authenticated end-to-end", () => {
     const newContainer1 = await createContainerAt(containerUrl, fetchOptions);
     const newContainer2 = await createContainerInContainer(
       containerContainerUrl,
-      { ...fetchOptions, slugSuggestion: containerName }
+      { ...fetchOptions, slugSuggestion: containerName },
     );
 
     expect(getSourceUrl(newContainer1)).toBe(containerUrl);
     expect(getSourceUrl(newContainer2)).toBe(
-      `${containerContainerUrl}${containerName}/`
+      `${containerContainerUrl}${containerName}/`,
     );
 
     await deleteFile(containerUrl, fetchOptions);
@@ -326,24 +326,24 @@ describe("Authenticated end-to-end", () => {
       // and change the non-blank node value:
       const initialisedDataset = await getSolidDataset(
         datasetUrl,
-        fetchOptions
+        fetchOptions,
       );
       const initialisedThing = getThing(
         initialisedDataset,
-        `${datasetUrl}#e2e-test-thing-with-blank-node`
+        `${datasetUrl}#e2e-test-thing-with-blank-node`,
       )!;
 
       const updatedThing = setBoolean(
         initialisedThing,
         regularPredicate,
-        false
+        false,
       );
 
       // Now fetch the Resource again, and try to insert the updated Thing into it:
       const refetchedDataset = await getSolidDataset(datasetUrl, fetchOptions);
       const updatedDataset = setThing(refetchedDataset, updatedThing);
       await expect(
-        saveSolidDatasetAt(datasetUrl, updatedDataset, fetchOptions)
+        saveSolidDatasetAt(datasetUrl, updatedDataset, fetchOptions),
       ).resolves.not.toThrow();
     } finally {
       // Clean up after ourselves

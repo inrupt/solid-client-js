@@ -205,7 +205,7 @@ export type WithChangeLog = SolidDataset & {
  * @since 0.2.0
  */
 export function hasResourceInfo<T>(
-  resource: T
+  resource: T,
 ): resource is T & WithResourceInfo {
   const potentialResourceInfo = resource as T & WithResourceInfo;
   return (
@@ -222,7 +222,7 @@ export function hasResourceInfo<T>(
  * @since 0.6.0
  */
 export function hasServerResourceInfo<T>(
-  resource: T
+  resource: T,
 ): resource is T & WithServerResourceInfo {
   const potentialResourceInfo = resource as T & WithServerResourceInfo;
   return (
@@ -235,7 +235,7 @@ export function hasServerResourceInfo<T>(
 
 /** @internal */
 export function hasChangelog<T extends SolidDataset>(
-  dataset: T
+  dataset: T,
 ): dataset is T & WithChangeLog {
   const potentialChangeLog = dataset as T & WithChangeLog;
   return (

@@ -80,8 +80,8 @@ jest.mock("../fetcher.ts", () => ({
     Promise.resolve(
       new Response(undefined, {
         headers: { Location: "https://arbitrary.pod/resource" },
-      })
-    )
+      }),
+    ),
   ),
 }));
 
@@ -103,7 +103,7 @@ describe("getPolicy", () => {
     const policyDataset = setThing(createSolidDataset(), mockPolicy);
 
     expect(
-      getPolicy(policyDataset, "https://some.pod/policy-resource#policy")
+      getPolicy(policyDataset, "https://some.pod/policy-resource#policy"),
     ).not.toBeNull();
   });
 
@@ -114,18 +114,21 @@ describe("getPolicy", () => {
     notAPolicy = setUrl(
       notAPolicy,
       rdf.type,
-      "https://arbitrary.vocab/not-a-policy"
+      "https://arbitrary.vocab/not-a-policy",
     );
     const policyDataset = setThing(createSolidDataset(), notAPolicy);
 
     expect(
-      getPolicy(policyDataset, "https://some.pod/policy-resource#not-a-policy")
+      getPolicy(policyDataset, "https://some.pod/policy-resource#not-a-policy"),
     ).toBeNull();
   });
 
   it("returns null if there is no Thing at the given URL", () => {
     expect(
-      getPolicy(createSolidDataset(), "https://some.pod/policy-resource#policy")
+      getPolicy(
+        createSolidDataset(),
+        "https://some.pod/policy-resource#policy",
+      ),
     ).toBeNull();
   });
 });
@@ -152,7 +155,7 @@ describe("getPolicyAll", () => {
     notAPolicy = setUrl(
       notAPolicy,
       rdf.type,
-      "https://arbitrary.vocab/not-a-policy"
+      "https://arbitrary.vocab/not-a-policy",
     );
     let policyDataset = setThing(createSolidDataset(), mockPolicy);
     policyDataset = setThing(policyDataset, notAPolicy);
@@ -178,14 +181,14 @@ describe("setPolicy", () => {
     const updatedPolicy = removeUrl(
       mockPolicy,
       somePredicate,
-      "https://example.test"
+      "https://example.test",
     );
 
     const updatedPolicyDataset = setPolicy(policyDataset, updatedPolicy);
 
     const policyAfterUpdate = getPolicy(
       updatedPolicyDataset,
-      "https://some.pod/policy-resource#policy"
+      "https://some.pod/policy-resource#policy",
     );
     expect(getUrl(policyAfterUpdate!, somePredicate)).toBeNull();
   });
@@ -212,7 +215,7 @@ describe("removePolicy", () => {
 
     const updatedPolicyDataset = removePolicy(
       policyDataset,
-      "https://some.pod/policy-resource#policy"
+      "https://some.pod/policy-resource#policy",
     );
     expect(getThingAll(updatedPolicyDataset)).toHaveLength(0);
   });
@@ -240,7 +243,7 @@ describe("createResourcePolicyFor", () => {
     const mockedAcr = mockAcrFor("https://some.pod/resource");
     const mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     const newPolicy = createResourcePolicyFor(mockedResourceWithAcr, "policy");
 
@@ -259,11 +262,11 @@ describe("getResourcePolicy", () => {
     mockedAcr = setThing(mockedAcr, mockedPolicy);
     let mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     mockedResourceWithAcr = addPolicyUrl(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#policy`
+      `${getSourceUrl(mockedAcr)}#policy`,
     );
 
     expect(getResourcePolicy(mockedResourceWithAcr, "policy")).not.toBeNull();
@@ -278,7 +281,7 @@ describe("getResourcePolicy", () => {
     mockedAcr = setThing(mockedAcr, mockedPolicy);
     const mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
 
     expect(getResourcePolicy(mockedResourceWithAcr, "policy")).toBeNull();
@@ -293,11 +296,11 @@ describe("getResourcePolicy", () => {
     mockedAcr = setThing(mockedAcr, mockedPolicy);
     let mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     mockedResourceWithAcr = addAcrPolicyUrl(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#policy`
+      `${getSourceUrl(mockedAcr)}#policy`,
     );
 
     expect(getResourcePolicy(mockedResourceWithAcr, "policy")).toBeNull();
@@ -310,19 +313,19 @@ describe("getResourcePolicy", () => {
     notAPolicy = setUrl(
       notAPolicy,
       rdf.type,
-      "https://arbitrary.vocab/not-a-policy"
+      "https://arbitrary.vocab/not-a-policy",
     );
     const mockedAcr = setThing(
       mockAcrFor("https://some.pod/resource"),
-      notAPolicy
+      notAPolicy,
     );
     let mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     mockedResourceWithAcr = addPolicyUrl(
       mockedResourceWithAcr,
-      "https://some.pod/resource?ext=acr#not-a-policy"
+      "https://some.pod/resource?ext=acr#not-a-policy",
     );
 
     expect(getResourcePolicy(mockedResourceWithAcr, "not-a-policy")).toBeNull();
@@ -333,10 +336,10 @@ describe("getResourcePolicy", () => {
       getResourcePolicy(
         addMockAcrTo(
           mockSolidDatasetFrom("https://some.pod/resource"),
-          mockAcrFor("https://some.pod/resource")
+          mockAcrFor("https://some.pod/resource"),
         ),
-        "policy"
-      )
+        "policy",
+      ),
     ).toBeNull();
   });
 });
@@ -351,15 +354,15 @@ describe("getResourceAcrPolicy", () => {
     mockedAcr = setThing(mockedAcr, mockedPolicy);
     let mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     mockedResourceWithAcr = addAcrPolicyUrl(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#policy`
+      `${getSourceUrl(mockedAcr)}#policy`,
     );
 
     expect(
-      getResourceAcrPolicy(mockedResourceWithAcr, "policy")
+      getResourceAcrPolicy(mockedResourceWithAcr, "policy"),
     ).not.toBeNull();
   });
 
@@ -372,7 +375,7 @@ describe("getResourceAcrPolicy", () => {
     mockedAcr = setThing(mockedAcr, mockedPolicy);
     const mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
 
     expect(getResourceAcrPolicy(mockedResourceWithAcr, "policy")).toBeNull();
@@ -387,11 +390,11 @@ describe("getResourceAcrPolicy", () => {
     mockedAcr = setThing(mockedAcr, mockedPolicy);
     let mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     mockedResourceWithAcr = addPolicyUrl(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#policy`
+      `${getSourceUrl(mockedAcr)}#policy`,
     );
 
     expect(getResourceAcrPolicy(mockedResourceWithAcr, "policy")).toBeNull();
@@ -404,23 +407,23 @@ describe("getResourceAcrPolicy", () => {
     notAPolicy = setUrl(
       notAPolicy,
       rdf.type,
-      "https://arbitrary.vocab/not-a-policy"
+      "https://arbitrary.vocab/not-a-policy",
     );
     const mockedAcr = setThing(
       mockAcrFor("https://some.pod/resource"),
-      notAPolicy
+      notAPolicy,
     );
     let mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     mockedResourceWithAcr = addAcrPolicyUrl(
       mockedResourceWithAcr,
-      "https://some.pod/resource?ext=acr#not-a-policy"
+      "https://some.pod/resource?ext=acr#not-a-policy",
     );
 
     expect(
-      getResourceAcrPolicy(mockedResourceWithAcr, "not-a-policy")
+      getResourceAcrPolicy(mockedResourceWithAcr, "not-a-policy"),
     ).toBeNull();
   });
 
@@ -429,10 +432,10 @@ describe("getResourceAcrPolicy", () => {
       getResourceAcrPolicy(
         addMockAcrTo(
           mockSolidDatasetFrom("https://some.pod/resource"),
-          mockAcrFor("https://some.pod/resource")
+          mockAcrFor("https://some.pod/resource"),
         ),
-        "policy"
-      )
+        "policy",
+      ),
     ).toBeNull();
   });
 });
@@ -447,11 +450,11 @@ describe("getResourcePolicyAll", () => {
     mockedAcr = setThing(mockedAcr, mockedPolicy);
     let mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     mockedResourceWithAcr = addPolicyUrl(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#policy`
+      `${getSourceUrl(mockedAcr)}#policy`,
     );
 
     expect(getResourcePolicyAll(mockedResourceWithAcr)).toHaveLength(1);
@@ -469,21 +472,21 @@ describe("getResourcePolicyAll", () => {
     notAPolicy = setUrl(
       notAPolicy,
       rdf.type,
-      "https://arbitrary.vocab/not-a-policy"
+      "https://arbitrary.vocab/not-a-policy",
     );
     mockedAcr = setThing(mockedAcr, mockedPolicy);
     mockedAcr = setThing(mockedAcr, notAPolicy);
     let mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     mockedResourceWithAcr = addPolicyUrl(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#policy`
+      `${getSourceUrl(mockedAcr)}#policy`,
     );
     mockedResourceWithAcr = addPolicyUrl(
       mockedResourceWithAcr,
-      "https://some.pod/policy-resource#not-a-policy"
+      "https://some.pod/policy-resource#not-a-policy",
     );
 
     expect(getResourcePolicyAll(mockedResourceWithAcr)).toHaveLength(1);
@@ -508,15 +511,15 @@ describe("getResourcePolicyAll", () => {
     mockedAcr = setThing(mockedAcr, acrPolicy);
     let mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     mockedResourceWithAcr = addPolicyUrl(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#applicable-policy`
+      `${getSourceUrl(mockedAcr)}#applicable-policy`,
     );
     mockedResourceWithAcr = addAcrPolicyUrl(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#acr-policy`
+      `${getSourceUrl(mockedAcr)}#acr-policy`,
     );
 
     expect(getResourcePolicyAll(mockedResourceWithAcr)).toHaveLength(1);
@@ -527,9 +530,9 @@ describe("getResourcePolicyAll", () => {
       getResourcePolicyAll(
         addMockAcrTo(
           mockSolidDatasetFrom("https://some.pod/resource"),
-          mockAcrFor("https://some.pod/resource")
-        )
-      )
+          mockAcrFor("https://some.pod/resource"),
+        ),
+      ),
     ).toHaveLength(0);
   });
 });
@@ -544,11 +547,11 @@ describe("getResourceAcrPolicyAll", () => {
     mockedAcr = setThing(mockedAcr, mockedPolicy);
     let mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     mockedResourceWithAcr = addAcrPolicyUrl(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#policy`
+      `${getSourceUrl(mockedAcr)}#policy`,
     );
 
     expect(getResourceAcrPolicyAll(mockedResourceWithAcr)).toHaveLength(1);
@@ -566,21 +569,21 @@ describe("getResourceAcrPolicyAll", () => {
     notAPolicy = setUrl(
       notAPolicy,
       rdf.type,
-      "https://arbitrary.vocab/not-a-policy"
+      "https://arbitrary.vocab/not-a-policy",
     );
     mockedAcr = setThing(mockedAcr, mockedPolicy);
     mockedAcr = setThing(mockedAcr, notAPolicy);
     let mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     mockedResourceWithAcr = addAcrPolicyUrl(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#policy`
+      `${getSourceUrl(mockedAcr)}#policy`,
     );
     mockedResourceWithAcr = addAcrPolicyUrl(
       mockedResourceWithAcr,
-      "https://some.pod/policy-resource#not-a-policy"
+      "https://some.pod/policy-resource#not-a-policy",
     );
 
     expect(getResourceAcrPolicyAll(mockedResourceWithAcr)).toHaveLength(1);
@@ -605,15 +608,15 @@ describe("getResourceAcrPolicyAll", () => {
     mockedAcr = setThing(mockedAcr, regularPolicy);
     let mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     mockedResourceWithAcr = addAcrPolicyUrl(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#applicable-policy`
+      `${getSourceUrl(mockedAcr)}#applicable-policy`,
     );
     mockedResourceWithAcr = addPolicyUrl(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#regular-policy`
+      `${getSourceUrl(mockedAcr)}#regular-policy`,
     );
 
     expect(getResourceAcrPolicyAll(mockedResourceWithAcr)).toHaveLength(1);
@@ -624,9 +627,9 @@ describe("getResourceAcrPolicyAll", () => {
       getResourceAcrPolicyAll(
         addMockAcrTo(
           mockSolidDatasetFrom("https://some.pod/resource"),
-          mockAcrFor("https://some.pod/resource")
-        )
-      )
+          mockAcrFor("https://some.pod/resource"),
+        ),
+      ),
     ).toHaveLength(0);
   });
 });
@@ -643,27 +646,27 @@ describe("setResourcePolicy", () => {
     mockedAcr = setThing(mockedAcr, mockedPolicy);
     let mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     mockedResourceWithAcr = addPolicyUrl(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#policy`
+      `${getSourceUrl(mockedAcr)}#policy`,
     );
 
     const updatedPolicy = removeUrl(
       mockedPolicy,
       somePredicate,
-      "https://example.test"
+      "https://example.test",
     );
 
     const updatedResourceWithAcr = setResourcePolicy(
       mockedResourceWithAcr,
-      updatedPolicy
+      updatedPolicy,
     );
 
     const policyAfterUpdate = getResourcePolicy(
       updatedResourceWithAcr,
-      "policy"
+      "policy",
     );
     expect(getUrl(policyAfterUpdate!, somePredicate)).toBeNull();
   });
@@ -672,16 +675,16 @@ describe("setResourcePolicy", () => {
     const mockedAcr = mockAcrFor("https://some.pod/resource");
     const mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     const mockedPolicy = createResourcePolicyFor(
       mockedResourceWithAcr,
-      "policy"
+      "policy",
     );
 
     const updatedResourceWithAcr = setResourcePolicy(
       mockedResourceWithAcr,
-      mockedPolicy
+      mockedPolicy,
     );
 
     expect(getPolicyUrlAll(updatedResourceWithAcr)).toEqual([
@@ -702,27 +705,27 @@ describe("setResourceAcrPolicy", () => {
     mockedAcr = setThing(mockedAcr, mockedPolicy);
     let mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     mockedResourceWithAcr = addAcrPolicyUrl(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#policy`
+      `${getSourceUrl(mockedAcr)}#policy`,
     );
 
     const updatedPolicy = removeUrl(
       mockedPolicy,
       somePredicate,
-      "https://example.test"
+      "https://example.test",
     );
 
     const updatedResourceWithAcr = setResourceAcrPolicy(
       mockedResourceWithAcr,
-      updatedPolicy
+      updatedPolicy,
     );
 
     const policyAfterUpdate = getResourceAcrPolicy(
       updatedResourceWithAcr,
-      "policy"
+      "policy",
     );
     expect(getUrl(policyAfterUpdate!, somePredicate)).toBeNull();
   });
@@ -731,16 +734,16 @@ describe("setResourceAcrPolicy", () => {
     const mockedAcr = mockAcrFor("https://some.pod/resource");
     const mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     const mockedPolicy = createResourcePolicyFor(
       mockedResourceWithAcr,
-      "policy"
+      "policy",
     );
 
     const updatedResourceWithAcr = setResourceAcrPolicy(
       mockedResourceWithAcr,
-      mockedPolicy
+      mockedPolicy,
     );
 
     expect(getAcrPolicyUrlAll(updatedResourceWithAcr)).toEqual([
@@ -759,16 +762,16 @@ describe("removeResourcePolicy", () => {
     mockedAcr = setThing(mockedAcr, mockedPolicy);
     let mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     mockedResourceWithAcr = addPolicyUrl(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#policy`
+      `${getSourceUrl(mockedAcr)}#policy`,
     );
 
     const updatedPolicyDataset = removeResourcePolicy(
       mockedResourceWithAcr,
-      mockedPolicy
+      mockedPolicy,
     );
     expect(getResourcePolicyAll(updatedPolicyDataset)).toHaveLength(0);
   });
@@ -782,16 +785,16 @@ describe("removeResourcePolicy", () => {
     mockedAcr = setThing(mockedAcr, mockedPolicy);
     let mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     mockedResourceWithAcr = addPolicyUrl(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#policy`
+      `${getSourceUrl(mockedAcr)}#policy`,
     );
 
     const updatedPolicyDataset = removeResourcePolicy(
       mockedResourceWithAcr,
-      mockedPolicy
+      mockedPolicy,
     );
     expect(getPolicyUrlAll(updatedPolicyDataset)).toHaveLength(0);
   });
@@ -805,16 +808,16 @@ describe("removeResourcePolicy", () => {
     mockedAcr = setThing(mockedAcr, mockedPolicy);
     let mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     mockedResourceWithAcr = addPolicyUrl(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#policy`
+      `${getSourceUrl(mockedAcr)}#policy`,
     );
 
     const updatedPolicyDataset = removeResourcePolicy(
       mockedResourceWithAcr,
-      "policy"
+      "policy",
     );
     expect(getResourcePolicyAll(updatedPolicyDataset)).toHaveLength(0);
   });
@@ -828,16 +831,16 @@ describe("removeResourcePolicy", () => {
     mockedAcr = setThing(mockedAcr, mockedPolicy);
     let mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     mockedResourceWithAcr = addPolicyUrl(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#policy`
+      `${getSourceUrl(mockedAcr)}#policy`,
     );
 
     const updatedPolicyDataset = removeResourcePolicy(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#policy`
+      `${getSourceUrl(mockedAcr)}#policy`,
     );
     expect(getResourcePolicyAll(updatedPolicyDataset)).toHaveLength(0);
   });
@@ -851,16 +854,16 @@ describe("removeResourcePolicy", () => {
     mockedAcr = setThing(mockedAcr, mockedPolicy);
     let mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     mockedResourceWithAcr = addPolicyUrl(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#policy`
+      `${getSourceUrl(mockedAcr)}#policy`,
     );
 
     const updatedPolicyDataset = removeResourcePolicy(
       mockedResourceWithAcr,
-      DataFactory.namedNode(`${getSourceUrl(mockedAcr)}#policy`)
+      DataFactory.namedNode(`${getSourceUrl(mockedAcr)}#policy`),
     );
     expect(getResourcePolicyAll(updatedPolicyDataset)).toHaveLength(0);
   });
@@ -873,26 +876,26 @@ describe("removeResourcePolicy", () => {
     mockedPolicy = setUrl(
       mockedPolicy,
       rdf.type,
-      "https://arbitrary.vocab/#not-a-policy"
+      "https://arbitrary.vocab/#not-a-policy",
     );
     mockedAcr = setThing(mockedAcr, mockedPolicy);
     let mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     mockedResourceWithAcr = addPolicyUrl(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#policy`
+      `${getSourceUrl(mockedAcr)}#policy`,
     );
 
     const updatedPolicyDataset = removeResourcePolicy(
       mockedResourceWithAcr,
-      mockedPolicy
+      mockedPolicy,
     );
 
     const updatedAcr = internal_getAcr(updatedPolicyDataset);
     expect(
-      getThing(updatedAcr, `${getSourceUrl(mockedAcr)}#policy`)
+      getThing(updatedAcr, `${getSourceUrl(mockedAcr)}#policy`),
     ).not.toBeNull();
   });
 
@@ -910,20 +913,20 @@ describe("removeResourcePolicy", () => {
     mockedAcr = setThing(mockedAcr, mockedPolicy2);
     let mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     mockedResourceWithAcr = addPolicyUrl(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#policy1`
+      `${getSourceUrl(mockedAcr)}#policy1`,
     );
     mockedResourceWithAcr = addPolicyUrl(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#policy2`
+      `${getSourceUrl(mockedAcr)}#policy2`,
     );
 
     const updatedPolicyDataset = removeResourcePolicy(
       mockedResourceWithAcr,
-      mockedPolicy1
+      mockedPolicy1,
     );
 
     expect(getResourcePolicyAll(updatedPolicyDataset)).toHaveLength(1);
@@ -940,16 +943,16 @@ describe("removeResourceAcrPolicy", () => {
     mockedAcr = setThing(mockedAcr, mockedPolicy);
     let mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     mockedResourceWithAcr = addAcrPolicyUrl(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#policy`
+      `${getSourceUrl(mockedAcr)}#policy`,
     );
 
     const updatedPolicyDataset = removeResourceAcrPolicy(
       mockedResourceWithAcr,
-      mockedPolicy
+      mockedPolicy,
     );
     expect(getResourceAcrPolicyAll(updatedPolicyDataset)).toHaveLength(0);
   });
@@ -963,16 +966,16 @@ describe("removeResourceAcrPolicy", () => {
     mockedAcr = setThing(mockedAcr, mockedPolicy);
     let mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     mockedResourceWithAcr = addAcrPolicyUrl(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#policy`
+      `${getSourceUrl(mockedAcr)}#policy`,
     );
 
     const updatedPolicyDataset = removeResourceAcrPolicy(
       mockedResourceWithAcr,
-      mockedPolicy
+      mockedPolicy,
     );
     expect(getAcrPolicyUrlAll(updatedPolicyDataset)).toHaveLength(0);
   });
@@ -986,16 +989,16 @@ describe("removeResourceAcrPolicy", () => {
     mockedAcr = setThing(mockedAcr, mockedPolicy);
     let mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     mockedResourceWithAcr = addAcrPolicyUrl(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#policy`
+      `${getSourceUrl(mockedAcr)}#policy`,
     );
 
     const updatedPolicyDataset = removeResourceAcrPolicy(
       mockedResourceWithAcr,
-      "policy"
+      "policy",
     );
     expect(getResourceAcrPolicyAll(updatedPolicyDataset)).toHaveLength(0);
   });
@@ -1009,16 +1012,16 @@ describe("removeResourceAcrPolicy", () => {
     mockedAcr = setThing(mockedAcr, mockedPolicy);
     let mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     mockedResourceWithAcr = addAcrPolicyUrl(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#policy`
+      `${getSourceUrl(mockedAcr)}#policy`,
     );
 
     const updatedPolicyDataset = removeResourceAcrPolicy(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#policy`
+      `${getSourceUrl(mockedAcr)}#policy`,
     );
     expect(getResourceAcrPolicyAll(updatedPolicyDataset)).toHaveLength(0);
   });
@@ -1032,16 +1035,16 @@ describe("removeResourceAcrPolicy", () => {
     mockedAcr = setThing(mockedAcr, mockedPolicy);
     let mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     mockedResourceWithAcr = addAcrPolicyUrl(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#policy`
+      `${getSourceUrl(mockedAcr)}#policy`,
     );
 
     const updatedPolicyDataset = removeResourceAcrPolicy(
       mockedResourceWithAcr,
-      DataFactory.namedNode(`${getSourceUrl(mockedAcr)}#policy`)
+      DataFactory.namedNode(`${getSourceUrl(mockedAcr)}#policy`),
     );
     expect(getResourceAcrPolicyAll(updatedPolicyDataset)).toHaveLength(0);
   });
@@ -1054,26 +1057,26 @@ describe("removeResourceAcrPolicy", () => {
     mockedPolicy = setUrl(
       mockedPolicy,
       rdf.type,
-      "https://arbitrary.vocab/#not-a-policy"
+      "https://arbitrary.vocab/#not-a-policy",
     );
     mockedAcr = setThing(mockedAcr, mockedPolicy);
     let mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     mockedResourceWithAcr = addAcrPolicyUrl(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#policy`
+      `${getSourceUrl(mockedAcr)}#policy`,
     );
 
     const updatedPolicyDataset = removeResourceAcrPolicy(
       mockedResourceWithAcr,
-      mockedPolicy
+      mockedPolicy,
     );
 
     const updatedAcr = internal_getAcr(updatedPolicyDataset);
     expect(
-      getThing(updatedAcr, `${getSourceUrl(mockedAcr)}#policy`)
+      getThing(updatedAcr, `${getSourceUrl(mockedAcr)}#policy`),
     ).not.toBeNull();
   });
 
@@ -1091,20 +1094,20 @@ describe("removeResourceAcrPolicy", () => {
     mockedAcr = setThing(mockedAcr, mockedPolicy2);
     let mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     mockedResourceWithAcr = addAcrPolicyUrl(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#policy1`
+      `${getSourceUrl(mockedAcr)}#policy1`,
     );
     mockedResourceWithAcr = addAcrPolicyUrl(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#policy2`
+      `${getSourceUrl(mockedAcr)}#policy2`,
     );
 
     const updatedPolicyDataset = removeResourceAcrPolicy(
       mockedResourceWithAcr,
-      mockedPolicy1
+      mockedPolicy1,
     );
 
     expect(getResourceAcrPolicyAll(updatedPolicyDataset)).toHaveLength(1);
@@ -1114,7 +1117,7 @@ describe("removeResourceAcrPolicy", () => {
 describe("setAllowModes", () => {
   it("sets the given modes on the Policy", () => {
     const policy = mockThingFrom(
-      "https://arbitrary.pod/policy-resource#policy"
+      "https://arbitrary.pod/policy-resource#policy",
     );
 
     const updatedPolicy = setAllowModesV2(policy, {
@@ -1162,7 +1165,7 @@ describe("setAllowModes", () => {
   describe("using the deprecated, ACP-specific vocabulary", () => {
     it("sets the given modes on the Policy", () => {
       const policy = mockThingFrom(
-        "https://arbitrary.pod/policy-resource#policy"
+        "https://arbitrary.pod/policy-resource#policy",
       );
 
       const updatedPolicy = setAllowModesV1(policy, {
@@ -1179,7 +1182,7 @@ describe("setAllowModes", () => {
 
     it("replaces existing modes set on the Policy", () => {
       let policy = mockThingFrom(
-        "https://arbitrary.pod/policy-resource#policy"
+        "https://arbitrary.pod/policy-resource#policy",
       );
       policy = addIri(policy, acp.allow, acp.Append);
 
@@ -1194,7 +1197,7 @@ describe("setAllowModes", () => {
 
     it("does not affect denied modes", () => {
       let policy = mockThingFrom(
-        "https://arbitrary.pod/policy-resource#policy"
+        "https://arbitrary.pod/policy-resource#policy",
       );
       policy = addIri(policy, acp.deny, acp.Append);
 
@@ -1231,7 +1234,7 @@ describe("getAllowModes", () => {
   describe("using the deprecated, ACP-specific vocabulary", () => {
     it("returns all modes that are allowed on the Policy", () => {
       let policy = mockThingFrom(
-        "https://arbitrary.pod/policy-resource#policy"
+        "https://arbitrary.pod/policy-resource#policy",
       );
       policy = addIri(policy, acp.allow, acp.Append);
 
@@ -1242,7 +1245,7 @@ describe("getAllowModes", () => {
 
     it("does not return modes that are denied on the Policy", () => {
       let policy = mockThingFrom(
-        "https://arbitrary.pod/policy-resource#policy"
+        "https://arbitrary.pod/policy-resource#policy",
       );
       policy = addIri(policy, acp.deny, acp.Append);
 
@@ -1260,7 +1263,7 @@ describe("getAllowModes", () => {
 describe("setDenyModes", () => {
   it("sets the given modes on the Policy", () => {
     const policy = mockThingFrom(
-      "https://arbitrary.pod/policy-resource#policy"
+      "https://arbitrary.pod/policy-resource#policy",
     );
 
     const updatedPolicy = setDenyModesV2(policy, {
@@ -1308,7 +1311,7 @@ describe("setDenyModes", () => {
   describe("using the deprecated, ACP-specific vocabulary", () => {
     it("sets the given modes on the Policy", () => {
       const policy = mockThingFrom(
-        "https://arbitrary.pod/policy-resource#policy"
+        "https://arbitrary.pod/policy-resource#policy",
       );
 
       const updatedPolicy = setDenyModesV1(policy, {
@@ -1325,7 +1328,7 @@ describe("setDenyModes", () => {
 
     it("replaces existing modes set on the Policy", () => {
       let policy = mockThingFrom(
-        "https://arbitrary.pod/policy-resource#policy"
+        "https://arbitrary.pod/policy-resource#policy",
       );
       policy = addIri(policy, acp.deny, acp.Append);
 
@@ -1340,7 +1343,7 @@ describe("setDenyModes", () => {
 
     it("does not affect allowed modes", () => {
       let policy = mockThingFrom(
-        "https://arbitrary.pod/policy-resource#policy"
+        "https://arbitrary.pod/policy-resource#policy",
       );
       policy = addIri(policy, acp.allow, acp.Append);
 
@@ -1377,7 +1380,7 @@ describe("getDenyModes", () => {
   describe("using the deprecated, ACP-specific vocabulary", () => {
     it("returns all modes that are denied on the Policy", () => {
       let policy = mockThingFrom(
-        "https://arbitrary.pod/policy-resource#policy"
+        "https://arbitrary.pod/policy-resource#policy",
       );
       policy = addIri(policy, acp.deny, acp.Append);
 
@@ -1388,7 +1391,7 @@ describe("getDenyModes", () => {
 
     it("does not return modes that are allowed on the Policy", () => {
       let policy = mockThingFrom(
-        "https://arbitrary.pod/policy-resource#policy"
+        "https://arbitrary.pod/policy-resource#policy",
       );
       policy = addIri(policy, acp.allow, acp.Append);
 
@@ -1424,7 +1427,7 @@ describe("policyAsMarkdown", () => {
         "- Append: unspecified\n" +
         "- Write: denied\n" +
         "\n" +
-        "<no rules specified yet>\n"
+        "<no rules specified yet>\n",
     );
   });
 
@@ -1432,7 +1435,7 @@ describe("policyAsMarkdown", () => {
     let policy = createPolicy("https://some.pod/policyResource#policy");
     policy = addAllOfRuleUrl(
       policy,
-      "https://some.pod/policyResource#allOfRule"
+      "https://some.pod/policyResource#allOfRule",
     );
 
     expect(policyAsMarkdown(policy)).toBe(
@@ -1443,7 +1446,7 @@ describe("policyAsMarkdown", () => {
         "- Write: unspecified\n" +
         "\n" +
         "All of these rules should match:\n" +
-        "- https://some.pod/policyResource#allOfRule\n"
+        "- https://some.pod/policyResource#allOfRule\n",
     );
   });
 
@@ -1451,15 +1454,15 @@ describe("policyAsMarkdown", () => {
     let policy = createPolicy("https://some.pod/policyResource#policy");
     policy = addAllOfRuleUrl(
       policy,
-      "https://some.pod/policyResource#allOfRule"
+      "https://some.pod/policyResource#allOfRule",
     );
     policy = addAnyOfRuleUrl(
       policy,
-      "https://some.pod/policyResource#anyOfRule"
+      "https://some.pod/policyResource#anyOfRule",
     );
     policy = addNoneOfRuleUrl(
       policy,
-      "https://some.pod/policyResource#noneOfRule"
+      "https://some.pod/policyResource#noneOfRule",
     );
 
     expect(policyAsMarkdown(policy)).toBe(
@@ -1476,7 +1479,7 @@ describe("policyAsMarkdown", () => {
         "- https://some.pod/policyResource#anyOfRule\n" +
         "\n" +
         "None of these rules should match:\n" +
-        "- https://some.pod/policyResource#noneOfRule\n"
+        "- https://some.pod/policyResource#noneOfRule\n",
     );
   });
 });

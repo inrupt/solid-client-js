@@ -52,11 +52,11 @@ describe("addIri", () => {
     const updatedThing = addUrl(
       thing,
       "https://some.vocab/predicate",
-      "https://some.pod/other-resource#object"
+      "https://some.pod/other-resource#object",
     );
 
     expect(
-      updatedThing.predicates["https://some.vocab/predicate"]
+      updatedThing.predicates["https://some.vocab/predicate"],
     ).toStrictEqual({
       namedNodes: ["https://some.pod/other-resource#object"],
     });
@@ -68,11 +68,11 @@ describe("addIri", () => {
     const updatedThing = addUrl(
       thing,
       "https://some.vocab/predicate",
-      DataFactory.namedNode("https://some.pod/other-resource#object")
+      DataFactory.namedNode("https://some.pod/other-resource#object"),
     );
 
     expect(
-      updatedThing.predicates["https://some.vocab/predicate"]
+      updatedThing.predicates["https://some.vocab/predicate"],
     ).toStrictEqual({
       namedNodes: ["https://some.pod/other-resource#object"],
     });
@@ -85,11 +85,11 @@ describe("addIri", () => {
     const updatedThing = addUrl(
       thing,
       "https://some.vocab/predicate",
-      targetThing
+      targetThing,
     );
 
     expect(
-      updatedThing.predicates["https://some.vocab/predicate"]
+      updatedThing.predicates["https://some.vocab/predicate"],
     ).toStrictEqual({
       namedNodes: ["https://some.pod/other-resource#object"],
     });
@@ -102,11 +102,11 @@ describe("addIri", () => {
     const updatedThing = addUrl(
       thing,
       "https://some.vocab/predicate",
-      thingLocal
+      thingLocal,
     );
 
     expect(
-      updatedThing.predicates["https://some.vocab/predicate"]
+      updatedThing.predicates["https://some.vocab/predicate"],
     ).toStrictEqual({
       namedNodes: [`${localNodeSkolemPrefix}localObject`],
     });
@@ -118,11 +118,11 @@ describe("addIri", () => {
     const updatedThing = addUrl(
       thing,
       DataFactory.namedNode("https://some.vocab/predicate"),
-      "https://some.pod/other-resource#object"
+      "https://some.pod/other-resource#object",
     );
 
     expect(
-      updatedThing.predicates["https://some.vocab/predicate"]
+      updatedThing.predicates["https://some.vocab/predicate"],
     ).toStrictEqual({
       namedNodes: ["https://some.pod/other-resource#object"],
     });
@@ -134,13 +134,13 @@ describe("addIri", () => {
     const updatedThing = addUrl(
       thing,
       "https://some.vocab/predicate",
-      "https://some.pod/other-resource#object"
+      "https://some.pod/other-resource#object",
     );
 
     expect(thing).not.toStrictEqual(updatedThing);
     expect(thing.predicates["https://some.vocab/predicate"]).toBeUndefined();
     expect(
-      updatedThing.predicates["https://some.vocab/predicate"]
+      updatedThing.predicates["https://some.vocab/predicate"],
     ).toStrictEqual({
       namedNodes: ["https://some.pod/other-resource#object"],
     });
@@ -148,18 +148,18 @@ describe("addIri", () => {
 
   it("also works on ThingLocals", () => {
     const thingLocal = mockThingFrom(
-      "https://arbitrary.pod/will-be-replaced-by-local-url"
+      "https://arbitrary.pod/will-be-replaced-by-local-url",
     );
     (thingLocal.url as string) = `${localNodeSkolemPrefix}arbitrary-subject-name`;
 
     const updatedThing = addUrl(
       thingLocal,
       "https://some.vocab/predicate",
-      "https://some.pod/other-resource#object"
+      "https://some.pod/other-resource#object",
     );
 
     expect(
-      updatedThing.predicates["https://some.vocab/predicate"]
+      updatedThing.predicates["https://some.vocab/predicate"],
     ).toStrictEqual({
       namedNodes: ["https://some.pod/other-resource#object"],
     });
@@ -179,11 +179,11 @@ describe("addIri", () => {
     const updatedThing = addUrl(
       thing,
       "https://some.vocab/predicate",
-      "https://some.pod/yet-another-resource#object"
+      "https://some.pod/yet-another-resource#object",
     );
 
     expect(
-      updatedThing.predicates["https://some.vocab/predicate"]
+      updatedThing.predicates["https://some.vocab/predicate"],
     ).toStrictEqual({
       namedNodes: [
         "https://some.pod/other-resource#object",
@@ -206,7 +206,7 @@ describe("addIri", () => {
     const updatedThing = addUrl(
       thing,
       "https://some.vocab/predicate",
-      "https://some.pod/other-resource#object"
+      "https://some.pod/other-resource#object",
     );
 
     expect(updatedThing.predicates).toStrictEqual({
@@ -224,8 +224,8 @@ describe("addIri", () => {
       addUrl(
         null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
-        "https://arbitrary.url"
-      )
+        "https://arbitrary.url",
+      ),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -234,10 +234,10 @@ describe("addIri", () => {
       addUrl(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "not-a-url",
-        "https://arbitrary.url"
-      )
+        "https://arbitrary.url",
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -248,7 +248,7 @@ describe("addIri", () => {
       addUrl(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "not-a-url",
-        "https://arbitrary.url"
+        "https://arbitrary.url",
       );
     } catch (e) {
       thrownError = e;
@@ -261,8 +261,8 @@ describe("addIri", () => {
       addUrl(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "https://arbitrary.vocab/predicate",
-        "not-a-url"
-      )
+        "not-a-url",
+      ),
     ).toThrow("Expected a valid URL value, but received: [not-a-url].");
   });
 
@@ -273,7 +273,7 @@ describe("addIri", () => {
       addUrl(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "https://arbitrary.vocab/predicate",
-        "not-a-url"
+        "not-a-url",
       );
     } catch (e) {
       thrownError = e;
@@ -289,13 +289,13 @@ describe("addBoolean", () => {
     const updatedThing = addBoolean(
       thing,
       "https://some.vocab/predicate",
-      true
+      true,
     );
 
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#boolean"
-      ]
+      ],
     ).toStrictEqual(["true"]);
   });
 
@@ -305,13 +305,13 @@ describe("addBoolean", () => {
     const updatedThing = addBoolean(
       thing,
       DataFactory.namedNode("https://some.vocab/predicate"),
-      false
+      false,
     );
 
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#boolean"
-      ]
+      ],
     ).toStrictEqual(["false"]);
   });
 
@@ -321,7 +321,7 @@ describe("addBoolean", () => {
     const updatedThing = addBoolean(
       thing,
       "https://some.vocab/predicate",
-      true
+      true,
     );
 
     expect(thing).not.toStrictEqual(updatedThing);
@@ -329,26 +329,26 @@ describe("addBoolean", () => {
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#boolean"
-      ]
+      ],
     ).toStrictEqual(["true"]);
   });
 
   it("also works on ThingLocals", () => {
     const thingLocal = mockThingFrom(
-      "https://arbitrary.pod/will-be-replaced-by-local-url"
+      "https://arbitrary.pod/will-be-replaced-by-local-url",
     );
     (thingLocal.url as string) = `${localNodeSkolemPrefix}localSubject`;
 
     const updatedThing = addBoolean(
       thingLocal,
       "https://some.vocab/predicate",
-      true
+      true,
     );
 
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#boolean"
-      ]
+      ],
     ).toStrictEqual(["true"]);
   });
 
@@ -366,13 +366,13 @@ describe("addBoolean", () => {
     const updatedThing = addBoolean(
       thing,
       "https://some.vocab/predicate",
-      true
+      true,
     );
 
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#boolean"
-      ]
+      ],
     ).toStrictEqual(["false", "true"]);
   });
 
@@ -390,18 +390,18 @@ describe("addBoolean", () => {
     const updatedThing = addBoolean(
       thing,
       "https://some.vocab/predicate",
-      true
+      true,
     );
 
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#boolean"
-      ]
+      ],
     ).toStrictEqual(["true"]);
     expect(
       updatedThing.predicates["https://some-other.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#boolean"
-      ]
+      ],
     ).toStrictEqual(["false"]);
   });
 
@@ -410,8 +410,8 @@ describe("addBoolean", () => {
       addBoolean(
         null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
-        true
-      )
+        true,
+      ),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -420,10 +420,10 @@ describe("addBoolean", () => {
       addBoolean(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "not-a-url",
-        true
-      )
+        true,
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -434,7 +434,7 @@ describe("addBoolean", () => {
       addBoolean(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "not-a-url",
-        true
+        true,
       );
     } catch (e) {
       thrownError = e;
@@ -450,13 +450,13 @@ describe("addDatetime", () => {
     const updatedThing = addDatetime(
       thing,
       "https://some.vocab/predicate",
-      new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
+      new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0)),
     );
 
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#dateTime"
-      ]
+      ],
     ).toStrictEqual(["1990-11-12T13:37:42.000Z"]);
   });
 
@@ -466,13 +466,13 @@ describe("addDatetime", () => {
     const updatedThing = addDatetime(
       thing,
       DataFactory.namedNode("https://some.vocab/predicate"),
-      new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
+      new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0)),
     );
 
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#dateTime"
-      ]
+      ],
     ).toStrictEqual(["1990-11-12T13:37:42.000Z"]);
   });
 
@@ -482,7 +482,7 @@ describe("addDatetime", () => {
     const updatedThing = addDatetime(
       thing,
       "https://some.vocab/predicate",
-      new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
+      new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0)),
     );
 
     expect(thing).not.toStrictEqual(updatedThing);
@@ -490,26 +490,26 @@ describe("addDatetime", () => {
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#dateTime"
-      ]
+      ],
     ).toStrictEqual(["1990-11-12T13:37:42.000Z"]);
   });
 
   it("also works on ThingLocals", () => {
     const thingLocal = mockThingFrom(
-      "https://arbitrary.pod/will-be-replaced-by-local-url"
+      "https://arbitrary.pod/will-be-replaced-by-local-url",
     );
     (thingLocal.url as string) = `${localNodeSkolemPrefix}localSubject`;
 
     const updatedThing = addDatetime(
       thingLocal,
       "https://some.vocab/predicate",
-      new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
+      new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0)),
     );
 
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#dateTime"
-      ]
+      ],
     ).toStrictEqual(["1990-11-12T13:37:42.000Z"]);
   });
 
@@ -531,13 +531,13 @@ describe("addDatetime", () => {
     const updatedThing = addDatetime(
       thing,
       "https://some.vocab/predicate",
-      new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
+      new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0)),
     );
 
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#dateTime"
-      ]
+      ],
     ).toStrictEqual(["1955-06-08T13:37:42.000Z", "1990-11-12T13:37:42.000Z"]);
   });
 
@@ -557,18 +557,18 @@ describe("addDatetime", () => {
     const updatedThing = addDatetime(
       thing,
       "https://some.vocab/predicate",
-      new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
+      new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0)),
     );
 
     expect(
       updatedThing.predicates["https://some-other.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#string"
-      ]
+      ],
     ).toStrictEqual(["Some other value"]);
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#dateTime"
-      ]
+      ],
     ).toStrictEqual(["1990-11-12T13:37:42.000Z"]);
   });
 
@@ -577,8 +577,8 @@ describe("addDatetime", () => {
       addDatetime(
         null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
-        new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
-      )
+        new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0)),
+      ),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -587,10 +587,10 @@ describe("addDatetime", () => {
       addDatetime(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "not-a-url",
-        new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
-      )
+        new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0)),
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -601,7 +601,7 @@ describe("addDatetime", () => {
       addDatetime(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "not-a-url",
-        new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
+        new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0)),
       );
     } catch (e) {
       thrownError = e;
@@ -617,13 +617,13 @@ describe("addDate", () => {
     const updatedThing = addDate(
       thing,
       "https://some.vocab/predicate",
-      new Date(Date.UTC(1990, 10, 12))
+      new Date(Date.UTC(1990, 10, 12)),
     );
 
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#date"
-      ]
+      ],
     ).toStrictEqual(["1990-11-12Z"]);
   });
 
@@ -633,13 +633,13 @@ describe("addDate", () => {
     const updatedThing = addDate(
       thing,
       DataFactory.namedNode("https://some.vocab/predicate"),
-      new Date(Date.UTC(1990, 10, 12))
+      new Date(Date.UTC(1990, 10, 12)),
     );
 
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#date"
-      ]
+      ],
     ).toStrictEqual(["1990-11-12Z"]);
   });
 
@@ -649,7 +649,7 @@ describe("addDate", () => {
     const updatedThing = addDate(
       thing,
       "https://some.vocab/predicate",
-      new Date(Date.UTC(1990, 10, 12))
+      new Date(Date.UTC(1990, 10, 12)),
     );
 
     expect(thing).not.toStrictEqual(updatedThing);
@@ -657,26 +657,26 @@ describe("addDate", () => {
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#date"
-      ]
+      ],
     ).toStrictEqual(["1990-11-12Z"]);
   });
 
   it("also works on ThingLocals", () => {
     const thingLocal = mockThingFrom(
-      "https://arbitrary.pod/will-be-replaced-by-local-url"
+      "https://arbitrary.pod/will-be-replaced-by-local-url",
     );
     (thingLocal.url as string) = `${localNodeSkolemPrefix}localSubject`;
 
     const updatedThing = addDate(
       thingLocal,
       "https://some.vocab/predicate",
-      new Date(Date.UTC(1990, 10, 12))
+      new Date(Date.UTC(1990, 10, 12)),
     );
 
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#date"
-      ]
+      ],
     ).toStrictEqual(["1990-11-12Z"]);
   });
 
@@ -696,13 +696,13 @@ describe("addDate", () => {
     const updatedThing = addDate(
       thing,
       "https://some.vocab/predicate",
-      new Date(Date.UTC(1990, 10, 12))
+      new Date(Date.UTC(1990, 10, 12)),
     );
 
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#date"
-      ]
+      ],
     ).toStrictEqual(["1955-06-08Z", "1990-11-12Z"]);
   });
 
@@ -722,18 +722,18 @@ describe("addDate", () => {
     const updatedThing = addDate(
       thing,
       "https://some.vocab/predicate",
-      new Date(Date.UTC(1990, 10, 12))
+      new Date(Date.UTC(1990, 10, 12)),
     );
 
     expect(
       updatedThing.predicates["https://some-other.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#string"
-      ]
+      ],
     ).toStrictEqual(["Some other value"]);
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#date"
-      ]
+      ],
     ).toStrictEqual(["1990-11-12Z"]);
   });
 
@@ -742,8 +742,8 @@ describe("addDate", () => {
       addDate(
         null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
-        new Date(Date.UTC(1990, 10, 12))
-      )
+        new Date(Date.UTC(1990, 10, 12)),
+      ),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -752,10 +752,10 @@ describe("addDate", () => {
       addDate(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "not-a-url",
-        new Date(Date.UTC(1990, 10, 12))
-      )
+        new Date(Date.UTC(1990, 10, 12)),
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -766,7 +766,7 @@ describe("addDate", () => {
       addDate(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "not-a-url",
-        new Date(Date.UTC(1990, 10, 12))
+        new Date(Date.UTC(1990, 10, 12)),
       );
     } catch (e) {
       thrownError = e;
@@ -788,7 +788,7 @@ describe("addTime", () => {
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#time"
-      ]
+      ],
     ).toStrictEqual(["13:37:42"]);
   });
 
@@ -805,7 +805,7 @@ describe("addTime", () => {
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#time"
-      ]
+      ],
     ).toStrictEqual(["13:37:42.367"]);
   });
 
@@ -819,13 +819,13 @@ describe("addTime", () => {
         hour: 13,
         minute: 37,
         second: 42,
-      }
+      },
     );
 
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#time"
-      ]
+      ],
     ).toStrictEqual(["13:37:42"]);
   });
 
@@ -843,13 +843,13 @@ describe("addTime", () => {
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#time"
-      ]
+      ],
     ).toStrictEqual(["13:37:42"]);
   });
 
   it("also works on ThingLocals", () => {
     const thingLocal = mockThingFrom(
-      "https://arbitrary.pod/will-be-replaced-by-local-url"
+      "https://arbitrary.pod/will-be-replaced-by-local-url",
     );
     (thingLocal.url as string) = `${localNodeSkolemPrefix}localSubject`;
 
@@ -862,7 +862,7 @@ describe("addTime", () => {
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#time"
-      ]
+      ],
     ).toStrictEqual(["13:37:42"]);
   });
 
@@ -888,7 +888,7 @@ describe("addTime", () => {
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#time"
-      ]
+      ],
     ).toStrictEqual(["13:37:42", "13:40:42"]);
   });
 
@@ -914,12 +914,12 @@ describe("addTime", () => {
     expect(
       updatedThing.predicates["https://some-other.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#string"
-      ]
+      ],
     ).toStrictEqual(["Some other value"]);
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#time"
-      ]
+      ],
     ).toStrictEqual(["13:37:42"]);
   });
 
@@ -929,7 +929,7 @@ describe("addTime", () => {
         hour: 13,
         minute: 37,
         second: 42,
-      })
+      }),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -942,10 +942,10 @@ describe("addTime", () => {
           hour: 13,
           minute: 37,
           second: 42,
-        }
-      )
+        },
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -960,7 +960,7 @@ describe("addTime", () => {
           hour: 13,
           minute: 37,
           second: 42,
-        }
+        },
       );
     } catch (e) {
       thrownError = e;
@@ -976,13 +976,13 @@ describe("addDecimal", () => {
     const updatedThing = addDecimal(
       thing,
       "https://some.vocab/predicate",
-      13.37
+      13.37,
     );
 
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#decimal"
-      ]
+      ],
     ).toStrictEqual(["13.37"]);
   });
 
@@ -992,13 +992,13 @@ describe("addDecimal", () => {
     const updatedThing = addDecimal(
       thing,
       DataFactory.namedNode("https://some.vocab/predicate"),
-      13.37
+      13.37,
     );
 
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#decimal"
-      ]
+      ],
     ).toStrictEqual(["13.37"]);
   });
 
@@ -1008,7 +1008,7 @@ describe("addDecimal", () => {
     const updatedThing = addDecimal(
       thing,
       "https://some.vocab/predicate",
-      13.37
+      13.37,
     );
 
     expect(thing).not.toStrictEqual(updatedThing);
@@ -1016,26 +1016,26 @@ describe("addDecimal", () => {
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#decimal"
-      ]
+      ],
     ).toStrictEqual(["13.37"]);
   });
 
   it("also works on ThingLocals", () => {
     const thingLocal = mockThingFrom(
-      "https://arbitrary.pod/will-be-replaced-by-local-url"
+      "https://arbitrary.pod/will-be-replaced-by-local-url",
     );
     (thingLocal.url as string) = `${localNodeSkolemPrefix}localSubject`;
 
     const updatedThing = addDecimal(
       thingLocal,
       "https://some.vocab/predicate",
-      13.37
+      13.37,
     );
 
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#decimal"
-      ]
+      ],
     ).toStrictEqual(["13.37"]);
   });
 
@@ -1053,13 +1053,13 @@ describe("addDecimal", () => {
     const updatedThing = addDecimal(
       thing,
       "https://some.vocab/predicate",
-      13.37
+      13.37,
     );
 
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#decimal"
-      ]
+      ],
     ).toStrictEqual(["4.2", "13.37"]);
   });
 
@@ -1079,18 +1079,18 @@ describe("addDecimal", () => {
     const updatedThing = addDecimal(
       thing,
       "https://some.vocab/predicate",
-      13.37
+      13.37,
     );
 
     expect(
       updatedThing.predicates["https://some-other.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#string"
-      ]
+      ],
     ).toStrictEqual(["Some other value"]);
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#decimal"
-      ]
+      ],
     ).toStrictEqual(["13.37"]);
   });
 
@@ -1099,8 +1099,8 @@ describe("addDecimal", () => {
       addDecimal(
         null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
-        13.37
-      )
+        13.37,
+      ),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -1109,10 +1109,10 @@ describe("addDecimal", () => {
       addDecimal(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "not-a-url",
-        13.37
-      )
+        13.37,
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -1123,7 +1123,7 @@ describe("addDecimal", () => {
       addDecimal(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "not-a-url",
-        13.37
+        13.37,
       );
     } catch (e) {
       thrownError = e;
@@ -1141,7 +1141,7 @@ describe("addInteger", () => {
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#integer"
-      ]
+      ],
     ).toStrictEqual(["42"]);
   });
 
@@ -1151,13 +1151,13 @@ describe("addInteger", () => {
     const updatedThing = addInteger(
       thing,
       DataFactory.namedNode("https://some.vocab/predicate"),
-      42
+      42,
     );
 
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#integer"
-      ]
+      ],
     ).toStrictEqual(["42"]);
   });
 
@@ -1171,26 +1171,26 @@ describe("addInteger", () => {
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#integer"
-      ]
+      ],
     ).toStrictEqual(["42"]);
   });
 
   it("also works on ThingLocals", () => {
     const thingLocal = mockThingFrom(
-      "https://arbitrary.pod/will-be-replaced-by-local-url"
+      "https://arbitrary.pod/will-be-replaced-by-local-url",
     );
     (thingLocal.url as string) = `${localNodeSkolemPrefix}localSubject`;
 
     const updatedThing = addInteger(
       thingLocal,
       "https://some.vocab/predicate",
-      42
+      42,
     );
 
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#integer"
-      ]
+      ],
     ).toStrictEqual(["42"]);
   });
 
@@ -1210,7 +1210,7 @@ describe("addInteger", () => {
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#integer"
-      ]
+      ],
     ).toStrictEqual(["1337", "42"]);
   });
 
@@ -1232,12 +1232,12 @@ describe("addInteger", () => {
     expect(
       updatedThing.predicates["https://some-other.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#string"
-      ]
+      ],
     ).toStrictEqual(["Some other value"]);
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#integer"
-      ]
+      ],
     ).toStrictEqual(["42"]);
   });
 
@@ -1246,8 +1246,8 @@ describe("addInteger", () => {
       addInteger(
         null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
-        42
-      )
+        42,
+      ),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -1256,10 +1256,10 @@ describe("addInteger", () => {
       addInteger(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "not-a-url",
-        42
-      )
+        42,
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -1270,7 +1270,7 @@ describe("addInteger", () => {
       addInteger(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "not-a-url",
-        42
+        42,
       );
     } catch (e) {
       thrownError = e;
@@ -1286,11 +1286,11 @@ describe("addStringEnglish", () => {
     const updatedThing = addStringEnglish(
       thing,
       "https://some.vocab/predicate",
-      "Some string"
+      "Some string",
     );
 
     expect(
-      updatedThing.predicates["https://some.vocab/predicate"].langStrings
+      updatedThing.predicates["https://some.vocab/predicate"].langStrings,
     ).toStrictEqual({
       en: ["Some string"],
     });
@@ -1305,11 +1305,11 @@ describe("addStringWithLocale", () => {
       thing,
       "https://some.vocab/predicate",
       "Some string",
-      "en-GB"
+      "en-GB",
     );
 
     expect(
-      updatedThing.predicates["https://some.vocab/predicate"].langStrings
+      updatedThing.predicates["https://some.vocab/predicate"].langStrings,
     ).toStrictEqual({
       "en-gb": ["Some string"],
     });
@@ -1322,11 +1322,11 @@ describe("addStringWithLocale", () => {
       thing,
       DataFactory.namedNode("https://some.vocab/predicate"),
       "Some string",
-      "en-GB"
+      "en-GB",
     );
 
     expect(
-      updatedThing.predicates["https://some.vocab/predicate"].langStrings
+      updatedThing.predicates["https://some.vocab/predicate"].langStrings,
     ).toStrictEqual({
       "en-gb": ["Some string"],
     });
@@ -1339,13 +1339,13 @@ describe("addStringWithLocale", () => {
       thing,
       DataFactory.namedNode("https://some.vocab/predicate"),
       "Some string",
-      "en-GB"
+      "en-GB",
     );
 
     expect(thing).not.toStrictEqual(updatedThing);
     expect(thing.predicates).toStrictEqual({});
     expect(
-      updatedThing.predicates["https://some.vocab/predicate"].langStrings
+      updatedThing.predicates["https://some.vocab/predicate"].langStrings,
     ).toStrictEqual({
       "en-gb": ["Some string"],
     });
@@ -1353,7 +1353,7 @@ describe("addStringWithLocale", () => {
 
   it("also works on ThingLocals", () => {
     const thingLocal = mockThingFrom(
-      "https://arbitrary.pod/will-be-replaced-by-local-url"
+      "https://arbitrary.pod/will-be-replaced-by-local-url",
     );
     (thingLocal.url as string) = `${localNodeSkolemPrefix}localSubject`;
 
@@ -1361,11 +1361,11 @@ describe("addStringWithLocale", () => {
       thingLocal,
       DataFactory.namedNode("https://some.vocab/predicate"),
       "Some string",
-      "en-GB"
+      "en-GB",
     );
 
     expect(
-      updatedThing.predicates["https://some.vocab/predicate"].langStrings
+      updatedThing.predicates["https://some.vocab/predicate"].langStrings,
     ).toStrictEqual({
       "en-gb": ["Some string"],
     });
@@ -1386,11 +1386,11 @@ describe("addStringWithLocale", () => {
       thing,
       "https://some.vocab/predicate",
       "Some string",
-      "en-GB"
+      "en-GB",
     );
 
     expect(
-      updatedThing.predicates["https://some.vocab/predicate"].langStrings
+      updatedThing.predicates["https://some.vocab/predicate"].langStrings,
     ).toStrictEqual({
       "nl-nl": ["Some string"],
       "en-gb": ["Some string"],
@@ -1412,11 +1412,11 @@ describe("addStringWithLocale", () => {
       thing,
       "https://some.vocab/predicate",
       "Some other string",
-      "nl-nl"
+      "nl-nl",
     );
 
     expect(
-      updatedThing.predicates["https://some.vocab/predicate"].langStrings
+      updatedThing.predicates["https://some.vocab/predicate"].langStrings,
     ).toStrictEqual({
       "nl-nl": ["Some string", "Some other string"],
     });
@@ -1439,16 +1439,16 @@ describe("addStringWithLocale", () => {
       thing,
       "https://some.vocab/predicate",
       "Some string",
-      "en-GB"
+      "en-GB",
     );
 
     expect(
       updatedThing.predicates["https://some-other.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#string"
-      ]
+      ],
     ).toStrictEqual(["Some other value"]);
     expect(
-      updatedThing.predicates["https://some.vocab/predicate"].langStrings
+      updatedThing.predicates["https://some.vocab/predicate"].langStrings,
     ).toStrictEqual({
       "en-gb": ["Some string"],
     });
@@ -1460,8 +1460,8 @@ describe("addStringWithLocale", () => {
         null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
         "Arbitrary string",
-        "nl-NL"
-      )
+        "nl-NL",
+      ),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -1471,10 +1471,10 @@ describe("addStringWithLocale", () => {
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "not-a-url",
         "Arbitrary string",
-        "nl-NL"
-      )
+        "nl-NL",
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -1486,7 +1486,7 @@ describe("addStringWithLocale", () => {
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "not-a-url",
         "Arbitrary string",
-        "nl-NL"
+        "nl-NL",
       );
     } catch (e) {
       thrownError = e;
@@ -1502,13 +1502,13 @@ describe("addStringNoLocale", () => {
     const updatedThing = addStringNoLocale(
       thing,
       "https://some.vocab/predicate",
-      "Some string value"
+      "Some string value",
     );
 
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#string"
-      ]
+      ],
     ).toStrictEqual(["Some string value"]);
   });
 
@@ -1518,13 +1518,13 @@ describe("addStringNoLocale", () => {
     const updatedThing = addStringNoLocale(
       thing,
       DataFactory.namedNode("https://some.vocab/predicate"),
-      "Some string value"
+      "Some string value",
     );
 
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#string"
-      ]
+      ],
     ).toStrictEqual(["Some string value"]);
   });
 
@@ -1534,7 +1534,7 @@ describe("addStringNoLocale", () => {
     const updatedThing = addStringNoLocale(
       thing,
       "https://some.vocab/predicate",
-      "Some string value"
+      "Some string value",
     );
 
     expect(thing).not.toStrictEqual(updatedThing);
@@ -1542,26 +1542,26 @@ describe("addStringNoLocale", () => {
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#string"
-      ]
+      ],
     ).toStrictEqual(["Some string value"]);
   });
 
   it("also works on ThingLocals", () => {
     const thingLocal = mockThingFrom(
-      "https://arbitrary.pod/will-be-replaced-by-local-url"
+      "https://arbitrary.pod/will-be-replaced-by-local-url",
     );
     (thingLocal.url as string) = `${localNodeSkolemPrefix}localSubject`;
 
     const updatedThing = addStringNoLocale(
       thingLocal,
       "https://some.vocab/predicate",
-      "Some string value"
+      "Some string value",
     );
 
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#string"
-      ]
+      ],
     ).toStrictEqual(["Some string value"]);
   });
 
@@ -1583,13 +1583,13 @@ describe("addStringNoLocale", () => {
     const updatedThing = addStringNoLocale(
       thing,
       "https://some.vocab/predicate",
-      "Some string value"
+      "Some string value",
     );
 
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#string"
-      ]
+      ],
     ).toStrictEqual(["Some other string value", "Some string value"]);
   });
 
@@ -1607,18 +1607,18 @@ describe("addStringNoLocale", () => {
     const updatedThing = addStringNoLocale(
       thing,
       "https://some.vocab/predicate",
-      "Some string value"
+      "Some string value",
     );
 
     expect(
       updatedThing.predicates["https://some-other.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#integer"
-      ]
+      ],
     ).toStrictEqual(["42"]);
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#string"
-      ]
+      ],
     ).toStrictEqual(["Some string value"]);
   });
 
@@ -1627,8 +1627,8 @@ describe("addStringNoLocale", () => {
       addStringNoLocale(
         null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
-        "Arbitrary string"
-      )
+        "Arbitrary string",
+      ),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -1637,10 +1637,10 @@ describe("addStringNoLocale", () => {
       addStringNoLocale(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "not-a-url",
-        "Arbitrary string"
-      )
+        "Arbitrary string",
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -1651,7 +1651,7 @@ describe("addStringNoLocale", () => {
       addStringNoLocale(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "not-a-url",
-        "Arbitrary string"
+        "Arbitrary string",
       );
     } catch (e) {
       thrownError = e;
@@ -1667,11 +1667,11 @@ describe("addNamedNode", () => {
     const updatedThing = addNamedNode(
       thing,
       "https://some.vocab/predicate",
-      DataFactory.namedNode("https://some.pod/other-resource#object")
+      DataFactory.namedNode("https://some.pod/other-resource#object"),
     );
 
     expect(
-      updatedThing.predicates["https://some.vocab/predicate"]
+      updatedThing.predicates["https://some.vocab/predicate"],
     ).toStrictEqual({
       namedNodes: ["https://some.pod/other-resource#object"],
     });
@@ -1683,11 +1683,11 @@ describe("addNamedNode", () => {
     const updatedThing = addNamedNode(
       thing,
       DataFactory.namedNode("https://some.vocab/predicate"),
-      DataFactory.namedNode("https://some.pod/other-resource#object")
+      DataFactory.namedNode("https://some.pod/other-resource#object"),
     );
 
     expect(
-      updatedThing.predicates["https://some.vocab/predicate"]
+      updatedThing.predicates["https://some.vocab/predicate"],
     ).toStrictEqual({
       namedNodes: ["https://some.pod/other-resource#object"],
     });
@@ -1699,13 +1699,13 @@ describe("addNamedNode", () => {
     const updatedThing = addNamedNode(
       thing,
       "https://some.vocab/predicate",
-      DataFactory.namedNode("https://some.pod/other-resource#object")
+      DataFactory.namedNode("https://some.pod/other-resource#object"),
     );
 
     expect(thing).not.toStrictEqual(updatedThing);
     expect(thing.predicates).toStrictEqual({});
     expect(
-      updatedThing.predicates["https://some.vocab/predicate"]
+      updatedThing.predicates["https://some.vocab/predicate"],
     ).toStrictEqual({
       namedNodes: ["https://some.pod/other-resource#object"],
     });
@@ -1713,18 +1713,18 @@ describe("addNamedNode", () => {
 
   it("also works on ThingLocals", () => {
     const thingLocal = mockThingFrom(
-      "https://arbitrary.pod/will-be-replaced-by-local-url"
+      "https://arbitrary.pod/will-be-replaced-by-local-url",
     );
     (thingLocal.url as string) = `${localNodeSkolemPrefix}localSubject`;
 
     const updatedThing = addNamedNode(
       thingLocal,
       "https://some.vocab/predicate",
-      DataFactory.namedNode("https://some.pod/other-resource#object")
+      DataFactory.namedNode("https://some.pod/other-resource#object"),
     );
 
     expect(
-      updatedThing.predicates["https://some.vocab/predicate"]
+      updatedThing.predicates["https://some.vocab/predicate"],
     ).toStrictEqual({
       namedNodes: ["https://some.pod/other-resource#object"],
     });
@@ -1744,11 +1744,11 @@ describe("addNamedNode", () => {
     const updatedThing = addNamedNode(
       thing,
       "https://some.vocab/predicate",
-      DataFactory.namedNode("https://some.pod/yet-another-resource#object")
+      DataFactory.namedNode("https://some.pod/yet-another-resource#object"),
     );
 
     expect(
-      updatedThing.predicates["https://some.vocab/predicate"]
+      updatedThing.predicates["https://some.vocab/predicate"],
     ).toStrictEqual({
       namedNodes: [
         "https://some.pod/other-resource#object",
@@ -1773,18 +1773,18 @@ describe("addNamedNode", () => {
     const updatedThing = addNamedNode(
       thing,
       "https://some.vocab/predicate",
-      DataFactory.namedNode("https://some.pod/other-resource#object")
+      DataFactory.namedNode("https://some.pod/other-resource#object"),
     );
 
     expect(
-      updatedThing.predicates["https://some-other.vocab/predicate"]
+      updatedThing.predicates["https://some-other.vocab/predicate"],
     ).toStrictEqual({
       literals: {
         "http://www.w3.org/2001/XMLSchema#string": ["Some other value"],
       },
     });
     expect(
-      updatedThing.predicates["https://some.vocab/predicate"]
+      updatedThing.predicates["https://some.vocab/predicate"],
     ).toStrictEqual({
       namedNodes: ["https://some.pod/other-resource#object"],
     });
@@ -1795,8 +1795,8 @@ describe("addNamedNode", () => {
       addNamedNode(
         null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
-        DataFactory.namedNode("https://arbitrary.pod/resource#object")
-      )
+        DataFactory.namedNode("https://arbitrary.pod/resource#object"),
+      ),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -1805,10 +1805,10 @@ describe("addNamedNode", () => {
       addNamedNode(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "not-a-url",
-        DataFactory.namedNode("https://arbitrary.vocab/object")
-      )
+        DataFactory.namedNode("https://arbitrary.vocab/object"),
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -1819,7 +1819,7 @@ describe("addNamedNode", () => {
       addNamedNode(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "not-a-url",
-        DataFactory.namedNode("https://arbitrary.vocab/object")
+        DataFactory.namedNode("https://arbitrary.vocab/object"),
       );
     } catch (e) {
       thrownError = e;
@@ -1835,13 +1835,13 @@ describe("addLiteral", () => {
     const updatedThing = addLiteral(
       thing,
       "https://some.vocab/predicate",
-      DataFactory.literal("Some string value")
+      DataFactory.literal("Some string value"),
     );
 
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#string"
-      ]
+      ],
     ).toStrictEqual(["Some string value"]);
   });
 
@@ -1851,13 +1851,13 @@ describe("addLiteral", () => {
     const updatedThing = addLiteral(
       thing,
       "https://some.vocab/predicate",
-      DataFactory.literal("Some string value", "nl-nl")
+      DataFactory.literal("Some string value", "nl-nl"),
     );
 
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].langStrings![
         "nl-nl"
-      ]
+      ],
     ).toStrictEqual(["Some string value"]);
   });
 
@@ -1867,13 +1867,13 @@ describe("addLiteral", () => {
     const updatedThing = addLiteral(
       thing,
       DataFactory.namedNode("https://some.vocab/predicate"),
-      DataFactory.literal("Some string value")
+      DataFactory.literal("Some string value"),
     );
 
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#string"
-      ]
+      ],
     ).toStrictEqual(["Some string value"]);
   });
 
@@ -1883,7 +1883,7 @@ describe("addLiteral", () => {
     const updatedThing = addLiteral(
       thing,
       "https://some.vocab/predicate",
-      DataFactory.literal("Some string value")
+      DataFactory.literal("Some string value"),
     );
 
     expect(thing).not.toStrictEqual(updatedThing);
@@ -1891,26 +1891,26 @@ describe("addLiteral", () => {
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#string"
-      ]
+      ],
     ).toStrictEqual(["Some string value"]);
   });
 
   it("also works on ThingLocals", () => {
     const thingLocal = mockThingFrom(
-      "https://arbitrary.pod/will-be-replaced-by-local-url"
+      "https://arbitrary.pod/will-be-replaced-by-local-url",
     );
     (thingLocal.url as string) = `${localNodeSkolemPrefix}localSubject`;
 
     const updatedThing = addLiteral(
       thingLocal,
       "https://some.vocab/predicate",
-      DataFactory.literal("Some string value")
+      DataFactory.literal("Some string value"),
     );
 
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#string"
-      ]
+      ],
     ).toStrictEqual(["Some string value"]);
   });
 
@@ -1932,13 +1932,13 @@ describe("addLiteral", () => {
     const updatedThing = addLiteral(
       thing,
       "https://some.vocab/predicate",
-      DataFactory.literal("Some string value")
+      DataFactory.literal("Some string value"),
     );
 
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#string"
-      ]
+      ],
     ).toStrictEqual(["Some other string value", "Some string value"]);
   });
 
@@ -1956,18 +1956,18 @@ describe("addLiteral", () => {
     const updatedThing = addLiteral(
       thing,
       "https://some.vocab/predicate",
-      DataFactory.literal("Some string value")
+      DataFactory.literal("Some string value"),
     );
 
     expect(
       updatedThing.predicates["https://some-other.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#integer"
-      ]
+      ],
     ).toStrictEqual(["42"]);
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#string"
-      ]
+      ],
     ).toStrictEqual(["Some string value"]);
   });
 
@@ -1976,8 +1976,8 @@ describe("addLiteral", () => {
       addLiteral(
         null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
-        DataFactory.literal("Arbitrary string value")
-      )
+        DataFactory.literal("Arbitrary string value"),
+      ),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -1986,10 +1986,10 @@ describe("addLiteral", () => {
       addLiteral(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "not-a-url",
-        DataFactory.literal("Arbitrary string value")
-      )
+        DataFactory.literal("Arbitrary string value"),
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -2000,7 +2000,7 @@ describe("addLiteral", () => {
       addLiteral(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "not-a-url",
-        DataFactory.literal("Arbitrary string value")
+        DataFactory.literal("Arbitrary string value"),
       );
     } catch (e) {
       thrownError = e;
@@ -2016,11 +2016,11 @@ describe("addTerm", () => {
     const updatedThing = addTerm(
       thing,
       "https://some.vocab/predicate",
-      DataFactory.namedNode("https://some.pod/other-resource#object")
+      DataFactory.namedNode("https://some.pod/other-resource#object"),
     );
 
     expect(
-      updatedThing.predicates["https://some.vocab/predicate"]
+      updatedThing.predicates["https://some.vocab/predicate"],
     ).toStrictEqual({
       namedNodes: ["https://some.pod/other-resource#object"],
     });
@@ -2034,14 +2034,14 @@ describe("addTerm", () => {
       "https://some.vocab/predicate",
       DataFactory.literal(
         "Some string",
-        DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#string")
-      )
+        DataFactory.namedNode("http://www.w3.org/2001/XMLSchema#string"),
+      ),
     );
 
     expect(
       updatedThing.predicates["https://some.vocab/predicate"].literals![
         "http://www.w3.org/2001/XMLSchema#string"
-      ]
+      ],
     ).toStrictEqual(["Some string"]);
   });
 
@@ -2051,11 +2051,11 @@ describe("addTerm", () => {
     const updatedThing = addTerm(
       thing,
       "https://some.vocab/predicate",
-      DataFactory.blankNode("some-blank-node-id")
+      DataFactory.blankNode("some-blank-node-id"),
     );
 
     expect(
-      updatedThing.predicates["https://some.vocab/predicate"].blankNodes
+      updatedThing.predicates["https://some.vocab/predicate"].blankNodes,
     ).toStrictEqual(["_:some-blank-node-id"]);
   });
 
@@ -2065,11 +2065,11 @@ describe("addTerm", () => {
     const updatedThing = addTerm(
       thing,
       DataFactory.namedNode("https://some.vocab/predicate"),
-      DataFactory.namedNode("https://some.pod/other-resource#object")
+      DataFactory.namedNode("https://some.pod/other-resource#object"),
     );
 
     expect(
-      updatedThing.predicates["https://some.vocab/predicate"]
+      updatedThing.predicates["https://some.vocab/predicate"],
     ).toStrictEqual({
       namedNodes: ["https://some.pod/other-resource#object"],
     });
@@ -2081,13 +2081,13 @@ describe("addTerm", () => {
     const updatedThing = addTerm(
       thing,
       "https://some.vocab/predicate",
-      DataFactory.namedNode("https://some.pod/other-resource#object")
+      DataFactory.namedNode("https://some.pod/other-resource#object"),
     );
 
     expect(thing).not.toStrictEqual(updatedThing);
     expect(thing.predicates).toStrictEqual({});
     expect(
-      updatedThing.predicates["https://some.vocab/predicate"]
+      updatedThing.predicates["https://some.vocab/predicate"],
     ).toStrictEqual({
       namedNodes: ["https://some.pod/other-resource#object"],
     });
@@ -2095,18 +2095,18 @@ describe("addTerm", () => {
 
   it("also works on ThingLocals", () => {
     const thingLocal = mockThingFrom(
-      "https://arbitrary.pod/will-be-replaced-by-local-url"
+      "https://arbitrary.pod/will-be-replaced-by-local-url",
     );
     (thingLocal.url as string) = `${localNodeSkolemPrefix}localSubject`;
 
     const updatedThing = addTerm(
       thingLocal,
       "https://some.vocab/predicate",
-      DataFactory.namedNode("https://some.pod/other-resource#object")
+      DataFactory.namedNode("https://some.pod/other-resource#object"),
     );
 
     expect(
-      updatedThing.predicates["https://some.vocab/predicate"]
+      updatedThing.predicates["https://some.vocab/predicate"],
     ).toStrictEqual({
       namedNodes: ["https://some.pod/other-resource#object"],
     });
@@ -2126,11 +2126,11 @@ describe("addTerm", () => {
     const updatedThing = addTerm(
       thing,
       "https://some.vocab/predicate",
-      DataFactory.blankNode("some-other-blank-node")
+      DataFactory.blankNode("some-other-blank-node"),
     );
 
     expect(
-      updatedThing.predicates["https://some.vocab/predicate"]
+      updatedThing.predicates["https://some.vocab/predicate"],
     ).toStrictEqual({
       blankNodes: ["_:some-blank-node", "_:some-other-blank-node"],
     });
@@ -2152,18 +2152,18 @@ describe("addTerm", () => {
     const updatedThing = addTerm(
       thing,
       "https://some.vocab/predicate",
-      DataFactory.namedNode("https://some.pod/other-resource#object")
+      DataFactory.namedNode("https://some.pod/other-resource#object"),
     );
 
     expect(
-      updatedThing.predicates["https://some-other.vocab/predicate"]
+      updatedThing.predicates["https://some-other.vocab/predicate"],
     ).toStrictEqual({
       literals: {
         "http://www.w3.org/2001/XMLSchema#string": ["Some other value"],
       },
     });
     expect(
-      updatedThing.predicates["https://some.vocab/predicate"]
+      updatedThing.predicates["https://some.vocab/predicate"],
     ).toStrictEqual({
       namedNodes: ["https://some.pod/other-resource#object"],
     });
@@ -2174,8 +2174,8 @@ describe("addTerm", () => {
       addTerm(
         null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
-        DataFactory.namedNode("https://arbitrary.pod/resource#object")
-      )
+        DataFactory.namedNode("https://arbitrary.pod/resource#object"),
+      ),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -2184,10 +2184,10 @@ describe("addTerm", () => {
       addTerm(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "not-a-url",
-        DataFactory.blankNode()
-      )
+        DataFactory.blankNode(),
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -2196,10 +2196,10 @@ describe("addTerm", () => {
       addTerm(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "https://arbitrary.vocab/predicate",
-        { termType: "Unsupported term type", value: "Arbitrary value" } as any
-      )
+        { termType: "Unsupported term type", value: "Arbitrary value" } as any,
+      ),
     ).toThrow(
-      "Term type [Unsupported term type] is not supported by @inrupt/solid-client."
+      "Term type [Unsupported term type] is not supported by @inrupt/solid-client.",
     );
   });
 
@@ -2210,7 +2210,7 @@ describe("addTerm", () => {
       addTerm(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "not-a-url",
-        DataFactory.namedNode("https://arbitrary.vocab/object")
+        DataFactory.namedNode("https://arbitrary.vocab/object"),
       );
     } catch (e) {
       thrownError = e;

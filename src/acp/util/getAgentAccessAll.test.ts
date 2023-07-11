@@ -60,7 +60,7 @@ describe("getAgentAccessAll", () => {
           DEFAULT_DOMAIN.concat("m1"),
           [[ACP.agent, [DEFAULT_DOMAIN.concat("bob")]]],
         ],
-      ])
+      ]),
     );
 
     expect(await getAgentAccessAll(resource)).toStrictEqual({
@@ -106,7 +106,7 @@ describe("getAgentAccessAll", () => {
           DEFAULT_DOMAIN.concat("m1"),
           [[ACP.agent, [DEFAULT_DOMAIN.concat("bob")]]],
         ],
-      ])
+      ]),
     );
 
     expect(await getAgentAccessAll(resource)).toStrictEqual({
@@ -145,7 +145,7 @@ describe("getAgentAccessAll", () => {
           DEFAULT_DOMAIN.concat("m1"),
           [[ACP.agent, [DEFAULT_DOMAIN.concat("bob")]]],
         ],
-      ])
+      ]),
     );
 
     expect(await getAgentAccessAll(resource)).toStrictEqual({
@@ -200,7 +200,7 @@ describe("getAgentAccessAll", () => {
           DEFAULT_DOMAIN.concat("m2"),
           [[ACP.agent, [DEFAULT_DOMAIN.concat("alice")]]],
         ],
-      ])
+      ]),
     );
 
     expect(await getAgentAccessAll(resource)).toStrictEqual({
@@ -273,7 +273,7 @@ describe("getAgentAccessAll", () => {
           DEFAULT_DOMAIN.concat("m1"),
           [[ACP.agent, [DEFAULT_DOMAIN.concat("bob")]]],
         ],
-      ])
+      ]),
     );
 
     expect(await getAgentAccessAll(resource)).toStrictEqual({
@@ -345,7 +345,7 @@ describe("getAgentAccessAll", () => {
             ],
           ],
         ],
-      ])
+      ]),
     );
 
     expect(await getAgentAccessAll(resource)).toStrictEqual({
@@ -414,7 +414,7 @@ describe("getAgentAccessAll", () => {
             ],
           ],
         ],
-      ])
+      ]),
     );
 
     expect(await getAgentAccessAll(resource)).toStrictEqual({
@@ -486,7 +486,7 @@ describe("getAgentAccessAll", () => {
             ],
           ],
         ],
-      ])
+      ]),
     );
 
     expect(await getAgentAccessAll(resource)).toStrictEqual({
@@ -543,7 +543,7 @@ describe("getAgentAccessAll", () => {
           DEFAULT_DOMAIN.concat("m1"),
           [[ACP.agent, [DEFAULT_DOMAIN.concat("bob")]]],
         ],
-      ])
+      ]),
     );
 
     expect(await getAgentAccessAll(resource)).toStrictEqual({
@@ -569,7 +569,7 @@ describe("getAgentAccessAll", () => {
           [[ACP.apply, [DEFAULT_DOMAIN.concat("p1")]]],
         ],
         [DEFAULT_DOMAIN.concat("p1"), [[ACP.allow, [ACL.Read]]]],
-      ])
+      ]),
     );
 
     expect(await getAgentAccessAll(resource)).toStrictEqual({});

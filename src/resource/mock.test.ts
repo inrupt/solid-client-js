@@ -67,7 +67,7 @@ describe("mockContainerFrom", () => {
 
   it("throws an error if the URL is not a Container's", async () => {
     expect(() => mockContainerFrom("https://some.pod/resource")).toThrow(
-      "A Container's URL should end in a slash. Please update your tests."
+      "A Container's URL should end in a slash. Please update your tests.",
     );
   });
 
@@ -112,7 +112,7 @@ describe("mockFetchError", () => {
 
     expect(error).toBeInstanceOf(Error);
     expect(error.message).toBe(
-      "Fetching the Resource at [https://some.pod/resource] failed: [404] [Not Found]."
+      "Fetching the Resource at [https://some.pod/resource] failed: [404] [Not Found].",
     );
     expect(error.statusCode).toBe(404);
     expect(error.statusText).toBe("Not Found");
@@ -124,12 +124,12 @@ describe("mockFetchError", () => {
     const error = mockFetchError(
       "https://some.pod/resource",
       418,
-      "I'm a Teapot"
+      "I'm a Teapot",
     );
 
     expect(error).toBeInstanceOf(Error);
     expect(error.message).toBe(
-      "Fetching the Resource at [https://some.pod/resource] failed: [418] [I'm a Teapot]."
+      "Fetching the Resource at [https://some.pod/resource] failed: [418] [I'm a Teapot].",
     );
     expect(error.statusCode).toBe(418);
     expect(error.statusText).toBe("I'm a Teapot");
@@ -140,7 +140,7 @@ describe("mockFetchError", () => {
     const error = mockFetchError(
       "https://some.pod/resource",
       599,
-      "Unknown error"
+      "Unknown error",
     );
 
     expect(error).toBeInstanceOf(Error);
@@ -148,7 +148,7 @@ describe("mockFetchError", () => {
     // The Response constructor in Node 14 makes an empty status text undefined.
     expect(error.statusText).toBe("Unknown error");
     expect(error.message).toMatch(
-      "Fetching the Resource at [https://some.pod/resource] failed: [599] [Unknown error]"
+      "Fetching the Resource at [https://some.pod/resource] failed: [599] [Unknown error]",
     );
     expect(error.response.status).toBe(error.statusCode);
   });
@@ -160,7 +160,7 @@ describe("mockFetchError", () => {
     expect(error.statusCode).toBe(404);
     expect(error.statusText).toBe("Not Found");
     expect(error.message).toMatch(
-      "Fetching the Resource at [https://some.pod/resource] failed: [404] [Not Found]"
+      "Fetching the Resource at [https://some.pod/resource] failed: [404] [Not Found]",
     );
     expect(error.response.status).toBe(error.statusCode);
   });

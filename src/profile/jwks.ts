@@ -43,14 +43,14 @@ import { getThing, setThing } from "../thing/thing";
 
 function getProfileFromProfileDoc(
   profileDataset: SolidDataset,
-  webId: WebId
+  webId: WebId,
 ): ThingPersisted {
   const profile = getThing(profileDataset, webId);
   if (profile === null) {
     throw new Error(
       `Profile document [${getSourceUrl(
-        profileDataset
-      )}] does not include WebID [${webId}]`
+        profileDataset,
+      )}] does not include WebID [${webId}]`,
     );
   }
   return profile;
@@ -68,15 +68,15 @@ function getProfileFromProfileDoc(
 export function setProfileJwks<Dataset extends SolidDataset>(
   profileDocument: Dataset,
   webId: WebId,
-  jwksIri: Iri | IriString
+  jwksIri: Iri | IriString,
 ): Dataset {
   return setThing(
     profileDocument,
     setIri(
       getProfileFromProfileDoc(profileDocument, webId),
       security.publicKey,
-      jwksIri
-    )
+      jwksIri,
+    ),
   );
 }
 
@@ -90,11 +90,11 @@ export function setProfileJwks<Dataset extends SolidDataset>(
  */
 export function getProfileJwksIri(
   profileDocument: SolidDataset,
-  webId: WebId
+  webId: WebId,
 ): UrlString | null {
   return getUrl(
     getProfileFromProfileDoc(profileDocument, webId),
-    security.publicKey
+    security.publicKey,
   );
 }
 
@@ -116,7 +116,7 @@ export async function addJwkToJwks(
   jwksIri: IriString,
   options: Partial<
     typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  > = internal_defaultFetchOptions,
 ): Promise<Jwks> {
   const config = {
     ...internal_defaultFetchOptions,
@@ -125,7 +125,7 @@ export async function addJwkToJwks(
   const jwksResponse = await config.fetch(jwksIri);
   if (!jwksResponse.ok) {
     throw new Error(
-      `Fetching [${jwksIri}] returned an error: ${jwksResponse.status} ${jwksResponse.statusText}`
+      `Fetching [${jwksIri}] returned an error: ${jwksResponse.status} ${jwksResponse.statusText}`,
     );
   }
   try {
@@ -133,8 +133,8 @@ export async function addJwkToJwks(
     if (!isJwks(jwksDocument)) {
       throw new Error(
         `[${jwksIri}] does not dereference to a valid JWKS: ${JSON.stringify(
-          jwksDocument
-        )}`
+          jwksDocument,
+        )}`,
       );
     }
     return {
@@ -162,14 +162,14 @@ export async function addPublicKeyToProfileJwks(
   webId: WebId,
   options: Partial<
     typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  > = internal_defaultFetchOptions,
 ): Promise<Blob & WithResourceInfo> {
   const profileDataset = await getSolidDataset(webId, {
     fetch: options.fetch,
   });
   if (profileDataset === null) {
     throw new Error(
-      `The profile document associated with WebID [${webId}] could not be retrieved.`
+      `The profile document associated with WebID [${webId}] could not be retrieved.`,
     );
   }
 
@@ -177,7 +177,7 @@ export async function addPublicKeyToProfileJwks(
 
   if (jwksIri === null) {
     throw new Error(
-      `No key set is declared for the property [${security.publicKey}] in the profile of [${webId}]`
+      `No key set is declared for the property [${security.publicKey}] in the profile of [${webId}]`,
     );
   }
 

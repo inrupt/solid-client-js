@@ -55,10 +55,10 @@ describe("stress-testing serialisations", () => {
     const fcResult = fc.check(
       fc.property(fc.boolean(), (inputBoolean) => {
         expect(deserializeBoolean(serializeBoolean(inputBoolean))).toBe(
-          inputBoolean
+          inputBoolean,
         );
       }),
-      { numRuns: runs }
+      { numRuns: runs },
     );
 
     expect(fcResult.counterexample).toBeNull();
@@ -72,10 +72,10 @@ describe("stress-testing serialisations", () => {
     const fcResult = fc.check(
       fc.property(fc.date(), (inputDatetime) => {
         expect(
-          deserializeDatetime(serializeDatetime(inputDatetime))?.getTime()
+          deserializeDatetime(serializeDatetime(inputDatetime))?.getTime(),
         ).toBe(inputDatetime.getTime());
       }),
-      { numRuns: runs }
+      { numRuns: runs },
     );
 
     expect(fcResult.counterexample).toBeNull();
@@ -89,10 +89,10 @@ describe("stress-testing serialisations", () => {
     const fcResult = fc.check(
       fc.property(fc.float(), (inputDecimal) => {
         expect(deserializeDecimal(serializeDecimal(inputDecimal))).toBe(
-          inputDecimal
+          inputDecimal,
         );
       }),
-      { numRuns: runs }
+      { numRuns: runs },
     );
 
     expect(fcResult.counterexample).toBeNull();
@@ -106,10 +106,10 @@ describe("stress-testing serialisations", () => {
     const fcResult = fc.check(
       fc.property(fc.integer(), (inputInteger) => {
         expect(deserializeInteger(serializeInteger(inputInteger))).toBe(
-          inputInteger
+          inputInteger,
         );
       }),
-      { numRuns: runs }
+      { numRuns: runs },
     );
 
     expect(fcResult.counterexample).toBeNull();
@@ -152,11 +152,11 @@ describe("deserializeBoolean", () => {
 describe("serializeDatetime", () => {
   it("properly serialises a given datetime", () => {
     expect(
-      serializeDatetime(new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0)))
+      serializeDatetime(new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))),
     ).toBe("1990-11-12T13:37:42.000Z");
 
     expect(
-      serializeDatetime(new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 42)))
+      serializeDatetime(new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 42))),
     ).toBe("1990-11-12T13:37:42.042Z");
   });
 });
@@ -164,106 +164,106 @@ describe("deserializeDatetime", () => {
   it("properly parses a serialised datetime", () => {
     const expectedDate = new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0));
     expect(deserializeDatetime("1990-11-12T13:37:42.000Z")).toEqual(
-      expectedDate
+      expectedDate,
     );
 
     const expectedDateWithNegativeYear = new Date(
-      Date.UTC(-42, 10, 12, 13, 37, 42, 0)
+      Date.UTC(-42, 10, 12, 13, 37, 42, 0),
     );
     expect(deserializeDatetime("-0042-11-12T13:37:42.000Z")).toEqual(
-      expectedDateWithNegativeYear
+      expectedDateWithNegativeYear,
     );
 
     const expectedDateWithHour24 = new Date(Date.UTC(1990, 10, 13, 0, 0, 0, 0));
     expect(deserializeDatetime("1990-11-12T24:00:00Z")).toEqual(
-      expectedDateWithHour24
+      expectedDateWithHour24,
     );
 
     const expectedDateWithFractionalSeconds = new Date(
-      Date.UTC(1990, 10, 12, 13, 37, 42, 42)
+      Date.UTC(1990, 10, 12, 13, 37, 42, 42),
     );
     expect(deserializeDatetime("1990-11-12T13:37:42.42Z")).toEqual(
-      expectedDateWithFractionalSeconds
+      expectedDateWithFractionalSeconds,
     );
 
     const expectedDateWithPositive0Timezone = new Date(
-      Date.UTC(1990, 10, 12, 10, 0, 0, 0)
+      Date.UTC(1990, 10, 12, 10, 0, 0, 0),
     );
     expect(deserializeDatetime("1990-11-12T10:00:00+00:00")).toEqual(
-      expectedDateWithPositive0Timezone
+      expectedDateWithPositive0Timezone,
     );
 
     const expectedDateWithNegative0Timezone = new Date(
-      Date.UTC(1990, 10, 12, 10, 0, 0, 0)
+      Date.UTC(1990, 10, 12, 10, 0, 0, 0),
     );
     expect(deserializeDatetime("1990-11-12T10:00:00-00:00")).toEqual(
-      expectedDateWithNegative0Timezone
+      expectedDateWithNegative0Timezone,
     );
 
     const expectedDateWithNegativeTimezone = new Date(
-      Date.UTC(1990, 10, 12, 8, 30, 0, 0)
+      Date.UTC(1990, 10, 12, 8, 30, 0, 0),
     );
     expect(deserializeDatetime("1990-11-12T10:00:00-01:30")).toEqual(
-      expectedDateWithNegativeTimezone
+      expectedDateWithNegativeTimezone,
     );
 
     const expectedDateWithMaxNegativeTimezone = new Date(
-      Date.UTC(1990, 10, 11, 20, 0, 0, 0)
+      Date.UTC(1990, 10, 11, 20, 0, 0, 0),
     );
     expect(deserializeDatetime("1990-11-12T10:00:00-14:00")).toEqual(
-      expectedDateWithMaxNegativeTimezone
+      expectedDateWithMaxNegativeTimezone,
     );
 
     const expectedDateWithPositiveTimezone = new Date(
-      Date.UTC(1990, 10, 12, 11, 30, 0, 0)
+      Date.UTC(1990, 10, 12, 11, 30, 0, 0),
     );
     expect(deserializeDatetime("1990-11-12T10:00:00+01:30")).toEqual(
-      expectedDateWithPositiveTimezone
+      expectedDateWithPositiveTimezone,
     );
 
     const expectedDateWithMaxPositiveTimezone = new Date(
-      Date.UTC(1990, 10, 13, 0, 0, 0, 0)
+      Date.UTC(1990, 10, 13, 0, 0, 0, 0),
     );
     expect(deserializeDatetime("1990-11-12T10:00:00+14:00")).toEqual(
-      expectedDateWithMaxPositiveTimezone
+      expectedDateWithMaxPositiveTimezone,
     );
 
     const expectedDateWithoutTimezone = new Date(
-      Date.UTC(1990, 10, 12, 13, 37, 42, 0)
+      Date.UTC(1990, 10, 12, 13, 37, 42, 0),
     );
     expect(deserializeDatetime("1990-11-12T13:37:42.000")).toEqual(
-      expectedDateWithoutTimezone
+      expectedDateWithoutTimezone,
     );
 
     const dateBeforeTheYear100 = new Date(-59042995200000);
     expect(deserializeDatetime("0099-01-01T00:00:00.000Z")).toEqual(
-      dateBeforeTheYear100
+      dateBeforeTheYear100,
     );
 
     const expectedEarliestRepresentableDate = new Date(-8640000000000000);
     expect(deserializeDatetime("-271821-04-20T00:00:00.000Z")).toEqual(
-      expectedEarliestRepresentableDate
+      expectedEarliestRepresentableDate,
     );
     // Same date, earlier timezone
     expect(deserializeDatetime("-271821-04-20T01:00:00.000-01:00")).toEqual(
-      expectedEarliestRepresentableDate
+      expectedEarliestRepresentableDate,
     );
     // Same date, later timezone
     expect(deserializeDatetime("-271821-04-19T23:00:00.000+01:00")).toEqual(
-      expectedEarliestRepresentableDate
+      expectedEarliestRepresentableDate,
     );
 
     const expectedLatestRepresentableDate = new Date(8640000000000000);
     expect(deserializeDatetime("275760-09-13T00:00:00.000Z")).toEqual(
-      expectedLatestRepresentableDate
+      expectedLatestRepresentableDate,
     );
     // Same date, earlier timezone
     expect(deserializeDatetime("275760-09-13T01:00:00.000-01:00")).toEqual(
-      expectedLatestRepresentableDate
+      expectedLatestRepresentableDate,
     );
     // Same date, later timezone
     expect(deserializeDatetime("275760-09-12T23:00:00.000+01:00")).toEqual(
-      expectedLatestRepresentableDate
+      expectedLatestRepresentableDate,
     );
   });
 
@@ -287,7 +287,7 @@ describe("deserializeDate", () => {
 
     const expectedDateWithNegativeYear = new Date(Date.UTC(-42, 10, 12, 12));
     expect(deserializeDate("-0042-11-12Z")).toEqual(
-      expectedDateWithNegativeYear
+      expectedDateWithNegativeYear,
     );
 
     const dateBeforeTheYear100 = new Date(Date.UTC(0, 0, 1, 12));
@@ -297,14 +297,14 @@ describe("deserializeDate", () => {
     const expectedEarliestRepresentableDate = new Date(Date.UTC(0, 3, 20, 12));
     expectedEarliestRepresentableDate.setUTCFullYear(-271821);
     expect(deserializeDate("-271821-04-20Z")).toEqual(
-      expectedEarliestRepresentableDate
+      expectedEarliestRepresentableDate,
     );
 
     // find largest date and set time to 12
     const expectedLatestRepresentableDate = new Date(Date.UTC(0, 11, 31, 12));
     expectedLatestRepresentableDate.setUTCFullYear(275759);
     expect(deserializeDate("275759-12-31Z")).toEqual(
-      expectedLatestRepresentableDate
+      expectedLatestRepresentableDate,
     );
   });
 
@@ -320,7 +320,7 @@ describe("serializeTime", () => {
         hour: 2,
         minute: 37,
         second: 5,
-      })
+      }),
     ).toBe("02:37:05");
 
     expect(
@@ -329,7 +329,7 @@ describe("serializeTime", () => {
         minute: 37,
         second: 5,
         timezoneHourOffset: 2,
-      })
+      }),
     ).toBe("02:37:05+02:00");
 
     expect(
@@ -338,7 +338,7 @@ describe("serializeTime", () => {
         minute: 37,
         second: 5,
         timezoneHourOffset: 10,
-      })
+      }),
     ).toBe("02:37:05+10:00");
 
     expect(
@@ -347,7 +347,7 @@ describe("serializeTime", () => {
         minute: 37,
         second: 5,
         timezoneHourOffset: -2,
-      })
+      }),
     ).toBe("02:37:05-02:00");
 
     expect(
@@ -356,7 +356,7 @@ describe("serializeTime", () => {
         minute: 1,
         second: 42,
         millisecond: 42,
-      })
+      }),
     ).toBe("13:01:42.042");
 
     expect(
@@ -365,7 +365,7 @@ describe("serializeTime", () => {
         minute: 1,
         second: 42,
         millisecond: 0,
-      })
+      }),
     ).toBe("13:01:42");
 
     expect(
@@ -374,7 +374,7 @@ describe("serializeTime", () => {
         minute: 1,
         second: 42,
         millisecond: 9,
-      })
+      }),
     ).toBe("13:01:42.009");
 
     expect(
@@ -384,7 +384,7 @@ describe("serializeTime", () => {
         second: 42,
         timezoneHourOffset: 5,
         timezoneMinuteOffset: 30,
-      })
+      }),
     ).toBe("13:01:42+05:30");
 
     expect(
@@ -394,7 +394,7 @@ describe("serializeTime", () => {
         second: 42,
         timezoneHourOffset: 0,
         timezoneMinuteOffset: 5,
-      })
+      }),
     ).toBe("13:01:42+00:05");
   });
 });
@@ -416,7 +416,7 @@ describe("deserializeTime", () => {
       timezoneMinuteOffset: 30,
     };
     expect(deserializeTime("13:37:42.020+02:30")).toStrictEqual(
-      expectedTimeWithAll
+      expectedTimeWithAll,
     );
 
     const expectedTimeWithAllNoMinutes = {
@@ -428,7 +428,7 @@ describe("deserializeTime", () => {
       timezoneMinuteOffset: 0,
     };
     expect(deserializeTime("13:37:42.020+02:00")).toStrictEqual(
-      expectedTimeWithAllNoMinutes
+      expectedTimeWithAllNoMinutes,
     );
 
     const expectedTimeWithHour24 = {
@@ -445,7 +445,7 @@ describe("deserializeTime", () => {
       millisecond: 42,
     };
     expect(deserializeTime("13:37:42.42")).toStrictEqual(
-      expectedTimeWithFractionalSeconds
+      expectedTimeWithFractionalSeconds,
     );
 
     const expectedTimeWithPositive0Timezone = {
@@ -456,7 +456,7 @@ describe("deserializeTime", () => {
       timezoneMinuteOffset: 0,
     };
     expect(deserializeTime("10:00:00+00:00")).toStrictEqual(
-      expectedTimeWithPositive0Timezone
+      expectedTimeWithPositive0Timezone,
     );
 
     const expectedTimeWithNegative0Timezone = {
@@ -467,7 +467,7 @@ describe("deserializeTime", () => {
       timezoneMinuteOffset: -0,
     };
     expect(deserializeTime("10:00:00-00:00")).toStrictEqual(
-      expectedTimeWithNegative0Timezone
+      expectedTimeWithNegative0Timezone,
     );
 
     const expectedTimeWithNegativeTimezone = {
@@ -478,7 +478,7 @@ describe("deserializeTime", () => {
       timezoneMinuteOffset: -30,
     };
     expect(deserializeTime("10:00:00-01:30")).toStrictEqual(
-      expectedTimeWithNegativeTimezone
+      expectedTimeWithNegativeTimezone,
     );
 
     const expectedTimeWithMaxNegativeTimezone = {
@@ -489,7 +489,7 @@ describe("deserializeTime", () => {
       timezoneMinuteOffset: -0,
     };
     expect(deserializeTime("10:00:00-14:00")).toStrictEqual(
-      expectedTimeWithMaxNegativeTimezone
+      expectedTimeWithMaxNegativeTimezone,
     );
 
     const expectedTimeWithPositiveTimezone = {
@@ -500,7 +500,7 @@ describe("deserializeTime", () => {
       timezoneMinuteOffset: 30,
     };
     expect(deserializeTime("10:00:00+01:30")).toStrictEqual(
-      expectedTimeWithPositiveTimezone
+      expectedTimeWithPositiveTimezone,
     );
 
     const expectedTimeWithMaxPositiveTimezone = {
@@ -511,7 +511,7 @@ describe("deserializeTime", () => {
       timezoneMinuteOffset: 0,
     };
     expect(deserializeTime("10:00:00+14:00")).toStrictEqual(
-      expectedTimeWithMaxPositiveTimezone
+      expectedTimeWithMaxPositiveTimezone,
     );
 
     const expectedTimeWithMinuteOverload = {
@@ -522,7 +522,7 @@ describe("deserializeTime", () => {
       timezoneMinuteOffset: 35,
     };
     expect(deserializeTime("10:30:00+00:35")).toStrictEqual(
-      expectedTimeWithMinuteOverload
+      expectedTimeWithMinuteOverload,
     );
 
     const expectedTimeWithMinuteGreaterThanSixty = {
@@ -531,7 +531,7 @@ describe("deserializeTime", () => {
       second: 0,
     };
     expect(deserializeTime("10:90:00")).toStrictEqual(
-      expectedTimeWithMinuteGreaterThanSixty
+      expectedTimeWithMinuteGreaterThanSixty,
     );
 
     expect(deserializeTime("10:00:00+10:60")).toBeNull();
@@ -599,7 +599,7 @@ describe("normalizeLocale", () => {
 describe("isNamedNode", () => {
   it("recognises a NamedNode", () => {
     expect(
-      isNamedNode(DataFactory.namedNode("https://arbitrary.pod/resource#node"))
+      isNamedNode(DataFactory.namedNode("https://arbitrary.pod/resource#node")),
     ).toBe(true);
   });
 
@@ -619,7 +619,7 @@ describe("isLiteral", () => {
   it("recognises non-Literals", () => {
     expect(isLiteral(DataFactory.blankNode())).toBe(false);
     expect(
-      isLiteral(DataFactory.namedNode("https://arbitrary.pod/resource#node"))
+      isLiteral(DataFactory.namedNode("https://arbitrary.pod/resource#node")),
     ).toBe(false);
     expect(isLiteral(DataFactory.variable("Arbitrary name"))).toBe(false);
     expect(isLiteral("Arbitrary string")).toBe(false);
@@ -629,14 +629,14 @@ describe("isLiteral", () => {
 describe("isLocalNode", () => {
   it("recognises a LocalNode", () => {
     expect(
-      isLocalNode(DataFactory.namedNode(`${localNodeSkolemPrefix}localNode`))
+      isLocalNode(DataFactory.namedNode(`${localNodeSkolemPrefix}localNode`)),
     ).toBe(true);
   });
 
   it("recognises non-LocalNodes", () => {
     expect(isLocalNode(DataFactory.blankNode())).toBe(false);
     expect(
-      isLocalNode(DataFactory.namedNode("https://arbitrary.pod/resource#node"))
+      isLocalNode(DataFactory.namedNode("https://arbitrary.pod/resource#node")),
     ).toBe(false);
     expect(isLocalNode(DataFactory.literal("Arbitrary value"))).toBe(false);
     expect(isLocalNode(DataFactory.variable("Arbitrary name"))).toBe(false);
@@ -653,7 +653,7 @@ describe("asNamedNode", () => {
 
   it("preserves an existing NamedNode", () => {
     const originalNode = DataFactory.namedNode(
-      "https://some.pod/resource#node"
+      "https://some.pod/resource#node",
     );
     const newNode = asNamedNode(originalNode);
     expect(newNode).toStrictEqual(originalNode);
@@ -667,10 +667,10 @@ describe("asNamedNode", () => {
 describe("resolveIriForLocalNode", () => {
   it("properly resolves the IRI for a LocalNode", () => {
     const localNode = DataFactory.namedNode(
-      `${localNodeSkolemPrefix}some-name`
+      `${localNodeSkolemPrefix}some-name`,
     ) as LocalNode;
     expect(
-      resolveIriForLocalNode(localNode, "https://some.pod/resource").value
+      resolveIriForLocalNode(localNode, "https://some.pod/resource").value,
     ).toBe("https://some.pod/resource#some-name");
   });
 });
@@ -678,7 +678,7 @@ describe("resolveIriForLocalNode", () => {
 describe("resolveLocalIri", () => {
   it("properly resolves the IRI for a given name and resource IRI", () => {
     expect(resolveLocalIri("some-name", "https://some.pod/resource")).toBe(
-      "https://some.pod/resource#some-name"
+      "https://some.pod/resource#some-name",
     );
   });
 });
@@ -694,7 +694,7 @@ describe("ValidUrlExpectedError", () => {
     const error = new ValidUrlExpectedError(DataFactory.namedNode("not-a-url"));
 
     expect(error.message).toBe(
-      "Expected a valid URL, but received: [not-a-url]."
+      "Expected a valid URL, but received: [not-a-url].",
     );
   });
 

@@ -33,7 +33,7 @@ import { setAgentAccess } from "./setAgentAccess";
  */
 export async function setPublicAccess<T extends WithAccessibleAcr>(
   resourceWithAcr: T,
-  access: Partial<AccessModes>
+  access: Partial<AccessModes>,
 ): Promise<T> {
   return setAgentAccess(resourceWithAcr, ACP.PublicAgent, access);
 }

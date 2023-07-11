@@ -37,7 +37,7 @@ describe("setPublicAccess()", () => {
 
     expect(
       (await setPublicAccess(resource, { read: true })).internal_acp.acr.graphs
-        .default
+        .default,
     ).toStrictEqual(
       createDatasetFromSubjects([
         [
@@ -62,7 +62,7 @@ describe("setPublicAccess()", () => {
           TEST_URL.defaultAccessControlAgentMatcherReadPolicyMatcher,
           [[ACP.agent, [ACP.PublicAgent]]],
         ],
-      ]).graphs.default
+      ]).graphs.default,
     );
   });
 });

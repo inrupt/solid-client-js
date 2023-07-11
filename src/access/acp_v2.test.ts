@@ -122,7 +122,7 @@ const defaultMockPolicies: MockPolicies = {
 function mockAcr(
   accessTo: UrlString,
   mockAcrUrl = defaultAcrUrl,
-  mockPolicies: Partial<MockPolicies> = {}
+  mockPolicies: Partial<MockPolicies> = {},
 ): AccessControlResource {
   const allMockPolicies = {
     ...defaultMockPolicies,
@@ -137,7 +137,7 @@ function mockAcr(
   const mockedMatchers: Record<UrlString, Matcher> = {};
   function generateMatcher(
     mockMatcherUrl: UrlString,
-    mockMatcher: MockMatcher
+    mockMatcher: MockMatcher,
   ): Matcher {
     let matcher =
       mockedMatchers[mockMatcherUrl] ?? createMatcher(mockMatcherUrl);
@@ -152,22 +152,22 @@ function mockAcr(
   const mockedPolicies: Record<UrlString, Policy> = {};
   function generatePolicy(
     policyUrl: UrlString,
-    mockPolicy: Partial<MockPolicy>
+    mockPolicy: Partial<MockPolicy>,
   ) {
     let policy = mockedPolicies[policyUrl] ?? createPolicy(policyUrl);
     const allOfMatchers = mockPolicy.allOf
       ? Object.entries(mockPolicy.allOf).map(([mockMatcherUrl, mockMatcher]) =>
-          generateMatcher(mockMatcherUrl, mockMatcher)
+          generateMatcher(mockMatcherUrl, mockMatcher),
         )
       : [];
     const anyOfMatchers = mockPolicy.anyOf
       ? Object.entries(mockPolicy.anyOf).map(([mockMatcherUrl, mockMatcher]) =>
-          generateMatcher(mockMatcherUrl, mockMatcher)
+          generateMatcher(mockMatcherUrl, mockMatcher),
         )
       : [];
     const noneOfMatchers = mockPolicy.noneOf
       ? Object.entries(mockPolicy.noneOf).map(([mockMatcherUrl, mockMatcher]) =>
-          generateMatcher(mockMatcherUrl, mockMatcher)
+          generateMatcher(mockMatcherUrl, mockMatcher),
         )
       : [];
 
@@ -188,15 +188,15 @@ function mockAcr(
 
     policy = allOfMatchers.reduce(
       (policy, matcher) => addIri(policy, acp.allOf, matcher),
-      policy
+      policy,
     );
     policy = anyOfMatchers.reduce(
       (policy, matcher) => addIri(policy, acp.anyOf, matcher),
-      policy
+      policy,
     );
     policy = noneOfMatchers.reduce(
       (policy, matcher) => addIri(policy, acp.noneOf, matcher),
-      policy
+      policy,
     );
     mockedPolicies[policyUrl] = policy;
   }
@@ -204,22 +204,22 @@ function mockAcr(
   Object.entries(allMockPolicies.acrPolicies).forEach(
     ([policyUrl, mockPolicy]) => {
       generatePolicy(policyUrl, mockPolicy);
-    }
+    },
   );
   Object.entries(allMockPolicies.memberAcrPolicies).forEach(
     ([policyUrl, mockPolicy]) => {
       generatePolicy(policyUrl, mockPolicy);
-    }
+    },
   );
   Object.entries(allMockPolicies.policies).forEach(
     ([policyUrl, mockPolicy]) => {
       generatePolicy(policyUrl, mockPolicy);
-    }
+    },
   );
   Object.entries(allMockPolicies.memberPolicies).forEach(
     ([policyUrl, mockPolicy]) => {
       generatePolicy(policyUrl, mockPolicy);
-    }
+    },
   );
 
   acr = Object.values(mockedMatchers).reduce(setThing, acr);
@@ -249,7 +249,7 @@ function mockAcr(
 function mockResourceWithAcr(
   accessTo: UrlString,
   mockAcrUrl = defaultAcrUrl,
-  mockPolicies: Partial<MockPolicies> = {}
+  mockPolicies: Partial<MockPolicies> = {},
 ): WithResourceInfo & WithAccessibleAcr {
   const acr = mockAcr(accessTo, mockAcrUrl, mockPolicies);
 
@@ -257,12 +257,12 @@ function mockResourceWithAcr(
   return addMockAcrTo(plainResource, acr);
 }
 function mockAcpData(
-  mockPolicies: Partial<MockPolicies> = {}
+  mockPolicies: Partial<MockPolicies> = {},
 ): internal_AcpData {
   const matchersByUrl: Record<UrlString, Matcher> = {};
   function generateMockMatcher(
     mockMatcherUrl: UrlString,
-    mockMatcher: MockMatcher
+    mockMatcher: MockMatcher,
   ) {
     let matcher =
       matchersByUrl[mockMatcherUrl] ?? createMatcher(mockMatcherUrl);
@@ -277,7 +277,7 @@ function mockAcpData(
   const mockedPolicies: Record<UrlString, Policy> = {};
   function generateMockPolicy(
     mockPolicyUrl: UrlString,
-    mockPolicy: Partial<MockPolicy>
+    mockPolicy: Partial<MockPolicy>,
   ) {
     let policy = mockedPolicies[mockPolicyUrl] ?? createPolicy(mockPolicyUrl);
     if (mockPolicy.allow) {
@@ -300,7 +300,7 @@ function mockAcpData(
         ([mockMatcherUrl, mockMatcher]) => {
           const matcher = generateMockMatcher(mockMatcherUrl, mockMatcher);
           policy = addIri(policy, acp.allOf, matcher);
-        }
+        },
       );
     }
     if (mockPolicy.anyOf) {
@@ -308,7 +308,7 @@ function mockAcpData(
         ([mockMatcherUrl, mockMatcher]) => {
           const matcher = generateMockMatcher(mockMatcherUrl, mockMatcher);
           policy = addIri(policy, acp.anyOf, matcher);
-        }
+        },
       );
     }
     if (mockPolicy.noneOf) {
@@ -316,7 +316,7 @@ function mockAcpData(
         ([mockMatcherUrl, mockMatcher]) => {
           const matcher = generateMockMatcher(mockMatcherUrl, mockMatcher);
           policy = addIri(policy, acp.noneOf, matcher);
-        }
+        },
       );
     }
     mockedPolicies[mockPolicyUrl] = policy;
@@ -330,19 +330,19 @@ function mockAcpData(
   Object.entries(allMockPolicies.acrPolicies).forEach(
     ([mockAcrPolicyUrl, mockAcrPolicy]) => {
       generateMockPolicy(mockAcrPolicyUrl, mockAcrPolicy);
-    }
+    },
   );
   Object.entries(allMockPolicies.policies).forEach(
     ([mockPolicyUrl, mockPolicy]) => {
       generateMockPolicy(mockPolicyUrl, mockPolicy);
-    }
+    },
   );
 
   const acrPolicies = Object.keys(allMockPolicies.acrPolicies).map(
-    (mockAcrPolicyUrl) => mockedPolicies[mockAcrPolicyUrl]
+    (mockAcrPolicyUrl) => mockedPolicies[mockAcrPolicyUrl],
   );
   const policies = Object.keys(allMockPolicies.policies).map(
-    (mockPolicyUrl) => mockedPolicies[mockPolicyUrl]
+    (mockPolicyUrl) => mockedPolicies[mockPolicyUrl],
   );
 
   return {
@@ -1029,7 +1029,7 @@ describe("getActorAccess", () => {
     policyReferencingNonExistentMatchers = addIri(
       policyReferencingNonExistentMatchers,
       acp.allOf,
-      "https://some.pod/resource?ext=acr#emptyMatcher"
+      "https://some.pod/resource?ext=acr#emptyMatcher",
     );
     acpData.policies[0] = policyReferencingNonExistentMatchers;
 
@@ -3067,7 +3067,7 @@ describe("getActorAccessAll", () => {
         memberAcrPolicies: {},
       });
       expect(internal_getActorAccessAll(acpData, actor)).toStrictEqual({});
-    }
+    },
   );
 
   it.each([acp.agent])(
@@ -3092,7 +3092,7 @@ describe("getActorAccessAll", () => {
       });
 
       expect(internal_getActorAccessAll(acpData, actor)).toStrictEqual({});
-    }
+    },
   );
 
   it.each([acp.agent])(
@@ -3117,7 +3117,7 @@ describe("getActorAccessAll", () => {
       });
 
       expect(internal_getActorAccessAll(acpData, actor)).toStrictEqual({});
-    }
+    },
   );
 
   it.each([acp.agent])(
@@ -3142,7 +3142,7 @@ describe("getActorAccessAll", () => {
       });
 
       expect(internal_getActorAccessAll(acpData, actor)).toStrictEqual({});
-    }
+    },
   );
 
   it.each([acp.agent])(
@@ -3184,7 +3184,7 @@ describe("getActorAccessAll", () => {
           controlWrite: false,
         },
       });
-    }
+    },
   );
 
   it.each([acp.agent])(
@@ -3210,7 +3210,7 @@ describe("getActorAccessAll", () => {
       });
       acpData.inaccessibleUrls = ["https://some.pod/another-resource.acr"];
       expect(internal_getActorAccessAll(acpData, actor)).toBeNull();
-    }
+    },
   );
 
   describe("One or several Policies that apply to multiple agents", () => {
@@ -3263,7 +3263,7 @@ describe("getActorAccessAll", () => {
             controlWrite: false,
           },
         });
-      }
+      },
     );
 
     it.each([acp.agent])(
@@ -3306,7 +3306,7 @@ describe("getActorAccessAll", () => {
             controlWrite: false,
           },
         });
-      }
+      },
     );
   });
 
@@ -3353,7 +3353,7 @@ describe("getActorAccessAll", () => {
             controlWrite: false,
           },
         });
-      }
+      },
     );
 
     it.each([acp.agent])(
@@ -3399,7 +3399,7 @@ describe("getActorAccessAll", () => {
             controlWrite: false,
           },
         });
-      }
+      },
     );
 
     it.each([acp.agent])(
@@ -3463,7 +3463,7 @@ describe("getActorAccessAll", () => {
             controlWrite: false,
           },
         });
-      }
+      },
     );
   });
 
@@ -3517,7 +3517,7 @@ describe("getActorAccessAll", () => {
             controlWrite: false,
           },
         });
-      }
+      },
     );
 
     it.each([acp.agent])(
@@ -3574,7 +3574,7 @@ describe("getActorAccessAll", () => {
             controlWrite: false,
           },
         });
-      }
+      },
     );
 
     it.each([acp.agent])(
@@ -3627,7 +3627,7 @@ describe("getActorAccessAll", () => {
             controlWrite: false,
           },
         });
-      }
+      },
     );
   });
 });
@@ -3762,7 +3762,7 @@ describe("setActorAccess", () => {
     const resourceWithAcr = mockResourceWithAcr(
       "https://some.pod/resource",
       "https://some.pod/resource?ext=acr",
-      mockSetup
+      mockSetup,
     );
     const acpData = mockAcpData(mockSetup);
 
@@ -3773,7 +3773,7 @@ describe("setActorAccess", () => {
       webId,
       {
         read: true,
-      }
+      },
     );
 
     expect(updatedResourceWithAcr).toStrictEqual(resourceWithAcr);
@@ -3798,7 +3798,7 @@ describe("setActorAccess", () => {
     const resourceWithAcr = mockResourceWithAcr(
       "https://some.pod/resource",
       "https://some.pod/resource?ext=acr",
-      mockSetup
+      mockSetup,
     );
     const acpData = mockAcpData(mockSetup);
 
@@ -3809,7 +3809,7 @@ describe("setActorAccess", () => {
       webId,
       {
         read: true,
-      }
+      },
     );
 
     expect(updatedResourceWithAcr).toStrictEqual(resourceWithAcr);
@@ -3831,19 +3831,19 @@ describe("setActorAccess", () => {
         fc.oneof(
           fc.constant("read"),
           fc.constant("append"),
-          fc.constant("write")
+          fc.constant("write"),
         ),
-        fc.boolean()
+        fc.boolean(),
       );
       const policyUrlArbitrary = fc.oneof(
         fc.constant("https://some.pod/resource?ext=acl#policy1"),
         fc.constant("https://some.pod/resource?ext=acl#policy2"),
-        fc.constant("https://some.pod/resource?ext=acl#policy3")
+        fc.constant("https://some.pod/resource?ext=acl#policy3"),
       );
       const matcherUrlArbitrary = fc.oneof(
         fc.constant("https://some.pod/resource?ext=acl#matcher"),
         fc.constant("https://some.pod/resource?ext=acl#matcher"),
-        fc.constant("https://some.pod/resource?ext=acl#matcher")
+        fc.constant("https://some.pod/resource?ext=acl#matcher"),
       );
       const agentUrlArbitrary = fc.oneof(
         fc.constant("https://some.pod/profiles#agent1"),
@@ -3851,7 +3851,7 @@ describe("setActorAccess", () => {
         fc.constant("https://some.pod/profiles#agent3"),
         fc.constant(acp.PublicAgent),
         fc.constant(acp.AuthenticatedAgent),
-        fc.constant(acp.CreatorAgent)
+        fc.constant(acp.CreatorAgent),
       );
       const matcherArbitrary = fc.record({
         [acp.agent]: fc.option(fc.array(agentUrlArbitrary, { maxLength: 6 }), {
@@ -3860,15 +3860,15 @@ describe("setActorAccess", () => {
       });
       const policyAccessArbitrary = fc.dictionary(
         fc.oneof(fc.constant("allow"), fc.constant("deny")),
-        mockAccessArbitrary
+        mockAccessArbitrary,
       );
       const policyMatchersArbitrary = fc.dictionary(
         fc.oneof(
           fc.constant("allOf"),
           fc.constant("anyOf"),
-          fc.constant("noneOf")
+          fc.constant("noneOf"),
         ),
-        fc.dictionary(matcherUrlArbitrary, matcherArbitrary)
+        fc.dictionary(matcherUrlArbitrary, matcherArbitrary),
       );
       const policyArbitrary = fc
         .tuple(policyAccessArbitrary, policyMatchersArbitrary)
@@ -3876,12 +3876,12 @@ describe("setActorAccess", () => {
       const acrArbitrary = fc.record({
         policies: fc.oneof(
           fc.constant({}),
-          fc.dictionary(policyUrlArbitrary, policyArbitrary)
+          fc.dictionary(policyUrlArbitrary, policyArbitrary),
         ),
         memberPolicies: fc.constant({}),
         acrPolicies: fc.oneof(
           fc.constant({}),
-          fc.dictionary(policyUrlArbitrary, policyArbitrary)
+          fc.dictionary(policyUrlArbitrary, policyArbitrary),
         ),
         memberAcrPolicies: fc.constant({}),
       });
@@ -3890,7 +3890,7 @@ describe("setActorAccess", () => {
         acrArbitrary,
         setAccessArbitrary,
         actorRelationArbitrary,
-        agentUrlArbitrary
+        agentUrlArbitrary,
       );
       const fcResult = fc.check(
         fc.property(
@@ -3899,7 +3899,7 @@ describe("setActorAccess", () => {
             const resourceWithAcr = mockResourceWithAcr(
               "https://some.pod/resource",
               "https://some.pod/resource?ext=acr",
-              acrConfig as any
+              acrConfig as any,
             );
             const acpData = mockAcpData(acrConfig);
             const updatedResource = internal_setActorAccess(
@@ -3907,18 +3907,18 @@ describe("setActorAccess", () => {
               acpData,
               actorRelation,
               actorUrl,
-              accessToSet
+              accessToSet,
             );
             expect(
               internal_getActorAccess(
                 getLocalAcpData(updatedResource!),
                 actorRelation,
-                actorUrl
-              )
+                actorUrl,
+              ),
             ).toStrictEqual(accessToSet);
-          }
+          },
         ),
-        { numRuns: runs }
+        { numRuns: runs },
       );
 
       expect(fcResult.counterexample).toBeNull();
@@ -3957,7 +3957,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        acrConfig
+        acrConfig,
       );
       const acpData = mockAcpData(acrConfig);
       const updatedResource = internal_setActorAccess(
@@ -3965,14 +3965,14 @@ describe("setActorAccess", () => {
         acpData,
         actorRelation,
         actorUrl,
-        accessToSet
+        accessToSet,
       );
       expect(
         internal_getActorAccess(
           getLocalAcpData(updatedResource!),
           actorRelation,
-          actorUrl
-        )
+          actorUrl,
+        ),
       ).toStrictEqual(accessToSet);
     });
 
@@ -4012,7 +4012,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        acrConfig
+        acrConfig,
       );
       const acpData = mockAcpData(acrConfig);
       const updatedResource = internal_setActorAccess(
@@ -4020,14 +4020,14 @@ describe("setActorAccess", () => {
         acpData,
         actorRelation,
         actorUrl,
-        accessToSet
+        accessToSet,
       );
       expect(
         internal_getActorAccess(
           getLocalAcpData(updatedResource!),
           actorRelation,
-          actorUrl
-        )
+          actorUrl,
+        ),
       ).toStrictEqual(accessToSet);
     });
 
@@ -4074,7 +4074,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        acrConfig
+        acrConfig,
       );
       const acpData = mockAcpData(acrConfig);
       const updatedResource = internal_setActorAccess(
@@ -4082,14 +4082,14 @@ describe("setActorAccess", () => {
         acpData,
         actorRelation,
         actorUrl,
-        accessToSet
+        accessToSet,
       );
       expect(
         internal_getActorAccess(
           getLocalAcpData(updatedResource!),
           actorRelation,
-          actorUrl
-        )
+          actorUrl,
+        ),
       ).toStrictEqual(accessToSet);
     });
 
@@ -4128,7 +4128,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        acrConfig
+        acrConfig,
       );
       const acpData = mockAcpData(acrConfig);
       const updatedResource = internal_setActorAccess(
@@ -4136,14 +4136,14 @@ describe("setActorAccess", () => {
         acpData,
         actorRelation,
         actorUrl,
-        accessToSet
+        accessToSet,
       );
       expect(
         internal_getActorAccess(
           getLocalAcpData(updatedResource!),
           actorRelation,
-          actorUrl
-        )
+          actorUrl,
+        ),
       ).toStrictEqual(accessToSet);
     });
   });
@@ -4159,7 +4159,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -4174,7 +4174,7 @@ describe("setActorAccess", () => {
           write: true,
           controlRead: true,
           controlWrite: true,
-        }
+        },
       );
       const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
 
@@ -4203,10 +4203,10 @@ describe("setActorAccess", () => {
       expect(allowed).toContain(internal_accessModeIriStrings.write);
 
       const acrMatcherUrls = getUrlAll(acrPolicy!, acp.allOf).concat(
-        getUrlAll(acrPolicy!, acp.anyOf)
+        getUrlAll(acrPolicy!, acp.anyOf),
       );
       const matcherUrls = getUrlAll(policy!, acp.allOf).concat(
-        getUrlAll(policy!, acp.anyOf)
+        getUrlAll(policy!, acp.anyOf),
       );
       expect(matcherUrls).toHaveLength(1);
       expect(matcherUrls).toStrictEqual(acrMatcherUrls);
@@ -4238,7 +4238,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -4249,11 +4249,14 @@ describe("setActorAccess", () => {
         webId,
         {
           append: true,
-        }
+        },
       );
 
       expect(
-        internal_getAgentAccess(getLocalAcpData(updatedResourceWithAcr!), webId)
+        internal_getAgentAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          webId,
+        ),
       ).toStrictEqual({
         read: true,
         append: true,
@@ -4282,7 +4285,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -4293,20 +4296,20 @@ describe("setActorAccess", () => {
         webId,
         {
           read: true,
-        }
+        },
       );
       const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
       // The original Control, Policiy and Matcher are still present:
       const thingUrlsInAcr = (getThingAll(updatedAcr) as ThingPersisted[]).map(
-        asIri
+        asIri,
       );
       expect(thingUrlsInAcr).toHaveLength(3);
       expect(thingUrlsInAcr).toContain("https://some.pod/resource?ext=acr");
       expect(thingUrlsInAcr).toContain(
-        "https://some.pod/resource?ext=acr#policy"
+        "https://some.pod/resource?ext=acr#policy",
       );
       expect(thingUrlsInAcr).toContain(
-        "https://some.pod/resource?ext=acr#matcher"
+        "https://some.pod/resource?ext=acr#matcher",
       );
     });
 
@@ -4338,7 +4341,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -4350,15 +4353,15 @@ describe("setActorAccess", () => {
         {
           read: false,
           controlRead: false,
-        }
+        },
       );
 
       expect(
         internal_getActorAccess(
           getLocalAcpData(resourceWithAcr),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: true,
         append: false,
@@ -4370,8 +4373,8 @@ describe("setActorAccess", () => {
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -4409,7 +4412,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -4421,15 +4424,15 @@ describe("setActorAccess", () => {
         {
           read: true,
           controlRead: true,
-        }
+        },
       );
 
       expect(
         internal_getActorAccess(
           getLocalAcpData(resourceWithAcr),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -4441,8 +4444,8 @@ describe("setActorAccess", () => {
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: true,
         append: false,
@@ -4471,7 +4474,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -4482,15 +4485,15 @@ describe("setActorAccess", () => {
         webId,
         {
           append: false,
-        }
+        },
       );
 
       expect(
         internal_getActorAccess(
           getLocalAcpData(resourceWithAcr),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: false,
         append: true,
@@ -4502,8 +4505,8 @@ describe("setActorAccess", () => {
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -4532,7 +4535,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -4543,15 +4546,15 @@ describe("setActorAccess", () => {
         webId,
         {
           append: true,
-        }
+        },
       );
 
       expect(
         internal_getActorAccess(
           getLocalAcpData(resourceWithAcr),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -4563,8 +4566,8 @@ describe("setActorAccess", () => {
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: false,
         append: true,
@@ -4602,7 +4605,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -4614,15 +4617,15 @@ describe("setActorAccess", () => {
         {
           write: false,
           controlWrite: false,
-        }
+        },
       );
 
       expect(
         internal_getActorAccess(
           getLocalAcpData(resourceWithAcr),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -4634,8 +4637,8 @@ describe("setActorAccess", () => {
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -4673,7 +4676,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -4685,15 +4688,15 @@ describe("setActorAccess", () => {
         {
           write: true,
           controlWrite: true,
-        }
+        },
       );
 
       expect(
         internal_getActorAccess(
           getLocalAcpData(resourceWithAcr),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -4705,8 +4708,8 @@ describe("setActorAccess", () => {
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -4746,7 +4749,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -4761,15 +4764,15 @@ describe("setActorAccess", () => {
           write: true,
           controlRead: true,
           controlWrite: true,
-        }
+        },
       );
 
       expect(
         internal_getActorAccess(
           getLocalAcpData(resourceWithAcr),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -4781,8 +4784,8 @@ describe("setActorAccess", () => {
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: true,
         append: true,
@@ -4820,7 +4823,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -4831,15 +4834,15 @@ describe("setActorAccess", () => {
         webId,
         {
           read: true,
-        }
+        },
       );
 
       expect(
         internal_getActorAccess(
           getLocalAcpData(resourceWithAcr),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -4851,8 +4854,8 @@ describe("setActorAccess", () => {
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: true,
         append: false,
@@ -4890,7 +4893,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -4901,15 +4904,15 @@ describe("setActorAccess", () => {
         webId,
         {
           controlRead: true,
-        }
+        },
       );
 
       expect(
         internal_getActorAccess(
           getLocalAcpData(resourceWithAcr),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -4921,8 +4924,8 @@ describe("setActorAccess", () => {
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -4951,7 +4954,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -4962,15 +4965,15 @@ describe("setActorAccess", () => {
         webId,
         {
           controlRead: true,
-        }
+        },
       );
 
       expect(
         internal_getActorAccess(
           getLocalAcpData(resourceWithAcr),
           acp.agent,
-          "https://some-other.pod/other-profile#me"
-        )
+          "https://some-other.pod/other-profile#me",
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -4982,8 +4985,8 @@ describe("setActorAccess", () => {
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -5013,7 +5016,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -5024,15 +5027,15 @@ describe("setActorAccess", () => {
         webId,
         {
           read: true,
-        }
+        },
       );
 
       expect(
         internal_getActorAccess(
           getLocalAcpData(resourceWithAcr),
           acp.agent,
-          "https://some-other.pod/other-profile#me"
-        )
+          "https://some-other.pod/other-profile#me",
+        ),
       ).toStrictEqual({
         read: false,
         append: true,
@@ -5044,8 +5047,8 @@ describe("setActorAccess", () => {
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: true,
         append: true,
@@ -5075,22 +5078,22 @@ describe("setActorAccess", () => {
       let mockedAcr = mockAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       let policyReferencingNonExistentMatchers = getPolicy(
         mockedAcr,
-        "https://some.pod/resource?ext=acr#policy"
+        "https://some.pod/resource?ext=acr#policy",
       )!;
       policyReferencingNonExistentMatchers = addIri(
         policyReferencingNonExistentMatchers,
         acp.allOf,
-        "https://some.pod/resource?ext=acr#nonExistentMatcher"
+        "https://some.pod/resource?ext=acr#nonExistentMatcher",
       );
       mockedAcr = setPolicy(mockedAcr, policyReferencingNonExistentMatchers);
       const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
       const resourceWithAcr = addPolicyUrl(
         addMockAcrTo(plainResource, mockedAcr),
-        "https://some.pod/resource?ext=acr#policy"
+        "https://some.pod/resource?ext=acr#policy",
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -5101,7 +5104,7 @@ describe("setActorAccess", () => {
         webId,
         {
           read: true,
-        }
+        },
       );
 
       const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
@@ -5114,9 +5117,9 @@ describe("setActorAccess", () => {
           }
           const allOfMatcherIris = getIriAll(policy, acp.allOf);
           return allOfMatcherIris.every(
-            (matcher) => getMatcher(updatedAcr, matcher) !== null
+            (matcher) => getMatcher(updatedAcr, matcher) !== null,
           );
-        })
+        }),
       ).toBe(true);
     });
 
@@ -5142,7 +5145,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -5153,15 +5156,15 @@ describe("setActorAccess", () => {
         webId,
         {
           controlRead: true,
-        }
+        },
       );
 
       expect(
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          "https://some-other.pod/other-profile#me"
-        )
+          "https://some-other.pod/other-profile#me",
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -5173,8 +5176,8 @@ describe("setActorAccess", () => {
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -5206,7 +5209,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -5217,15 +5220,15 @@ describe("setActorAccess", () => {
         webId,
         {
           read: true,
-        }
+        },
       );
 
       expect(
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          "https://some-other.pod/other-profile#me"
-        )
+          "https://some-other.pod/other-profile#me",
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -5237,8 +5240,8 @@ describe("setActorAccess", () => {
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: true,
         append: false,
@@ -5270,7 +5273,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -5281,7 +5284,7 @@ describe("setActorAccess", () => {
         webId,
         {
           controlRead: true,
-        }
+        },
       );
 
       // The new access should be applied:
@@ -5289,8 +5292,8 @@ describe("setActorAccess", () => {
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -5306,7 +5309,7 @@ describe("setActorAccess", () => {
       const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
       const existingPolicy = getPolicy(
         updatedAcr,
-        "https://some.pod/resource?ext=acr#policy"
+        "https://some.pod/resource?ext=acr#policy",
       )!;
       expect(getIriAll(existingPolicy, acp.allOf)).toStrictEqual([
         "https://some.pod/resource?ext=acr#own-matcher",
@@ -5314,7 +5317,7 @@ describe("setActorAccess", () => {
       ]);
       const existingMatcher = getMatcher(
         updatedAcr,
-        "https://some.pod/resource?ext=acr#own-matcher"
+        "https://some.pod/resource?ext=acr#own-matcher",
       )!;
       expect(getIri(existingMatcher, acp.agent)).toBe(webId);
     });
@@ -5341,7 +5344,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -5352,7 +5355,7 @@ describe("setActorAccess", () => {
         webId,
         {
           read: true,
-        }
+        },
       );
 
       // The new access should be applied:
@@ -5360,8 +5363,8 @@ describe("setActorAccess", () => {
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: true,
         append: false,
@@ -5377,7 +5380,7 @@ describe("setActorAccess", () => {
       const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
       const existingPolicy = getPolicy(
         updatedAcr,
-        "https://some.pod/resource?ext=acr#policy"
+        "https://some.pod/resource?ext=acr#policy",
       )!;
       expect(getIriAll(existingPolicy, acp.allOf)).toStrictEqual([
         "https://some.pod/resource?ext=acr#own-matcher",
@@ -5385,7 +5388,7 @@ describe("setActorAccess", () => {
       ]);
       const existingMatcher = getMatcher(
         updatedAcr,
-        "https://some.pod/resource?ext=acr#own-matcher"
+        "https://some.pod/resource?ext=acr#own-matcher",
       )!;
       expect(getIri(existingMatcher, acp.agent)).toBe(webId);
     });
@@ -5414,7 +5417,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -5425,7 +5428,7 @@ describe("setActorAccess", () => {
         webId,
         {
           controlRead: true,
-        }
+        },
       );
 
       // The new access should be applied:
@@ -5433,8 +5436,8 @@ describe("setActorAccess", () => {
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -5450,7 +5453,7 @@ describe("setActorAccess", () => {
       const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
       const existingPolicy = getPolicy(
         updatedAcr,
-        "https://some.pod/resource?ext=acr#policy"
+        "https://some.pod/resource?ext=acr#policy",
       )!;
       expect(getIriAll(existingPolicy, acp.allOf)).toStrictEqual([
         "https://some.pod/resource?ext=acr#own-matcher",
@@ -5460,7 +5463,7 @@ describe("setActorAccess", () => {
       ]);
       const existingMatcher = getMatcher(
         updatedAcr,
-        "https://some.pod/resource?ext=acr#own-matcher"
+        "https://some.pod/resource?ext=acr#own-matcher",
       )!;
       expect(getIri(existingMatcher, acp.agent)).toBe(webId);
     });
@@ -5489,7 +5492,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -5500,7 +5503,7 @@ describe("setActorAccess", () => {
         webId,
         {
           read: true,
-        }
+        },
       );
 
       // The new access should be applied:
@@ -5508,8 +5511,8 @@ describe("setActorAccess", () => {
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: true,
         append: false,
@@ -5525,7 +5528,7 @@ describe("setActorAccess", () => {
       const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
       const existingPolicy = getPolicy(
         updatedAcr,
-        "https://some.pod/resource?ext=acr#policy"
+        "https://some.pod/resource?ext=acr#policy",
       )!;
       expect(getIriAll(existingPolicy, acp.allOf)).toStrictEqual([
         "https://some.pod/resource?ext=acr#own-matcher",
@@ -5535,7 +5538,7 @@ describe("setActorAccess", () => {
       ]);
       const existingMatcher = getMatcher(
         updatedAcr,
-        "https://some.pod/resource?ext=acr#own-matcher"
+        "https://some.pod/resource?ext=acr#own-matcher",
       )!;
       expect(getIri(existingMatcher, acp.agent)).toBe(webId);
     });
@@ -5562,7 +5565,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -5573,14 +5576,14 @@ describe("setActorAccess", () => {
         webId,
         {
           read: true,
-        }
+        },
       );
 
       expect(
         internal_getAgentAccess(
           getLocalAcpData(updatedResourceWithAcr!),
-          otherWebId
-        )
+          otherWebId,
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -5609,7 +5612,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -5620,12 +5623,12 @@ describe("setActorAccess", () => {
         webId,
         {
           read: true,
-        }
+        },
       );
 
       const acr = internal_getAcr(updatedResourceWithAcr!);
       expect(
-        getThing(acr, "https://some.pod/resource?ext=acr#policy")
+        getThing(acr, "https://some.pod/resource?ext=acr#policy"),
       ).not.toBeNull();
     });
 
@@ -5643,7 +5646,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -5654,15 +5657,15 @@ describe("setActorAccess", () => {
         webId,
         {
           read: true,
-        }
+        },
       );
 
       expect(
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: true,
         append: false,
@@ -5671,10 +5674,10 @@ describe("setActorAccess", () => {
         controlWrite: false,
       });
       expect(getPolicyUrlAll(updatedResourceWithAcr!)).toContain(
-        "https://some.pod/resource?ext=acr#policy"
+        "https://some.pod/resource?ext=acr#policy",
       );
       expect(getAcrPolicyUrlAll(updatedResourceWithAcr!)).toContain(
-        "https://some.pod/resource?ext=acr#acrPolicy"
+        "https://some.pod/resource?ext=acr#acrPolicy",
       );
     });
 
@@ -5706,7 +5709,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -5717,15 +5720,15 @@ describe("setActorAccess", () => {
         webId,
         {
           read: true,
-        }
+        },
       );
 
       expect(
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: true,
         append: false,
@@ -5736,20 +5739,20 @@ describe("setActorAccess", () => {
       const acr = internal_getAcr(updatedResourceWithAcr!);
       const policy = getThing(acr, "https://some.pod/resource?ext=acr#policy")!;
       expect(getIri(policy, acp.allOf)).toBe(
-        "https://some.pod/resource?ext=acr#allOf_matcher"
+        "https://some.pod/resource?ext=acr#allOf_matcher",
       );
       expect(getIri(policy, acp.anyOf)).toBe(
-        "https://some.pod/resource?ext=acr#anyOf_matcher"
+        "https://some.pod/resource?ext=acr#anyOf_matcher",
       );
       const acrPolicy = getThing(
         acr,
-        "https://some.pod/resource?ext=acr#acrPolicy"
+        "https://some.pod/resource?ext=acr#acrPolicy",
       )!;
       expect(getIri(acrPolicy, acp.allOf)).toBe(
-        "https://some.pod/resource?ext=acr#allOf_acrMatcher"
+        "https://some.pod/resource?ext=acr#allOf_acrMatcher",
       );
       expect(getIri(acrPolicy, acp.anyOf)).toBe(
-        "https://some.pod/resource?ext=acr#anyOf_acrMatcher"
+        "https://some.pod/resource?ext=acr#anyOf_acrMatcher",
       );
     });
   });
@@ -5765,7 +5768,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -5780,7 +5783,7 @@ describe("setActorAccess", () => {
           write: false,
           controlRead: false,
           controlWrite: false,
-        }
+        },
       );
       const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
 
@@ -5814,7 +5817,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -5825,11 +5828,14 @@ describe("setActorAccess", () => {
         webId,
         {
           append: false,
-        }
+        },
       );
 
       expect(
-        internal_getAgentAccess(getLocalAcpData(updatedResourceWithAcr!), webId)
+        internal_getAgentAccess(
+          getLocalAcpData(updatedResourceWithAcr!),
+          webId,
+        ),
       ).toStrictEqual({
         read: true,
         append: false,
@@ -5858,7 +5864,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -5869,20 +5875,20 @@ describe("setActorAccess", () => {
         webId,
         {
           read: false,
-        }
+        },
       );
       const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
       // The original Control, Policiy and Matcher are still present:
       const thingUrlsInAcr = (getThingAll(updatedAcr) as ThingPersisted[]).map(
-        asIri
+        asIri,
       );
       expect(thingUrlsInAcr).toHaveLength(3);
       expect(thingUrlsInAcr).toContain("https://some.pod/resource?ext=acr");
       expect(thingUrlsInAcr).toContain(
-        "https://some.pod/resource?ext=acr#policy"
+        "https://some.pod/resource?ext=acr#policy",
       );
       expect(thingUrlsInAcr).toContain(
-        "https://some.pod/resource?ext=acr#matcher"
+        "https://some.pod/resource?ext=acr#matcher",
       );
     });
 
@@ -5914,7 +5920,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -5929,15 +5935,15 @@ describe("setActorAccess", () => {
           write: false,
           controlRead: false,
           controlWrite: false,
-        }
+        },
       );
 
       expect(
         internal_getActorAccess(
           getLocalAcpData(resourceWithAcr),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: true,
         append: true,
@@ -5949,8 +5955,8 @@ describe("setActorAccess", () => {
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -5990,7 +5996,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -6005,15 +6011,15 @@ describe("setActorAccess", () => {
           write: false,
           controlRead: false,
           controlWrite: false,
-        }
+        },
       );
 
       expect(
         internal_getActorAccess(
           getLocalAcpData(resourceWithAcr),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: true,
         append: true,
@@ -6025,8 +6031,8 @@ describe("setActorAccess", () => {
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -6064,7 +6070,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -6075,15 +6081,15 @@ describe("setActorAccess", () => {
         webId,
         {
           read: false,
-        }
+        },
       );
 
       expect(
         internal_getActorAccess(
           getLocalAcpData(resourceWithAcr),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: true,
         append: true,
@@ -6095,8 +6101,8 @@ describe("setActorAccess", () => {
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: false,
         append: true,
@@ -6134,7 +6140,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -6145,15 +6151,15 @@ describe("setActorAccess", () => {
         webId,
         {
           controlRead: false,
-        }
+        },
       );
 
       expect(
         internal_getActorAccess(
           getLocalAcpData(resourceWithAcr),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: true,
         append: true,
@@ -6165,8 +6171,8 @@ describe("setActorAccess", () => {
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: true,
         append: true,
@@ -6195,7 +6201,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -6206,15 +6212,15 @@ describe("setActorAccess", () => {
         webId,
         {
           controlRead: false,
-        }
+        },
       );
 
       expect(
         internal_getActorAccess(
           getLocalAcpData(resourceWithAcr),
           acp.agent,
-          "https://some-other.pod/other-profile#me"
-        )
+          "https://some-other.pod/other-profile#me",
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -6226,8 +6232,8 @@ describe("setActorAccess", () => {
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -6257,7 +6263,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -6268,15 +6274,15 @@ describe("setActorAccess", () => {
         webId,
         {
           read: false,
-        }
+        },
       );
 
       expect(
         internal_getActorAccess(
           getLocalAcpData(resourceWithAcr),
           acp.agent,
-          "https://some-other.pod/other-profile#me"
-        )
+          "https://some-other.pod/other-profile#me",
+        ),
       ).toStrictEqual({
         read: true,
         append: false,
@@ -6288,8 +6294,8 @@ describe("setActorAccess", () => {
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -6319,22 +6325,22 @@ describe("setActorAccess", () => {
       let mockedAcr = mockAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       let policyReferencingNonExistentMatchers = getPolicy(
         mockedAcr,
-        "https://some.pod/resource?ext=acr#policy"
+        "https://some.pod/resource?ext=acr#policy",
       )!;
       policyReferencingNonExistentMatchers = addIri(
         policyReferencingNonExistentMatchers,
         acp.allOf,
-        "https://some.pod/resource?ext=acr#nonExistentMatcher"
+        "https://some.pod/resource?ext=acr#nonExistentMatcher",
       );
       mockedAcr = setPolicy(mockedAcr, policyReferencingNonExistentMatchers);
       const plainResource = mockSolidDatasetFrom("https://some.pod/resource");
       const resourceWithAcr = addPolicyUrl(
         addMockAcrTo(plainResource, mockedAcr),
-        "https://some.pod/resource?ext=acr#policy"
+        "https://some.pod/resource?ext=acr#policy",
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -6345,7 +6351,7 @@ describe("setActorAccess", () => {
         webId,
         {
           read: false,
-        }
+        },
       );
 
       const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
@@ -6358,9 +6364,9 @@ describe("setActorAccess", () => {
           }
           const allOfMatcherIris = getIriAll(policy, acp.allOf);
           return allOfMatcherIris.every(
-            (matcher) => getMatcher(updatedAcr, matcher) !== null
+            (matcher) => getMatcher(updatedAcr, matcher) !== null,
           );
-        })
+        }),
       ).toBe(true);
     });
 
@@ -6386,7 +6392,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -6397,15 +6403,15 @@ describe("setActorAccess", () => {
         webId,
         {
           controlRead: false,
-        }
+        },
       );
 
       expect(
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          "https://some-other.pod/other-profile#me"
-        )
+          "https://some-other.pod/other-profile#me",
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -6417,8 +6423,8 @@ describe("setActorAccess", () => {
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -6450,7 +6456,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -6461,15 +6467,15 @@ describe("setActorAccess", () => {
         webId,
         {
           read: false,
-        }
+        },
       );
 
       expect(
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          "https://some-other.pod/other-profile#me"
-        )
+          "https://some-other.pod/other-profile#me",
+        ),
       ).toStrictEqual({
         read: true,
         append: false,
@@ -6481,8 +6487,8 @@ describe("setActorAccess", () => {
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -6514,7 +6520,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -6525,7 +6531,7 @@ describe("setActorAccess", () => {
         webId,
         {
           controlRead: false,
-        }
+        },
       );
 
       // The new access should be applied:
@@ -6533,8 +6539,8 @@ describe("setActorAccess", () => {
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -6550,7 +6556,7 @@ describe("setActorAccess", () => {
       const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
       const existingPolicy = getPolicy(
         updatedAcr,
-        "https://some.pod/resource?ext=acr#policy"
+        "https://some.pod/resource?ext=acr#policy",
       )!;
       expect(getIriAll(existingPolicy, acp.allOf)).toStrictEqual([
         "https://some.pod/resource?ext=acr#own-matcher",
@@ -6558,7 +6564,7 @@ describe("setActorAccess", () => {
       ]);
       const existingMatcher = getMatcher(
         updatedAcr,
-        "https://some.pod/resource?ext=acr#own-matcher"
+        "https://some.pod/resource?ext=acr#own-matcher",
       )!;
       expect(getIri(existingMatcher, acp.agent)).toBe(webId);
     });
@@ -6585,7 +6591,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -6596,7 +6602,7 @@ describe("setActorAccess", () => {
         webId,
         {
           read: false,
-        }
+        },
       );
 
       // The new access should be applied:
@@ -6604,8 +6610,8 @@ describe("setActorAccess", () => {
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -6621,7 +6627,7 @@ describe("setActorAccess", () => {
       const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
       const existingPolicy = getPolicy(
         updatedAcr,
-        "https://some.pod/resource?ext=acr#policy"
+        "https://some.pod/resource?ext=acr#policy",
       )!;
       expect(getIriAll(existingPolicy, acp.allOf)).toStrictEqual([
         "https://some.pod/resource?ext=acr#own-matcher",
@@ -6629,7 +6635,7 @@ describe("setActorAccess", () => {
       ]);
       const existingMatcher = getMatcher(
         updatedAcr,
-        "https://some.pod/resource?ext=acr#own-matcher"
+        "https://some.pod/resource?ext=acr#own-matcher",
       )!;
       expect(getIri(existingMatcher, acp.agent)).toBe(webId);
     });
@@ -6658,7 +6664,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -6669,7 +6675,7 @@ describe("setActorAccess", () => {
         webId,
         {
           controlRead: false,
-        }
+        },
       );
 
       // The new access should be applied:
@@ -6677,8 +6683,8 @@ describe("setActorAccess", () => {
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -6694,7 +6700,7 @@ describe("setActorAccess", () => {
       const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
       const existingPolicy = getPolicy(
         updatedAcr,
-        "https://some.pod/resource?ext=acr#policy"
+        "https://some.pod/resource?ext=acr#policy",
       )!;
       expect(getIriAll(existingPolicy, acp.allOf)).toStrictEqual([
         "https://some.pod/resource?ext=acr#own-matcher",
@@ -6704,7 +6710,7 @@ describe("setActorAccess", () => {
       ]);
       const existingMatcher = getMatcher(
         updatedAcr,
-        "https://some.pod/resource?ext=acr#own-matcher"
+        "https://some.pod/resource?ext=acr#own-matcher",
       )!;
       expect(getIri(existingMatcher, acp.agent)).toBe(webId);
     });
@@ -6733,7 +6739,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -6744,7 +6750,7 @@ describe("setActorAccess", () => {
         webId,
         {
           read: false,
-        }
+        },
       );
 
       // The new access should be applied:
@@ -6752,8 +6758,8 @@ describe("setActorAccess", () => {
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -6769,7 +6775,7 @@ describe("setActorAccess", () => {
       const updatedAcr = internal_getAcr(updatedResourceWithAcr!);
       const existingPolicy = getPolicy(
         updatedAcr,
-        "https://some.pod/resource?ext=acr#policy"
+        "https://some.pod/resource?ext=acr#policy",
       )!;
       expect(getIriAll(existingPolicy, acp.allOf)).toStrictEqual([
         "https://some.pod/resource?ext=acr#own-matcher",
@@ -6779,7 +6785,7 @@ describe("setActorAccess", () => {
       ]);
       const existingMatcher = getMatcher(
         updatedAcr,
-        "https://some.pod/resource?ext=acr#own-matcher"
+        "https://some.pod/resource?ext=acr#own-matcher",
       )!;
       expect(getIri(existingMatcher, acp.agent)).toBe(webId);
     });
@@ -6806,7 +6812,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -6817,14 +6823,14 @@ describe("setActorAccess", () => {
         webId,
         {
           read: false,
-        }
+        },
       );
 
       expect(
         internal_getAgentAccess(
           getLocalAcpData(updatedResourceWithAcr!),
-          otherWebId
-        )
+          otherWebId,
+        ),
       ).toStrictEqual({
         read: true,
         append: false,
@@ -6853,7 +6859,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -6864,12 +6870,12 @@ describe("setActorAccess", () => {
         webId,
         {
           read: false,
-        }
+        },
       );
 
       const acr = internal_getAcr(updatedResourceWithAcr!);
       expect(
-        getThing(acr, "https://some.pod/resource?ext=acr#policy")
+        getThing(acr, "https://some.pod/resource?ext=acr#policy"),
       ).not.toBeNull();
     });
 
@@ -6887,7 +6893,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -6898,15 +6904,15 @@ describe("setActorAccess", () => {
         webId,
         {
           read: false,
-        }
+        },
       );
 
       expect(
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -6915,10 +6921,10 @@ describe("setActorAccess", () => {
         controlWrite: false,
       });
       expect(getPolicyUrlAll(updatedResourceWithAcr!)).toContain(
-        "https://some.pod/resource?ext=acr#policy"
+        "https://some.pod/resource?ext=acr#policy",
       );
       expect(getAcrPolicyUrlAll(updatedResourceWithAcr!)).toContain(
-        "https://some.pod/resource?ext=acr#acrPolicy"
+        "https://some.pod/resource?ext=acr#acrPolicy",
       );
     });
 
@@ -6950,7 +6956,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -6961,15 +6967,15 @@ describe("setActorAccess", () => {
         webId,
         {
           read: false,
-        }
+        },
       );
 
       expect(
         internal_getActorAccess(
           getLocalAcpData(updatedResourceWithAcr!),
           acp.agent,
-          webId
-        )
+          webId,
+        ),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -6980,20 +6986,20 @@ describe("setActorAccess", () => {
       const acr = internal_getAcr(updatedResourceWithAcr!);
       const policy = getThing(acr, "https://some.pod/resource?ext=acr#policy")!;
       expect(getIri(policy, acp.allOf)).toBe(
-        "https://some.pod/resource?ext=acr#allOf_matcher"
+        "https://some.pod/resource?ext=acr#allOf_matcher",
       );
       expect(getIri(policy, acp.anyOf)).toBe(
-        "https://some.pod/resource?ext=acr#anyOf_matcher"
+        "https://some.pod/resource?ext=acr#anyOf_matcher",
       );
       const acrPolicy = getThing(
         acr,
-        "https://some.pod/resource?ext=acr#acrPolicy"
+        "https://some.pod/resource?ext=acr#acrPolicy",
       )!;
       expect(getIri(acrPolicy, acp.allOf)).toBe(
-        "https://some.pod/resource?ext=acr#allOf_acrMatcher"
+        "https://some.pod/resource?ext=acr#allOf_acrMatcher",
       );
       expect(getIri(acrPolicy, acp.anyOf)).toBe(
-        "https://some.pod/resource?ext=acr#anyOf_acrMatcher"
+        "https://some.pod/resource?ext=acr#anyOf_acrMatcher",
       );
     });
   });
@@ -7009,7 +7015,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -7023,11 +7029,11 @@ describe("setActorAccess", () => {
           write: true,
           controlRead: true,
           controlWrite: true,
-        }
+        },
       );
 
       expect(
-        internal_getAgentAccess(getLocalAcpData(updatedResource!), webId)
+        internal_getAgentAccess(getLocalAcpData(updatedResource!), webId),
       ).toStrictEqual({
         read: true,
         append: true,
@@ -7072,7 +7078,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -7086,11 +7092,11 @@ describe("setActorAccess", () => {
           write: false,
           controlRead: false,
           controlWrite: false,
-        }
+        },
       );
 
       expect(
-        internal_getAgentAccess(getLocalAcpData(updatedResource!), webId)
+        internal_getAgentAccess(getLocalAcpData(updatedResource!), webId),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -7112,7 +7118,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
       acpData.inaccessibleUrls = [
@@ -7125,7 +7131,7 @@ describe("setActorAccess", () => {
         webId,
         {
           read: true,
-        }
+        },
       );
 
       expect(updatedResource).toBeNull();
@@ -7152,7 +7158,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -7166,14 +7172,14 @@ describe("setActorAccess", () => {
           write: true,
           controlRead: true,
           controlWrite: true,
-        }
+        },
       );
 
       expect(
         internal_getAgentAccess(
           getLocalAcpData(updatedResource!),
-          "https://arbitrary.pod/other-profile#me"
-        )
+          "https://arbitrary.pod/other-profile#me",
+        ),
       ).toStrictEqual({
         read: true,
         append: false,
@@ -7193,7 +7199,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -7207,11 +7213,11 @@ describe("setActorAccess", () => {
           write: true,
           controlRead: true,
           controlWrite: true,
-        }
+        },
       );
 
       expect(
-        internal_getPublicAccess(getLocalAcpData(updatedResource!))
+        internal_getPublicAccess(getLocalAcpData(updatedResource!)),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -7231,7 +7237,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -7245,11 +7251,11 @@ describe("setActorAccess", () => {
           write: true,
           controlRead: true,
           controlWrite: true,
-        }
+        },
       );
 
       expect(
-        internal_getAuthenticatedAccess(getLocalAcpData(updatedResource!))
+        internal_getAuthenticatedAccess(getLocalAcpData(updatedResource!)),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -7271,7 +7277,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -7284,11 +7290,11 @@ describe("setActorAccess", () => {
           write: true,
           controlRead: true,
           controlWrite: true,
-        }
+        },
       );
 
       expect(
-        internal_getPublicAccess(getLocalAcpData(updatedResource!))
+        internal_getPublicAccess(getLocalAcpData(updatedResource!)),
       ).toStrictEqual({
         read: true,
         append: true,
@@ -7333,7 +7339,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -7346,11 +7352,11 @@ describe("setActorAccess", () => {
           write: false,
           controlRead: false,
           controlWrite: false,
-        }
+        },
       );
 
       expect(
-        internal_getPublicAccess(getLocalAcpData(updatedResource!))
+        internal_getPublicAccess(getLocalAcpData(updatedResource!)),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -7372,7 +7378,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
       acpData.inaccessibleUrls = [
@@ -7384,7 +7390,7 @@ describe("setActorAccess", () => {
         acpData,
         {
           read: true,
-        }
+        },
       );
 
       expect(updatedResource).toBeNull();
@@ -7400,7 +7406,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -7413,11 +7419,11 @@ describe("setActorAccess", () => {
           write: true,
           controlRead: true,
           controlWrite: true,
-        }
+        },
       );
 
       expect(
-        internal_getAuthenticatedAccess(getLocalAcpData(updatedResource!))
+        internal_getAuthenticatedAccess(getLocalAcpData(updatedResource!)),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -7439,7 +7445,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -7452,11 +7458,11 @@ describe("setActorAccess", () => {
           write: true,
           controlRead: true,
           controlWrite: true,
-        }
+        },
       );
 
       expect(
-        internal_getAuthenticatedAccess(getLocalAcpData(updatedResource!))
+        internal_getAuthenticatedAccess(getLocalAcpData(updatedResource!)),
       ).toStrictEqual({
         read: true,
         append: true,
@@ -7501,7 +7507,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -7514,11 +7520,11 @@ describe("setActorAccess", () => {
           write: false,
           controlRead: false,
           controlWrite: false,
-        }
+        },
       );
 
       expect(
-        internal_getAuthenticatedAccess(getLocalAcpData(updatedResource!))
+        internal_getAuthenticatedAccess(getLocalAcpData(updatedResource!)),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -7540,7 +7546,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
       acpData.inaccessibleUrls = [
@@ -7552,7 +7558,7 @@ describe("setActorAccess", () => {
         acpData,
         {
           read: true,
-        }
+        },
       );
 
       expect(updatedResource).toBeNull();
@@ -7568,7 +7574,7 @@ describe("setActorAccess", () => {
       const resourceWithAcr = mockResourceWithAcr(
         "https://some.pod/resource",
         "https://some.pod/resource?ext=acr",
-        mockSetup
+        mockSetup,
       );
       const acpData = mockAcpData(mockSetup);
 
@@ -7581,11 +7587,11 @@ describe("setActorAccess", () => {
           write: true,
           controlRead: true,
           controlWrite: true,
-        }
+        },
       );
 
       expect(
-        internal_getPublicAccess(getLocalAcpData(updatedResource!))
+        internal_getPublicAccess(getLocalAcpData(updatedResource!)),
       ).toStrictEqual({
         read: false,
         append: false,
@@ -7607,35 +7613,35 @@ describe("getPoliciesAndMatchers", () => {
     const mockResourceWithAcr = addMockAcrTo(plainResource, acr);
     let mockResourceWithExternalPolicy = addPolicyUrl(
       mockResourceWithAcr,
-      "https://some.pod/policy-resource#policy"
+      "https://some.pod/policy-resource#policy",
     );
     mockResourceWithExternalPolicy = addAcrPolicyUrl(
       mockResourceWithExternalPolicy,
-      "https://some.pod/policy-resource#policy"
+      "https://some.pod/policy-resource#policy",
     );
     mockResourceWithExternalPolicy = addAcrPolicyUrl(
       mockResourceWithExternalPolicy,
-      "https://some.pod/policy-resource#acrPolicy"
+      "https://some.pod/policy-resource#acrPolicy",
     );
     const externalPolicy = addAllOfMatcherUrl(
       createPolicy("https://some.pod/policy-resource#policy"),
-      "https://some.pod/matcher-resource#matcher"
+      "https://some.pod/matcher-resource#matcher",
     );
     const externalAcrPolicy = addAllOfMatcherUrl(
       createPolicy("https://some.pod/policy-resource#acrPolicy"),
-      "https://some.pod/matcher-resource#matcher"
+      "https://some.pod/matcher-resource#matcher",
     );
     let externalPolicyDataset = setPolicy(
       mockSolidDatasetFrom("https://some.pod/policy-resource"),
-      externalPolicy
+      externalPolicy,
     );
     externalPolicyDataset = setPolicy(externalPolicyDataset, externalAcrPolicy);
     const externalMatcher = createMatcher(
-      "https://some.pod/matcher-resource#matcher"
+      "https://some.pod/matcher-resource#matcher",
     );
     const externalMatcherDataset = setMatcher(
       mockSolidDatasetFrom("https://some.pod/matcher-resource"),
-      externalMatcher
+      externalMatcher,
     );
     jest
       .spyOn(solidDatasetModule, "getSolidDataset")
@@ -7643,7 +7649,7 @@ describe("getPoliciesAndMatchers", () => {
       .mockResolvedValueOnce(externalMatcherDataset);
 
     const acpData = await internal_getPoliciesAndMatchers(
-      mockResourceWithExternalPolicy
+      mockResourceWithExternalPolicy,
     );
 
     expect(acpData).toStrictEqual({
@@ -7656,12 +7662,12 @@ describe("getPoliciesAndMatchers", () => {
     expect(solidDatasetModule.getSolidDataset).toHaveBeenNthCalledWith(
       1,
       "https://some.pod/policy-resource",
-      expect.anything()
+      expect.anything(),
     );
     expect(solidDatasetModule.getSolidDataset).toHaveBeenNthCalledWith(
       2,
       "https://some.pod/matcher-resource",
-      expect.anything()
+      expect.anything(),
     );
   });
 
@@ -7674,22 +7680,22 @@ describe("getPoliciesAndMatchers", () => {
     const mockResourceWithAcr = addMockAcrTo(plainResource, acr);
     const mockResourceWithExternalPolicy = addPolicyUrl(
       mockResourceWithAcr,
-      "https://some.pod/policy-resource#policy"
+      "https://some.pod/policy-resource#policy",
     );
     const externalPolicy = addAllOfMatcherUrl(
       createPolicy("https://some.pod/policy-resource#policy"),
-      "https://some.pod/matcher-resource#matcher"
+      "https://some.pod/matcher-resource#matcher",
     );
     const externalPolicyDataset = setPolicy(
       mockSolidDatasetFrom("https://some.pod/policy-resource"),
-      externalPolicy
+      externalPolicy,
     );
     const externalMatcher = createMatcher(
-      "https://some.pod/matcher-resource#matcher"
+      "https://some.pod/matcher-resource#matcher",
     );
     const externalMatcherDataset = setMatcher(
       mockSolidDatasetFrom("https://some.pod/matcher-resource"),
-      externalMatcher
+      externalMatcher,
     );
     jest
       .spyOn(solidDatasetModule, "getSolidDataset")
@@ -7704,12 +7710,12 @@ describe("getPoliciesAndMatchers", () => {
     expect(solidDatasetModule.getSolidDataset).toHaveBeenNthCalledWith(
       1,
       "https://some.pod/policy-resource",
-      { fetch: mockedFetch }
+      { fetch: mockedFetch },
     );
     expect(solidDatasetModule.getSolidDataset).toHaveBeenNthCalledWith(
       2,
       "https://some.pod/matcher-resource",
-      { fetch: mockedFetch }
+      { fetch: mockedFetch },
     );
   });
 
@@ -7722,19 +7728,19 @@ describe("getPoliciesAndMatchers", () => {
     const mockResourceWithAcr = addMockAcrTo(plainResource, acr);
     let mockResourceWithExternalPolicy = addPolicyUrl(
       mockResourceWithAcr,
-      "https://some.pod/policy-resource#policy"
+      "https://some.pod/policy-resource#policy",
     );
     mockResourceWithExternalPolicy = addPolicyUrl(
       mockResourceWithExternalPolicy,
-      "https://some.pod/inaccessible-policy-resource#policy"
+      "https://some.pod/inaccessible-policy-resource#policy",
     );
     const externalPolicy = addAllOfMatcherUrl(
       createPolicy("https://some.pod/policy-resource#policy"),
-      "https://some.pod/inaccessible-matcher-resource#matcher"
+      "https://some.pod/inaccessible-matcher-resource#matcher",
     );
     const externalPolicyDataset = setPolicy(
       mockSolidDatasetFrom("https://some.pod/policy-resource"),
-      externalPolicy
+      externalPolicy,
     );
     jest
       .spyOn(solidDatasetModule, "getSolidDataset")
@@ -7742,16 +7748,16 @@ describe("getPoliciesAndMatchers", () => {
       .mockRejectedValueOnce(
         new Response("Policy Resource not accessible to the current user", {
           status: 403,
-        })
+        }),
       )
       .mockRejectedValueOnce(
         new Response("Matcher Resource not accessible to the current user", {
           status: 403,
-        })
+        }),
       );
 
     const acpData = await internal_getPoliciesAndMatchers(
-      mockResourceWithExternalPolicy
+      mockResourceWithExternalPolicy,
     );
 
     expect(acpData).toStrictEqual({
@@ -7782,11 +7788,11 @@ function getLocalAcpData(resourceWithAcr: WithAccessibleAcr): internal_AcpData {
   const acr = internal_getAcr(resourceWithAcr);
   const acpData: internal_AcpData = {
     acrPolicies: acrPolicyUrls.map(
-      (acrPolicyUrl) => getThing(acr, acrPolicyUrl)!
+      (acrPolicyUrl) => getThing(acr, acrPolicyUrl)!,
     ),
     policies: policyUrls.map((policyUrl) => getThing(acr, policyUrl)!),
     matchers: getThingAll(acr).filter((thing) =>
-      getIriAll(thing, rdf.type).includes(acp.Matcher)
+      getIriAll(thing, rdf.type).includes(acp.Matcher),
     ),
     inaccessibleUrls: [],
   };

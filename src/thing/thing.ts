@@ -68,17 +68,17 @@ export interface GetThingOptions {
 export function getThing(
   solidDataset: SolidDataset,
   thingUrl: UrlString | Url,
-  options?: GetThingOptions
+  options?: GetThingOptions,
 ): ThingPersisted | null;
 export function getThing(
   solidDataset: SolidDataset,
   thingUrl: LocalNodeIri,
-  options?: GetThingOptions
+  options?: GetThingOptions,
 ): ThingLocal | null;
 export function getThing(
   solidDataset: SolidDataset,
   thingUrl: UrlString | Url | LocalNodeIri,
-  options?: GetThingOptions
+  options?: GetThingOptions,
 ): Thing | null;
 /**
  * Extract Quads with a given Subject from a [[SolidDataset]] into a [[Thing]].
@@ -90,7 +90,7 @@ export function getThing(
 export function getThing(
   solidDataset: SolidDataset,
   thingUrl: UrlString | Url | LocalNodeIri,
-  options: GetThingOptions = {}
+  options: GetThingOptions = {},
 ): Thing | null {
   if (!internal_isValidUrl(thingUrl)) {
     throw new ValidThingUrlExpectedError(thingUrl);
@@ -126,7 +126,7 @@ export function getThingAll(
      * Can Things local to the current dataset, and having no IRI, be returned ?
      */
     acceptBlankNodes?: boolean;
-  } = { acceptBlankNodes: false }
+  } = { acceptBlankNodes: false },
 ): Thing[] {
   const graph =
     typeof options.scope !== "undefined"
@@ -134,7 +134,7 @@ export function getThingAll(
       : "default";
   const thingsByIri = solidDataset.graphs[graph] ?? {};
   return Object.values(thingsByIri).filter(
-    (thing) => !isBlankNodeId(thing.url) || options.acceptBlankNodes
+    (thing) => !isBlankNodeId(thing.url) || options.acceptBlankNodes,
   );
 }
 
@@ -147,7 +147,7 @@ export function getThingAll(
  */
 export function setThing<Dataset extends SolidDataset>(
   solidDataset: Dataset,
-  thing: Thing
+  thing: Thing,
 ): Dataset & WithChangeLog {
   const thingIri =
     isThingLocal(thing) && hasServerResourceInfo(solidDataset)
@@ -172,14 +172,14 @@ export function setThing<Dataset extends SolidDataset>(
       ? subjectToRdfJsQuads(
           deletedThingPredicates,
           subjectNode,
-          DataFactory.defaultGraph()
+          DataFactory.defaultGraph(),
         )
       : [];
 
   const additions = subjectToRdfJsQuads(
     thing.predicates,
     subjectNode,
-    DataFactory.defaultGraph()
+    DataFactory.defaultGraph(),
   );
   return internal_addAdditionsToChangeLog(
     internal_addDeletionsToChangeLog(
@@ -187,9 +187,9 @@ export function setThing<Dataset extends SolidDataset>(
         ...solidDataset,
         graphs: updatedGraphs,
       }),
-      deletions
+      deletions,
     ),
-    additions
+    additions,
   );
 }
 
@@ -202,7 +202,7 @@ export function setThing<Dataset extends SolidDataset>(
  */
 export function removeThing<Dataset extends SolidDataset>(
   solidDataset: Dataset,
-  thing: UrlString | Url | Thing
+  thing: UrlString | Url | Thing,
 ): Dataset & WithChangeLog {
   let thingIri: IriString;
   if (isNamedNode(thing)) {
@@ -234,7 +234,7 @@ export function removeThing<Dataset extends SolidDataset>(
       ? subjectToRdfJsQuads(
           deletedThingPredicates,
           subjectNode,
-          DataFactory.defaultGraph()
+          DataFactory.defaultGraph(),
         )
       : [];
 
@@ -243,7 +243,7 @@ export function removeThing<Dataset extends SolidDataset>(
       ...solidDataset,
       graphs: updatedGraphs,
     }),
-    deletions
+    deletions,
   );
 }
 
@@ -276,7 +276,7 @@ export type CreateThingOptions =
  * @param options See [[CreateThingPersistedOptions]] for how to specify the new [[Thing]]'s URL.
  */
 export function createThing(
-  options: CreateThingPersistedOptions
+  options: CreateThingPersistedOptions,
 ): ThingPersisted;
 /**
  * Initialise a new [[Thing]] in memory.
@@ -331,14 +331,14 @@ type IsNotThingLocal<T extends Thing> = T extends ThingLocal ? never : T;
  */
 export function asUrl(thing: ThingLocal, baseUrl: UrlString): UrlString;
 export function asUrl<T extends ThingPersisted>(
-  thing: T & IsNotThingLocal<T>
+  thing: T & IsNotThingLocal<T>,
 ): UrlString;
 export function asUrl(thing: Thing, baseUrl: UrlString): UrlString;
 export function asUrl(thing: Thing, baseUrl?: UrlString): UrlString {
   if (isThingLocal(thing)) {
     if (typeof baseUrl === "undefined") {
       throw new Error(
-        "The URL of a Thing that has not been persisted cannot be determined without a base URL."
+        "The URL of a Thing that has not been persisted cannot be determined without a base URL.",
       );
     }
     return resolveLocalIri(getLocalNodeName(thing.url), baseUrl);
@@ -363,7 +363,7 @@ export function thingAsMarkdown(thing: Thing): string {
 
   if (isThingLocal(thing)) {
     thingAsMarkdown += `## Thing (no URL yet — identifier: \`#${getLocalNodeName(
-      thing.url
+      thing.url,
     )}\`)\n`;
   } else {
     thingAsMarkdown += `## Thing: ${thing.url}\n`;
@@ -392,7 +392,7 @@ export function thingAsMarkdown(thing: Thing): string {
  * @since 1.7.0
  */
 export function isThingLocal(
-  thing: ThingPersisted | ThingLocal
+  thing: ThingPersisted | ThingLocal,
 ): thing is ThingLocal {
   return isLocalNodeIri(thing.url);
 }

@@ -67,8 +67,8 @@ export function mockAcrFor(resourceUrl: UrlString): AccessControlResource {
 export function addMockAcrTo<T extends WithResourceInfo>(
   resource: T,
   accessControlResource: AccessControlResource = mockAcrFor(
-    getSourceUrl(resource)
-  )
+    getSourceUrl(resource),
+  ),
 ): T & WithAccessibleAcr {
   const resourceWithAcr: typeof resource & WithAccessibleAcr = Object.assign(
     internal_cloneResource(resource),
@@ -77,7 +77,7 @@ export function addMockAcrTo<T extends WithResourceInfo>(
         acr: accessControlResource,
         aprs: {},
       },
-    }
+    },
   );
 
   return resourceWithAcr;

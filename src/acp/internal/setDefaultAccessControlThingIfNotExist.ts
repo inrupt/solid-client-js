@@ -29,7 +29,7 @@ import { getDefaultAccessControlUrl } from "./getDefaultAccessControlUrl";
 import { setAccessControlResourceThing } from "./setAccessControlResourceThing";
 
 function getAccessControlTypeFromDefaultAccessControlName(
-  name: DefaultAccessControlName
+  name: DefaultAccessControlName,
 ): string {
   if (name.includes("Member")) {
     return ACP.memberAccessControl;
@@ -39,11 +39,11 @@ function getAccessControlTypeFromDefaultAccessControlName(
 
 /** @hidden */
 export function setDefaultAccessControlThingIfNotExist<
-  T extends WithAccessibleAcr
+  T extends WithAccessibleAcr,
 >(resource: T, name: DefaultAccessControlName): T {
   const defaultAccessControlThingUrl = getDefaultAccessControlUrl(
     resource,
-    name
+    name,
   );
   const acr = getAccessControlResource(resource);
 
@@ -59,14 +59,14 @@ export function setDefaultAccessControlThingIfNotExist<
   // Get the Default Access Control Thing or create it and return
   const accessControlUrlAll = getIriAll(
     accessControlResourceThing,
-    getAccessControlTypeFromDefaultAccessControlName(name)
+    getAccessControlTypeFromDefaultAccessControlName(name),
   );
 
   if (!accessControlUrlAll.includes(defaultAccessControlThingUrl)) {
     accessControlResourceThing = buildThing(accessControlResourceThing)
       .addUrl(
         getAccessControlTypeFromDefaultAccessControlName(name),
-        defaultAccessControlThingUrl
+        defaultAccessControlThingUrl,
       )
       .build();
 

@@ -41,7 +41,7 @@ describe("removeMemberAcrPolicyUrl()", () => {
           TEST_URL.defaultMemberAcrAccessControl,
           [[ACP.access, [TEST_URL.defaultMemberAcrAccessControlPolicy1]]],
         ],
-      ])
+      ]),
     );
 
     expect(resource.internal_acp.acr.graphs).toStrictEqual({
@@ -70,8 +70,8 @@ describe("removeMemberAcrPolicyUrl()", () => {
     expect(
       removeMemberAcrPolicyUrl(
         resource,
-        TEST_URL.defaultMemberAcrAccessControlPolicy1
-      ).internal_acp.acr.graphs
+        TEST_URL.defaultMemberAcrAccessControlPolicy1,
+      ).internal_acp.acr.graphs,
     ).toStrictEqual({
       default: {
         [TEST_URL.accessControlResource]: {
@@ -125,7 +125,7 @@ describe("removeMemberAcrPolicyUrl()", () => {
           TEST_URL.defaultMemberAcrAccessControl,
           [[ACP.access, [TEST_URL.policy1]]],
         ],
-      ])
+      ]),
     );
 
     expect(resource.internal_acp.acr.graphs).toStrictEqual({
@@ -189,7 +189,7 @@ describe("removeMemberAcrPolicyUrl()", () => {
 
     expect(
       removeMemberAcrPolicyUrl(resource, TEST_URL.policy1).internal_acp.acr
-        .graphs
+        .graphs,
     ).toStrictEqual({
       default: {
         [TEST_URL.accessControlResource]: {

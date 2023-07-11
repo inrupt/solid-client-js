@@ -37,12 +37,12 @@ describe("getAccessFor", () => {
       "https://some.resource",
       "agent",
       "https://some.pod/profile#webid",
-      options
+      options,
     );
     expect(universalModule.getAgentAccess).toHaveBeenCalledWith(
       "https://some.resource",
       "https://some.pod/profile#webid",
-      options
+      options,
     );
   });
 
@@ -54,10 +54,10 @@ describe("getAccessFor", () => {
       getAccessFor(
         "https://some.resource",
         "agent" as unknown as "public",
-        options
-      )
+        options,
+      ),
     ).rejects.toThrow(
-      "When reading Agent-specific access, the given agent cannot be left undefined."
+      "When reading Agent-specific access, the given agent cannot be left undefined.",
     );
   });
 
@@ -72,20 +72,20 @@ describe("getAccessFor", () => {
       "https://some.resource",
       "group",
       "https://some.pod/groups#group",
-      options
+      options,
     );
     expect(universalModule.getGroupAccess).toHaveBeenCalledWith(
       "https://some.resource",
       "https://some.pod/groups#group",
-      options
+      options,
     );
   });
 
   it("throws if the group has been omitted", async () => {
     await expect(
-      getAccessFor("https://some.resource", "group" as unknown as "public")
+      getAccessFor("https://some.resource", "group" as unknown as "public"),
     ).rejects.toThrow(
-      "When reading Group-specific access, the given group cannot be left undefined."
+      "When reading Group-specific access, the given group cannot be left undefined.",
     );
   });
 
@@ -94,10 +94,10 @@ describe("getAccessFor", () => {
       getAccessFor(
         "https://some.resource",
         "public",
-        "some actor" as unknown as { fetch: typeof fetch }
-      )
+        "some actor" as unknown as { fetch: typeof fetch },
+      ),
     ).rejects.toThrow(
-      "When reading public access, no actor type should be specified (here [some actor])."
+      "When reading public access, no actor type should be specified (here [some actor]).",
     );
   });
 
@@ -112,7 +112,7 @@ describe("getAccessFor", () => {
     await getAccessFor("https://some.resource", "public", options);
     expect(universalModule.getPublicAccess).toHaveBeenCalledWith(
       "https://some.resource",
-      options
+      options,
     );
   });
 
@@ -120,8 +120,8 @@ describe("getAccessFor", () => {
     await expect(
       getAccessFor(
         "https://some.resource",
-        "unknown-actor" as unknown as "public"
-      )
+        "unknown-actor" as unknown as "public",
+      ),
     ).resolves.toBeNull();
   });
 });
@@ -137,7 +137,7 @@ describe("getAccessForAll", () => {
     await getAccessForAll("https://some.resource", "agent", options);
     expect(universalModule.getAgentAccessAll).toHaveBeenCalledWith(
       "https://some.resource",
-      options
+      options,
     );
   });
 
@@ -151,7 +151,7 @@ describe("getAccessForAll", () => {
     await getAccessForAll("https://some.resource", "group", options);
     expect(universalModule.getGroupAccessAll).toHaveBeenCalledWith(
       "https://some.resource",
-      options
+      options,
     );
   });
 
@@ -159,8 +159,8 @@ describe("getAccessForAll", () => {
     await expect(
       getAccessForAll(
         "https://some.resource",
-        "some actor" as unknown as "agent"
-      )
+        "some actor" as unknown as "agent",
+      ),
     ).resolves.toBeNull();
   });
 });
@@ -180,7 +180,7 @@ describe("setAccessFor", () => {
         read: true,
       },
       "https://some.pod/profile#webid",
-      options
+      options,
     );
     expect(universalModule.setAgentAccess).toHaveBeenCalledWith(
       "https://some.resource",
@@ -188,7 +188,7 @@ describe("setAccessFor", () => {
       {
         read: true,
       },
-      options
+      options,
     );
   });
 
@@ -196,9 +196,9 @@ describe("setAccessFor", () => {
     await expect(
       setAccessFor("https://some.resource", "agent" as unknown as "public", {
         read: true,
-      })
+      }),
     ).rejects.toThrow(
-      "When writing Agent-specific access, the given agent cannot be left undefined."
+      "When writing Agent-specific access, the given agent cannot be left undefined.",
     );
   });
 
@@ -216,7 +216,7 @@ describe("setAccessFor", () => {
         read: true,
       },
       "https://some.pod/groups#group",
-      options
+      options,
     );
     expect(universalModule.setGroupAccess).toHaveBeenCalledWith(
       "https://some.resource",
@@ -224,7 +224,7 @@ describe("setAccessFor", () => {
       {
         read: true,
       },
-      options
+      options,
     );
   });
 
@@ -232,9 +232,9 @@ describe("setAccessFor", () => {
     await expect(
       setAccessFor("https://some.resource", "group" as unknown as "public", {
         read: true,
-      })
+      }),
     ).rejects.toThrow(
-      "When writing Group-specific access, the given group cannot be left undefined."
+      "When writing Group-specific access, the given group cannot be left undefined.",
     );
   });
 
@@ -246,10 +246,10 @@ describe("setAccessFor", () => {
         {
           read: true,
         },
-        "some actor" as unknown as { fetch: typeof fetch }
-      )
+        "some actor" as unknown as { fetch: typeof fetch },
+      ),
     ).rejects.toThrow(
-      "When writing public access, no actor type should be specified (here [some actor])."
+      "When writing public access, no actor type should be specified (here [some actor]).",
     );
   });
 
@@ -267,14 +267,14 @@ describe("setAccessFor", () => {
       {
         read: true,
       },
-      options
+      options,
     );
     expect(universalModule.setPublicAccess).toHaveBeenCalledWith(
       "https://some.resource",
       {
         read: true,
       },
-      options
+      options,
     );
   });
 
@@ -285,8 +285,8 @@ describe("setAccessFor", () => {
         "unknown-actor" as unknown as "public",
         {
           read: true,
-        }
-      )
+        },
+      ),
     ).resolves.toBeNull();
   });
 });

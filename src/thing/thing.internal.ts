@@ -106,7 +106,7 @@ export function internal_throwIfNotThing(thing: Thing): void {
  */
 export function internal_addAdditionsToChangeLog<Dataset extends SolidDataset>(
   solidDataset: Dataset,
-  additions: Quad[]
+  additions: Quad[],
 ): Dataset & WithChangeLog {
   const changeLog = hasChangelog(solidDataset)
     ? solidDataset.internal_changeLog
@@ -118,7 +118,7 @@ export function internal_addAdditionsToChangeLog<Dataset extends SolidDataset>(
     .reduce(
       ([additionsAcc, deletionsAcc], addition) => {
         const existingDeletion = deletionsAcc.find((deletion) =>
-          deletion.equals(addition)
+          deletion.equals(addition),
         );
         if (typeof existingDeletion !== "undefined") {
           return [
@@ -128,7 +128,7 @@ export function internal_addAdditionsToChangeLog<Dataset extends SolidDataset>(
         }
         return [additionsAcc.concat(addition), deletionsAcc];
       },
-      [changeLog.additions, changeLog.deletions]
+      [changeLog.additions, changeLog.deletions],
     );
 
   return freeze({
@@ -146,7 +146,7 @@ export function internal_addAdditionsToChangeLog<Dataset extends SolidDataset>(
  */
 export function internal_addDeletionsToChangeLog<Dataset extends SolidDataset>(
   solidDataset: Dataset,
-  deletions: Quad[]
+  deletions: Quad[],
 ): Dataset & WithChangeLog {
   const changeLog = hasChangelog(solidDataset)
     ? solidDataset.internal_changeLog
@@ -157,7 +157,7 @@ export function internal_addDeletionsToChangeLog<Dataset extends SolidDataset>(
     .reduce(
       ([additionsAcc, deletionsAcc], deletion) => {
         const existingAddition = additionsAcc.find((addition) =>
-          addition.equals(deletion)
+          addition.equals(deletion),
         );
         if (typeof existingAddition !== "undefined") {
           return [
@@ -167,7 +167,7 @@ export function internal_addDeletionsToChangeLog<Dataset extends SolidDataset>(
         }
         return [additionsAcc, deletionsAcc.concat(deletion)];
       },
-      [changeLog.additions, changeLog.deletions]
+      [changeLog.additions, changeLog.deletions],
     );
 
   return freeze({
@@ -186,7 +186,7 @@ export function internal_addDeletionsToChangeLog<Dataset extends SolidDataset>(
  * @param solidDataset
  */
 export function internal_withChangeLog<Dataset extends SolidDataset>(
-  solidDataset: Dataset
+  solidDataset: Dataset,
 ): Dataset & WithChangeLog {
   const newSolidDataset: Dataset & WithChangeLog = hasChangelog(solidDataset)
     ? solidDataset

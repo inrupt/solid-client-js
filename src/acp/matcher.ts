@@ -83,7 +83,7 @@ function isMatcher(thing: Thing): thing is Matcher {
  */
 export function addAllOfMatcherUrl<P extends Policy | ResourcePolicy>(
   policy: P,
-  matcher: Matcher | Url | UrlString
+  matcher: Matcher | Url | UrlString,
 ): P {
   return addIri(policy, acp.allOf, matcher);
 }
@@ -103,7 +103,7 @@ export function addAllOfMatcherUrl<P extends Policy | ResourcePolicy>(
  */
 export function removeAllOfMatcherUrl<P extends Policy | ResourcePolicy>(
   policy: P,
-  matcher: Matcher | Url | UrlString
+  matcher: Matcher | Url | UrlString,
 ): P {
   return removeIri(policy, acp.allOf, matcher);
 }
@@ -123,7 +123,7 @@ export function removeAllOfMatcherUrl<P extends Policy | ResourcePolicy>(
  */
 export function setAllOfMatcherUrl<P extends Policy | ResourcePolicy>(
   policy: P,
-  matcher: Matcher | Url | UrlString
+  matcher: Matcher | Url | UrlString,
 ): P {
   return setIri(policy, acp.allOf, matcher);
 }
@@ -139,7 +139,7 @@ export function setAllOfMatcherUrl<P extends Policy | ResourcePolicy>(
  * @since Not released yet.
  */
 export function getAllOfMatcherUrlAll<P extends Policy | ResourcePolicy>(
-  policy: P
+  policy: P,
 ): UrlString[] {
   return getIriAll(policy, acp.allOf);
 }
@@ -162,7 +162,7 @@ export function getAllOfMatcherUrlAll<P extends Policy | ResourcePolicy>(
  */
 export function addAnyOfMatcherUrl<P extends Policy | ResourcePolicy>(
   policy: P,
-  matcher: Matcher | Url | UrlString
+  matcher: Matcher | Url | UrlString,
 ): P {
   return addIri(policy, acp.anyOf, matcher);
 }
@@ -182,7 +182,7 @@ export function addAnyOfMatcherUrl<P extends Policy | ResourcePolicy>(
  */
 export function removeAnyOfMatcherUrl<P extends Policy | ResourcePolicy>(
   policy: P,
-  matcher: Matcher | Url | UrlString
+  matcher: Matcher | Url | UrlString,
 ): P {
   return removeIri(policy, acp.anyOf, matcher);
 }
@@ -202,7 +202,7 @@ export function removeAnyOfMatcherUrl<P extends Policy | ResourcePolicy>(
  */
 export function setAnyOfMatcherUrl<P extends Policy | ResourcePolicy>(
   policy: P,
-  matcher: Matcher | Url | UrlString
+  matcher: Matcher | Url | UrlString,
 ): P {
   return setIri(policy, acp.anyOf, matcher);
 }
@@ -218,7 +218,7 @@ export function setAnyOfMatcherUrl<P extends Policy | ResourcePolicy>(
  * @since Not released yet.
  */
 export function getAnyOfMatcherUrlAll<P extends Policy | ResourcePolicy>(
-  policy: P
+  policy: P,
 ): UrlString[] {
   return getIriAll(policy, acp.anyOf);
 }
@@ -241,7 +241,7 @@ export function getAnyOfMatcherUrlAll<P extends Policy | ResourcePolicy>(
  */
 export function addNoneOfMatcherUrl<P extends Policy | ResourcePolicy>(
   policy: P,
-  matcher: Matcher | Url | UrlString
+  matcher: Matcher | Url | UrlString,
 ): P {
   return addIri(policy, acp.noneOf, matcher);
 }
@@ -262,7 +262,7 @@ export function addNoneOfMatcherUrl<P extends Policy | ResourcePolicy>(
  */
 export function removeNoneOfMatcherUrl<P extends Policy | ResourcePolicy>(
   policy: P,
-  matcher: Matcher | Url | UrlString
+  matcher: Matcher | Url | UrlString,
 ): P {
   return removeIri(policy, acp.noneOf, matcher);
 }
@@ -283,7 +283,7 @@ export function removeNoneOfMatcherUrl<P extends Policy | ResourcePolicy>(
  */
 export function setNoneOfMatcherUrl<P extends Policy | ResourcePolicy>(
   policy: P,
-  matcher: Matcher | Url | UrlString
+  matcher: Matcher | Url | UrlString,
 ): P {
   return setIri(policy, acp.noneOf, matcher);
 }
@@ -299,7 +299,7 @@ export function setNoneOfMatcherUrl<P extends Policy | ResourcePolicy>(
  * @since Not released yet.
  */
 export function getNoneOfMatcherUrlAll<P extends Policy | ResourcePolicy>(
-  policy: P
+  policy: P,
 ): UrlString[] {
   return getIriAll(policy, acp.noneOf);
 }
@@ -334,7 +334,7 @@ export function createMatcher(url: Url | UrlString): Matcher {
  */
 export function createResourceMatcherFor(
   resourceWithAcr: WithAccessibleAcr,
-  name: string
+  name: string,
 ): ResourceMatcher {
   const acr = internal_getAcr(resourceWithAcr);
   const url = new URL(getSourceUrl(acr));
@@ -358,7 +358,7 @@ export function createResourceMatcherFor(
  */
 export function getMatcher(
   matcherResource: SolidDataset,
-  url: Url | UrlString
+  url: Url | UrlString,
 ): Matcher | null {
   const foundThing = getThing(matcherResource, url);
   if (foundThing === null || !isMatcher(foundThing)) {
@@ -382,7 +382,7 @@ export function getMatcher(
  */
 export function getResourceMatcher(
   resourceWithAcr: WithAccessibleAcr,
-  name: string
+  name: string,
 ): ResourceMatcher | null {
   const acr = internal_getAcr(resourceWithAcr);
   const acrUrl = getSourceUrl(acr);
@@ -423,7 +423,7 @@ export function getMatcherAll(matcherResource: SolidDataset): Matcher[] {
  * @since Not released yet.
  */
 export function getResourceMatcherAll(
-  resourceWithAcr: WithAccessibleAcr
+  resourceWithAcr: WithAccessibleAcr,
 ): ResourceMatcher[] {
   const acr = internal_getAcr(resourceWithAcr);
   const things = getThingAll(acr);
@@ -443,7 +443,7 @@ export function getResourceMatcherAll(
  */
 export function removeMatcher<Dataset extends SolidDataset>(
   matcherResource: Dataset,
-  matcher: Url | UrlString | Matcher
+  matcher: Url | UrlString | Matcher,
 ): Dataset {
   return removeThing(matcherResource, matcher);
 }
@@ -461,7 +461,7 @@ export function removeMatcher<Dataset extends SolidDataset>(
  */
 export function removeResourceMatcher<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
-  matcher: string | Url | UrlString | ResourceMatcher
+  matcher: string | Url | UrlString | ResourceMatcher,
 ): ResourceExt {
   const acr = internal_getAcr(resourceWithAcr);
   let matcherToRemove: UrlString;
@@ -486,7 +486,7 @@ export function removeResourceMatcher<ResourceExt extends WithAccessibleAcr>(
   // Check whether the actual Matcher (i.e. with the Matcher type) exists:
   const matchingMatcher = getResourceMatcher(
     resourceWithAcr,
-    new URL(matcherToRemove).hash.substring(1)
+    new URL(matcherToRemove).hash.substring(1),
   );
   if (matchingMatcher === null) {
     // No such Matcher exists yet, so return the Resource+ACR unchanged:
@@ -512,7 +512,7 @@ export function removeResourceMatcher<ResourceExt extends WithAccessibleAcr>(
  */
 export function setMatcher<Dataset extends SolidDataset>(
   matcherResource: Dataset,
-  matcher: Matcher
+  matcher: Matcher,
 ): Dataset {
   return setThing(matcherResource, matcher);
 }
@@ -531,7 +531,7 @@ export function setMatcher<Dataset extends SolidDataset>(
  */
 export function setResourceMatcher<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
-  matcher: ResourceMatcher
+  matcher: ResourceMatcher,
 ): ResourceExt {
   const acr = internal_getAcr(resourceWithAcr);
   const updatedAcr = setThing(acr, matcher);
@@ -556,7 +556,7 @@ export function getAgentAll(matcher: Matcher): WebId[] {
     (agent: WebId) =>
       agent !== acp.PublicAgent &&
       agent !== acp.AuthenticatedAgent &&
-      agent !== acp.CreatorAgent
+      agent !== acp.CreatorAgent,
   );
 }
 
@@ -660,7 +660,7 @@ export function setPublic(matcher: Matcher): Matcher {
   // eslint-disable-next-line prefer-rest-params
   if (typeof arguments === "object" && typeof arguments[1] === "boolean") {
     throw new Error(
-      "The function `setPublic` no longer takes a second parameter. It is now used together with `removePublic` instead."
+      "The function `setPublic` no longer takes a second parameter. It is now used together with `removePublic` instead.",
     );
   }
   return addIri(matcher, acp.agent, acp.PublicAgent);
@@ -695,7 +695,7 @@ export function removePublic(matcher: Matcher): Matcher {
 export function hasAuthenticated(matcher: Matcher): boolean {
   return (
     getIriAll(matcher, acp.agent).filter(
-      (agent) => agent === acp.AuthenticatedAgent
+      (agent) => agent === acp.AuthenticatedAgent,
     ).length > 0
   );
 }
@@ -717,7 +717,7 @@ export function setAuthenticated(matcher: Matcher): Matcher {
   // eslint-disable-next-line prefer-rest-params
   if (typeof arguments === "object" && typeof arguments[1] === "boolean") {
     throw new Error(
-      "The function `setAuthenticated` no longer takes a second parameter. It is now used together with `removeAuthenticated` instead."
+      "The function `setAuthenticated` no longer takes a second parameter. It is now used together with `removeAuthenticated` instead.",
     );
   }
   return addIri(matcher, acp.agent, acp.AuthenticatedAgent);
@@ -773,7 +773,7 @@ export function setCreator(matcher: Matcher): Matcher {
   // eslint-disable-next-line prefer-rest-params
   if (typeof arguments === "object" && typeof arguments[1] === "boolean") {
     throw new Error(
-      "The function `setCreator` no longer takes a second parameter. It is now used together with `removeCreator` instead."
+      "The function `setCreator` no longer takes a second parameter. It is now used together with `removeCreator` instead.",
     );
   }
   return addIri(matcher, acp.agent, acp.CreatorAgent);
@@ -889,7 +889,7 @@ export function removeClient(matcher: Matcher, client: Url | string): Matcher {
 export function hasAnyClient(matcher: Matcher): boolean {
   return (
     getIriAll(matcher, acp.client).filter(
-      (client) => client === solid.PublicOidcClient
+      (client) => client === solid.PublicOidcClient,
     ).length > 0
   );
 }

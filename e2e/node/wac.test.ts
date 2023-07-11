@@ -100,7 +100,7 @@ describe("Authenticated end-to-end WAC", () => {
     const datasetWithAcl = await getSolidDatasetWithAcl(pod, options);
     const datasetWithoutAcl = await getSolidDatasetWithAcl(
       sessionResource,
-      options
+      options,
     );
 
     expect(hasResourceAcl(datasetWithAcl)).toBe(true);
@@ -129,7 +129,7 @@ describe("Authenticated end-to-end WAC", () => {
 
     if (!hasResourceAcl(datasetWithAcl)) {
       throw new Error(
-        `The Resource at [${pod}] does not seem to have an ACL. The end-to-end tests do expect it to have one.`
+        `The Resource at [${pod}] does not seem to have an ACL. The end-to-end tests do expect it to have one.`,
       );
     }
     const acl = getResourceAcl(datasetWithAcl);
@@ -165,11 +165,11 @@ describe("Authenticated end-to-end WAC", () => {
       setPublicAccessUniversal(
         sessionResource,
         { controlRead: true, controlWrite: false },
-        options
-      )
+        options,
+      ),
     ).rejects.toThrow(
       `When setting access for a Resource in a Pod implementing Web Access Control (i.e. [${sessionResource}]), ` +
-        "`controlRead` and `controlWrite` should have the same value."
+        "`controlRead` and `controlWrite` should have the same value.",
     );
   });
 });

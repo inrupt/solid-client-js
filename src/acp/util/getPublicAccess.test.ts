@@ -62,7 +62,7 @@ describe("getPublicAccess()", () => {
           ],
         ],
         [DEFAULT_DOMAIN.concat("m1"), [[ACP.agent, [ACP.PublicAgent]]]],
-      ])
+      ]),
     );
 
     expect(await getPublicAccess(resource)).toStrictEqual({

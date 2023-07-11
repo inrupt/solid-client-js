@@ -46,7 +46,7 @@ describe("getAclServerResourceInfo", () => {
   it("passes the fetch option to fetch the ACL resource info", async () => {
     await getAclServerResourceInfo(
       { internal_resourceInfo: { aclUrl: "x" } } as any,
-      { fetch: "x" } as any
+      { fetch: "x" } as any,
     );
     expect(getResourceInfo).toHaveBeenCalledTimes(1);
     expect(getResourceInfo).toHaveBeenCalledWith("x", { fetch: "x" });

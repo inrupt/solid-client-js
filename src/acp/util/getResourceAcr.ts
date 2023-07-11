@@ -37,7 +37,7 @@ import { getSourceUrl } from "../../resource/resource";
  */
 export async function getResourceAcr<T extends WithServerResourceInfo>(
   resource: T,
-  options?: DefaultOptions
+  options?: DefaultOptions,
 ): Promise<(T & WithAccessibleAcr) | null> {
   const acrUrl = await getAcrUrl(resource, options);
   if (acrUrl === null) {

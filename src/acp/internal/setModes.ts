@@ -29,7 +29,7 @@ import type { ModeType } from "./getModes";
 export function setModes<T extends ThingPersisted>(
   policy: T,
   modes: AccessModes,
-  type: ModeType
+  type: ModeType,
 ): T {
   let newPolicy = removeAll(policy, type);
 

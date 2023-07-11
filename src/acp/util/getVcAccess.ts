@@ -43,7 +43,7 @@ const DEFAULT_NO_ACCESS: AccessModes = {
 const linkExists = (
   subject: Thing,
   predicate: UrlString,
-  object: Thing
+  object: Thing,
 ): boolean => getIriAll(subject, predicate).includes(asIri(object));
 
 // TODO: It should be possible to write a `chainExists` function, taking in a chain
@@ -77,7 +77,7 @@ export function getVcAccess(resourceWithAcr: WithAccessibleAcr): AccessModes {
 
   const accessControl = getDefaultAccessControlThing(
     resourceWithAcr,
-    "defaultAccessControl"
+    "defaultAccessControl",
   );
 
   const acrThing = getAccessControlResourceThing(resourceWithAcr);

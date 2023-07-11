@@ -93,54 +93,54 @@ const ACP_ANY = DataFactory.namedNode("http://www.w3.org/ns/solid/acp#anyOf");
 const ACP_ALL = DataFactory.namedNode("http://www.w3.org/ns/solid/acp#allOf");
 const ACP_NONE = DataFactory.namedNode("http://www.w3.org/ns/solid/acp#noneOf");
 const RDF_TYPE = DataFactory.namedNode(
-  "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+  "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
 );
 const ACP_MATCHER = DataFactory.namedNode(
-  "http://www.w3.org/ns/solid/acp#Matcher"
+  "http://www.w3.org/ns/solid/acp#Matcher",
 );
 const ACP_AGENT = DataFactory.namedNode("http://www.w3.org/ns/solid/acp#agent");
 const ACP_CLIENT = DataFactory.namedNode(
-  "http://www.w3.org/ns/solid/acp#client"
+  "http://www.w3.org/ns/solid/acp#client",
 );
 const ACP_PUBLIC = DataFactory.namedNode(
-  "http://www.w3.org/ns/solid/acp#PublicAgent"
+  "http://www.w3.org/ns/solid/acp#PublicAgent",
 );
 const ACP_AUTHENTICATED = DataFactory.namedNode(
-  "http://www.w3.org/ns/solid/acp#AuthenticatedAgent"
+  "http://www.w3.org/ns/solid/acp#AuthenticatedAgent",
 );
 const ACP_CREATOR = DataFactory.namedNode(
-  "http://www.w3.org/ns/solid/acp#CreatorAgent"
+  "http://www.w3.org/ns/solid/acp#CreatorAgent",
 );
 const SOLID_PUBLIC_CLIENT = DataFactory.namedNode(
-  "http://www.w3.org/ns/solid/terms#PublicOidcClient"
+  "http://www.w3.org/ns/solid/terms#PublicOidcClient",
 );
 
 // Test data
 const MOCKED_POLICY_IRI = DataFactory.namedNode(
-  "https://some.pod/policy-resource#policy"
+  "https://some.pod/policy-resource#policy",
 );
 const MOCKED_MATCHER_IRI = DataFactory.namedNode(
-  "https://some.pod/matcher-resource#a-matcher"
+  "https://some.pod/matcher-resource#a-matcher",
 );
 const OTHER_MOCKED_MATCHER_IRI = DataFactory.namedNode(
-  "https://some.pod/matcher-resource#another-matcher"
+  "https://some.pod/matcher-resource#another-matcher",
 );
 const ALLOF_MATCHER_IRI = DataFactory.namedNode(
-  "https://some.pod/matcher-resource#allOf-matcher"
+  "https://some.pod/matcher-resource#allOf-matcher",
 );
 const ANYOF_MATCHER_IRI = DataFactory.namedNode(
-  "https://some.pod/matcher-resource#anyOf-matcher"
+  "https://some.pod/matcher-resource#anyOf-matcher",
 );
 const NONEOF_MATCHER_IRI = DataFactory.namedNode(
-  "https://some.pod/matcher-resource#noneOf-matcher"
+  "https://some.pod/matcher-resource#noneOf-matcher",
 );
 const MOCK_WEBID_ME = DataFactory.namedNode("https://my.pod/profile#me");
 const MOCK_WEBID_YOU = DataFactory.namedNode("https://your.pod/profile#you");
 const MOCK_CLIENT_IDENTIFIER_1 = DataFactory.namedNode(
-  "https://my.app/registration#it"
+  "https://my.app/registration#it",
 );
 const MOCK_CLIENT_IDENTIFIER_2 = DataFactory.namedNode(
-  "https://your.app/registration#it"
+  "https://your.app/registration#it",
 );
 const MOCK_CLIENT_ID_3 = "test_string_client_id";
 const MOCK_CLIENT_ID_4 = "other_string_client_id";
@@ -148,7 +148,7 @@ const MOCK_CLIENT_ID_4 = "other_string_client_id";
 const addAllObjects = (
   thing: ThingPersisted,
   predicate: NamedNode,
-  objects: (Url | string)[]
+  objects: (Url | string)[],
 ): ThingPersisted => {
   return objects.reduce((thingAcc, object) => {
     return internal_isValidUrl(object)
@@ -160,7 +160,7 @@ const addAllObjects = (
 const addAllThingObjects = (
   thing: ThingPersisted,
   predicate: NamedNode,
-  objects: Thing[]
+  objects: Thing[],
 ): ThingPersisted => {
   return objects.reduce((thingAcc, object) => {
     return addUrl(thingAcc, predicate, object);
@@ -176,7 +176,7 @@ const mockMatcher = (
     creator?: boolean;
     clients?: (Url | string)[];
     publicClient?: boolean;
-  }
+  },
 ): Matcher => {
   let mockedMatcher = createThing({
     url: url.value,
@@ -205,7 +205,7 @@ const mockMatcher = (
 
 const mockPolicy = (
   url: NamedNode,
-  matchers?: { allOf?: Matcher[]; anyOf?: Matcher[]; noneOf?: Matcher[] }
+  matchers?: { allOf?: Matcher[]; anyOf?: Matcher[]; noneOf?: Matcher[] },
 ): Policy => {
   let mockPolicy = createThing({ url: url.value });
   if (matchers?.noneOf) {
@@ -224,7 +224,7 @@ describe("addNoneOfMatcherUrl", () => {
   it("adds the matcher in the noneOf matchers of the policy", () => {
     const myPolicy = addNoneOfMatcherUrl(
       mockPolicy(MOCKED_POLICY_IRI),
-      mockMatcher(MOCKED_MATCHER_IRI)
+      mockMatcher(MOCKED_MATCHER_IRI),
     );
     expect(getUrlAll(myPolicy, ACP_NONE)).toContain(MOCKED_MATCHER_IRI.value);
   });
@@ -235,10 +235,10 @@ describe("addNoneOfMatcherUrl", () => {
     });
     const myPolicy = addNoneOfMatcherUrl(
       mockedPolicy,
-      mockMatcher(MOCKED_MATCHER_IRI)
+      mockMatcher(MOCKED_MATCHER_IRI),
     );
     expect(getUrlAll(myPolicy, ACP_NONE)).toContain(
-      OTHER_MOCKED_MATCHER_IRI.value
+      OTHER_MOCKED_MATCHER_IRI.value,
     );
   });
 
@@ -249,7 +249,7 @@ describe("addNoneOfMatcherUrl", () => {
     });
     const myPolicy = addNoneOfMatcherUrl(
       mockedPolicy,
-      mockMatcher(NONEOF_MATCHER_IRI)
+      mockMatcher(NONEOF_MATCHER_IRI),
     );
     expect(getUrlAll(myPolicy, ACP_ALL)).toContain(ALLOF_MATCHER_IRI.value);
     expect(getUrlAll(myPolicy, ACP_ANY)).toContain(ANYOF_MATCHER_IRI.value);
@@ -259,7 +259,7 @@ describe("addNoneOfMatcherUrl", () => {
     const myPolicy = mockPolicy(MOCKED_POLICY_IRI);
     const updatedPolicy = addNoneOfMatcherUrl(
       myPolicy,
-      mockMatcher(MOCKED_MATCHER_IRI)
+      mockMatcher(MOCKED_MATCHER_IRI),
     );
     expect(myPolicy).not.toStrictEqual(updatedPolicy);
   });
@@ -269,7 +269,7 @@ describe("addAnyOfMatcherUrl", () => {
   it("adds the matcher in the anyOf matchers of the policy", () => {
     const myPolicy = addAnyOfMatcherUrl(
       mockPolicy(MOCKED_POLICY_IRI),
-      mockMatcher(MOCKED_MATCHER_IRI)
+      mockMatcher(MOCKED_MATCHER_IRI),
     );
     expect(getUrlAll(myPolicy, ACP_ANY)).toContain(MOCKED_MATCHER_IRI.value);
   });
@@ -280,10 +280,10 @@ describe("addAnyOfMatcherUrl", () => {
     });
     const myPolicy = addAnyOfMatcherUrl(
       mockedPolicy,
-      mockMatcher(MOCKED_POLICY_IRI)
+      mockMatcher(MOCKED_POLICY_IRI),
     );
     expect(getUrlAll(myPolicy, ACP_ANY)).toContain(
-      OTHER_MOCKED_MATCHER_IRI.value
+      OTHER_MOCKED_MATCHER_IRI.value,
     );
   });
 
@@ -294,7 +294,7 @@ describe("addAnyOfMatcherUrl", () => {
     });
     const myPolicy = addAnyOfMatcherUrl(
       mockedPolicy,
-      mockMatcher(ANYOF_MATCHER_IRI)
+      mockMatcher(ANYOF_MATCHER_IRI),
     );
     expect(getUrlAll(myPolicy, ACP_ALL)).toContain(ALLOF_MATCHER_IRI.value);
     expect(getUrlAll(myPolicy, ACP_NONE)).toContain(NONEOF_MATCHER_IRI.value);
@@ -304,7 +304,7 @@ describe("addAnyOfMatcherUrl", () => {
     const myPolicy = mockPolicy(MOCKED_POLICY_IRI);
     const updatedPolicy = addAnyOfMatcherUrl(
       myPolicy,
-      mockMatcher(MOCKED_MATCHER_IRI)
+      mockMatcher(MOCKED_MATCHER_IRI),
     );
     expect(myPolicy).not.toStrictEqual(updatedPolicy);
   });
@@ -314,7 +314,7 @@ describe("addAllOfMatcherUrl", () => {
   it("adds the matcher in the allOf matchers of the policy", () => {
     const myPolicy = addAllOfMatcherUrl(
       mockPolicy(MOCKED_POLICY_IRI),
-      mockMatcher(MOCKED_MATCHER_IRI)
+      mockMatcher(MOCKED_MATCHER_IRI),
     );
     expect(getUrlAll(myPolicy, ACP_ALL)).toContain(MOCKED_MATCHER_IRI.value);
   });
@@ -325,10 +325,10 @@ describe("addAllOfMatcherUrl", () => {
     });
     const myPolicy = addAllOfMatcherUrl(
       mockedPolicy,
-      mockMatcher(MOCKED_MATCHER_IRI)
+      mockMatcher(MOCKED_MATCHER_IRI),
     );
     expect(getUrlAll(myPolicy, ACP_ALL)).toContain(
-      OTHER_MOCKED_MATCHER_IRI.value
+      OTHER_MOCKED_MATCHER_IRI.value,
     );
   });
 
@@ -339,7 +339,7 @@ describe("addAllOfMatcherUrl", () => {
     });
     const myPolicy = addAllOfMatcherUrl(
       mockedPolicy,
-      mockMatcher(ANYOF_MATCHER_IRI)
+      mockMatcher(ANYOF_MATCHER_IRI),
     );
     expect(getUrlAll(myPolicy, ACP_ANY)).toContain(ANYOF_MATCHER_IRI.value);
     expect(getUrlAll(myPolicy, ACP_NONE)).toContain(NONEOF_MATCHER_IRI.value);
@@ -349,7 +349,7 @@ describe("addAllOfMatcherUrl", () => {
     const myPolicy = mockPolicy(MOCKED_POLICY_IRI);
     const updatedPolicy = addAnyOfMatcherUrl(
       myPolicy,
-      mockMatcher(MOCKED_MATCHER_IRI)
+      mockMatcher(MOCKED_MATCHER_IRI),
     );
     expect(myPolicy).not.toStrictEqual(updatedPolicy);
   });
@@ -359,7 +359,7 @@ describe("setNoneOfMatcherUrl", () => {
   it("sets the provided matchers as the noneOf matchers for the policy", () => {
     const myPolicy = setNoneOfMatcherUrl(
       mockPolicy(MOCKED_POLICY_IRI),
-      mockMatcher(MOCKED_MATCHER_IRI)
+      mockMatcher(MOCKED_MATCHER_IRI),
     );
     expect(getUrlAll(myPolicy, ACP_NONE)).toContain(MOCKED_MATCHER_IRI.value);
   });
@@ -370,10 +370,10 @@ describe("setNoneOfMatcherUrl", () => {
     });
     const myPolicy = setNoneOfMatcherUrl(
       mockedPolicy,
-      mockMatcher(MOCKED_MATCHER_IRI)
+      mockMatcher(MOCKED_MATCHER_IRI),
     );
     expect(getUrlAll(myPolicy, ACP_NONE)).not.toContain(
-      OTHER_MOCKED_MATCHER_IRI.value
+      OTHER_MOCKED_MATCHER_IRI.value,
     );
   });
 
@@ -384,7 +384,7 @@ describe("setNoneOfMatcherUrl", () => {
     });
     const myPolicy = setNoneOfMatcherUrl(
       mockedPolicy,
-      mockMatcher(NONEOF_MATCHER_IRI)
+      mockMatcher(NONEOF_MATCHER_IRI),
     );
     expect(getUrlAll(myPolicy, ACP_ALL)).toContain(ALLOF_MATCHER_IRI.value);
     expect(getUrlAll(myPolicy, ACP_ANY)).toContain(ANYOF_MATCHER_IRI.value);
@@ -394,7 +394,7 @@ describe("setNoneOfMatcherUrl", () => {
     const myPolicy = mockPolicy(MOCKED_POLICY_IRI);
     const updatedPolicy = setNoneOfMatcherUrl(
       myPolicy,
-      mockMatcher(MOCKED_MATCHER_IRI)
+      mockMatcher(MOCKED_MATCHER_IRI),
     );
     expect(myPolicy).not.toStrictEqual(updatedPolicy);
   });
@@ -404,7 +404,7 @@ describe("setAnyOfMatcherUrl", () => {
   it("sets the provided matchers as the anyOf matchers for the policy", () => {
     const myPolicy = setAnyOfMatcherUrl(
       mockPolicy(MOCKED_POLICY_IRI),
-      mockMatcher(MOCKED_MATCHER_IRI)
+      mockMatcher(MOCKED_MATCHER_IRI),
     );
     expect(getUrlAll(myPolicy, ACP_ANY)).toContain(MOCKED_MATCHER_IRI.value);
   });
@@ -415,10 +415,10 @@ describe("setAnyOfMatcherUrl", () => {
     });
     const myPolicy = setAnyOfMatcherUrl(
       mockedPolicy,
-      mockMatcher(MOCKED_MATCHER_IRI)
+      mockMatcher(MOCKED_MATCHER_IRI),
     );
     expect(getUrlAll(myPolicy, ACP_ANY)).not.toContain(
-      OTHER_MOCKED_MATCHER_IRI.value
+      OTHER_MOCKED_MATCHER_IRI.value,
     );
   });
 
@@ -429,7 +429,7 @@ describe("setAnyOfMatcherUrl", () => {
     });
     const myPolicy = setAnyOfMatcherUrl(
       mockedPolicy,
-      mockMatcher(ANYOF_MATCHER_IRI)
+      mockMatcher(ANYOF_MATCHER_IRI),
     );
     expect(getUrlAll(myPolicy, ACP_ALL)).toContain(ALLOF_MATCHER_IRI.value);
     expect(getUrlAll(myPolicy, ACP_NONE)).toContain(NONEOF_MATCHER_IRI.value);
@@ -439,7 +439,7 @@ describe("setAnyOfMatcherUrl", () => {
     const myPolicy = mockPolicy(MOCKED_POLICY_IRI);
     const updatedPolicy = setAnyOfMatcherUrl(
       myPolicy,
-      mockMatcher(MOCKED_MATCHER_IRI)
+      mockMatcher(MOCKED_MATCHER_IRI),
     );
     expect(myPolicy).not.toStrictEqual(updatedPolicy);
   });
@@ -449,7 +449,7 @@ describe("setAllOfMatcherUrl", () => {
   it("sets the provided matchers as the allOf matchers for the policy", () => {
     const myPolicy = setAllOfMatcherUrl(
       mockPolicy(MOCKED_POLICY_IRI),
-      mockMatcher(MOCKED_MATCHER_IRI)
+      mockMatcher(MOCKED_MATCHER_IRI),
     );
     expect(getUrlAll(myPolicy, ACP_ALL)).toContain(MOCKED_MATCHER_IRI.value);
   });
@@ -460,10 +460,10 @@ describe("setAllOfMatcherUrl", () => {
     });
     const myPolicy = setAllOfMatcherUrl(
       mockedPolicy,
-      mockMatcher(MOCKED_MATCHER_IRI)
+      mockMatcher(MOCKED_MATCHER_IRI),
     );
     expect(getUrlAll(myPolicy, ACP_ALL)).not.toContain(
-      OTHER_MOCKED_MATCHER_IRI.value
+      OTHER_MOCKED_MATCHER_IRI.value,
     );
   });
 
@@ -474,7 +474,7 @@ describe("setAllOfMatcherUrl", () => {
     });
     const myPolicy = setAllOfMatcherUrl(
       mockedPolicy,
-      mockMatcher(ALLOF_MATCHER_IRI)
+      mockMatcher(ALLOF_MATCHER_IRI),
     );
     expect(getUrlAll(myPolicy, ACP_ANY)).toContain(ANYOF_MATCHER_IRI.value);
     expect(getUrlAll(myPolicy, ACP_NONE)).toContain(NONEOF_MATCHER_IRI.value);
@@ -484,7 +484,7 @@ describe("setAllOfMatcherUrl", () => {
     const myPolicy = mockPolicy(MOCKED_POLICY_IRI);
     const updatedPolicy = setAllOfMatcherUrl(
       myPolicy,
-      mockMatcher(MOCKED_MATCHER_IRI)
+      mockMatcher(MOCKED_MATCHER_IRI),
     );
     expect(myPolicy).not.toStrictEqual(updatedPolicy);
   });
@@ -654,11 +654,11 @@ describe("createResourceMatcherFor", () => {
     const mockedAcr = mockAcrFor("https://some.pod/resource");
     const mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     const myMatcher = createResourceMatcherFor(
       mockedResourceWithAcr,
-      "myMatcher"
+      "myMatcher",
     );
     expect(getIri(myMatcher, RDF_TYPE)).toBe(ACP_MATCHER.value);
   });
@@ -666,11 +666,11 @@ describe("createResourceMatcherFor", () => {
     const mockedAcr = mockAcrFor("https://some.pod/resource");
     const mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     const myMatcher = createResourceMatcherFor(
       mockedResourceWithAcr,
-      "myMatcher"
+      "myMatcher",
     );
     // The matcher should only contain a type triple.
     expect(Object.keys(myMatcher.predicates)).toHaveLength(1);
@@ -691,11 +691,11 @@ describe("getMatcher", () => {
     });
     const dataset = setThing(
       createSolidDataset(),
-      setUrl(notAMatcher, RDF_TYPE, "http://example.org/ns#NotMatcherType")
+      setUrl(notAMatcher, RDF_TYPE, "http://example.org/ns#NotMatcherType"),
     );
     const result = getMatcher(
       dataset,
-      "https://my.pod/matcher-resource#not-a-matcher"
+      "https://my.pod/matcher-resource#not-a-matcher",
     );
     expect(result).toBeNull();
   });
@@ -718,7 +718,7 @@ describe("getResourceMatcher", () => {
     mockedAcr = setThing(mockedAcr, mockedMatcher);
     const mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     const result = getResourceMatcher(mockedResourceWithAcr, "matcher");
     expect(result).not.toBeNull();
@@ -732,12 +732,12 @@ describe("getResourceMatcher", () => {
     mockedMatcher = setUrl(
       mockedMatcher,
       rdf.type,
-      "http://example.org/ns#NotMatcherType"
+      "http://example.org/ns#NotMatcherType",
     );
     mockedAcr = setThing(mockedAcr, mockedMatcher);
     const mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     const result = getResourceMatcher(mockedResourceWithAcr, "matcher");
     expect(result).toBeNull();
@@ -752,7 +752,7 @@ describe("getResourceMatcher", () => {
     mockedAcr = setThing(mockedAcr, mockedMatcher);
     const mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     const result = getResourceMatcher(mockedResourceWithAcr, "other-matcher");
     expect(result).toBeNull();
@@ -782,7 +782,7 @@ describe("getResourceMatcherAll", () => {
     const mockedAcr = mockAcrFor("https://some.pod/resource");
     const mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     expect(getResourceMatcherAll(mockedResourceWithAcr)).toHaveLength(0);
   });
@@ -801,7 +801,7 @@ describe("getResourceMatcherAll", () => {
     mockedAcr = setThing(mockedAcr, mockedMatcher2);
     const mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
 
     const result = getResourceMatcherAll(mockedResourceWithAcr);
@@ -829,12 +829,12 @@ describe("removeResourceMatcher", () => {
     mockedAcr = setThing(mockedAcr, mockedMatcher);
     const mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
 
     const updatedDataset = removeResourceMatcher(
       mockedResourceWithAcr,
-      mockedMatcher
+      mockedMatcher,
     );
     expect(getResourceMatcherAll(updatedDataset)).toHaveLength(0);
   });
@@ -848,12 +848,12 @@ describe("removeResourceMatcher", () => {
     mockedAcr = setThing(mockedAcr, mockedMatcher);
     const mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
 
     const updatedDataset = removeResourceMatcher(
       mockedResourceWithAcr,
-      "matcher"
+      "matcher",
     );
     expect(getResourceMatcherAll(updatedDataset)).toHaveLength(0);
   });
@@ -867,12 +867,12 @@ describe("removeResourceMatcher", () => {
     mockedAcr = setThing(mockedAcr, mockedMatcher);
     const mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
 
     const updatedDataset = removeResourceMatcher(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#matcher`
+      `${getSourceUrl(mockedAcr)}#matcher`,
     );
     expect(getResourceMatcherAll(updatedDataset)).toHaveLength(0);
   });
@@ -886,12 +886,12 @@ describe("removeResourceMatcher", () => {
     mockedAcr = setThing(mockedAcr, mockedMatcher);
     const mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
 
     const updatedDataset = removeResourceMatcher(
       mockedResourceWithAcr,
-      DataFactory.namedNode(`${getSourceUrl(mockedAcr)}#matcher`)
+      DataFactory.namedNode(`${getSourceUrl(mockedAcr)}#matcher`),
     );
     expect(getResourceMatcherAll(updatedDataset)).toHaveLength(0);
   });
@@ -904,21 +904,21 @@ describe("removeResourceMatcher", () => {
     mockedMatcher = setUrl(
       mockedMatcher,
       rdf.type,
-      "https://example.vocab/not-a-matcher"
+      "https://example.vocab/not-a-matcher",
     );
     mockedAcr = setThing(mockedAcr, mockedMatcher);
     const mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
 
     const updatedDataset = removeResourceMatcher(
       mockedResourceWithAcr,
-      "matcher"
+      "matcher",
     );
     const updatedAcr = internal_getAcr(updatedDataset);
     expect(
-      getThing(updatedAcr, `${getSourceUrl(mockedAcr)}#matcher`)
+      getThing(updatedAcr, `${getSourceUrl(mockedAcr)}#matcher`),
     ).not.toBeNull();
   });
 });
@@ -939,7 +939,7 @@ describe("setResourceMatcher", () => {
     const mockedAcr = mockAcrFor("https://some.pod/resource");
     const mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     let mockedMatcher = createThing({
       url: `${getSourceUrl(mockedAcr)}#matcher`,
@@ -947,7 +947,7 @@ describe("setResourceMatcher", () => {
     mockedMatcher = setUrl(mockedMatcher, rdf.type, acp.Matcher);
     const updatedResource = setResourceMatcher(
       mockedResourceWithAcr,
-      mockedMatcher
+      mockedMatcher,
     );
 
     expect(getResourceMatcherAll(updatedResource)).toHaveLength(1);
@@ -1106,9 +1106,9 @@ describe("setPublic", () => {
     const matcher = mockMatcher(MOCKED_MATCHER_IRI);
     expect(
       // @ts-expect-error The type signature should warn about passing a second argument:
-      () => setPublic(matcher, true)
+      () => setPublic(matcher, true),
     ).toThrow(
-      "The function `setPublic` no longer takes a second parameter. It is now used together with `removePublic` instead."
+      "The function `setPublic` no longer takes a second parameter. It is now used together with `removePublic` instead.",
     );
   });
 });
@@ -1168,7 +1168,7 @@ describe("setAuthenticated", () => {
     const matcher = mockMatcher(MOCKED_MATCHER_IRI);
     setAuthenticated(matcher);
     expect(getUrlAll(matcher, ACP_AGENT)).not.toContain(
-      ACP_AUTHENTICATED.value
+      ACP_AUTHENTICATED.value,
     );
   });
 
@@ -1186,9 +1186,9 @@ describe("setAuthenticated", () => {
     const matcher = mockMatcher(MOCKED_MATCHER_IRI);
     expect(
       // @ts-expect-error The type signature should warn about passing a second argument:
-      () => setAuthenticated(matcher, true)
+      () => setAuthenticated(matcher, true),
     ).toThrow(
-      "The function `setAuthenticated` no longer takes a second parameter. It is now used together with `removeAuthenticated` instead."
+      "The function `setAuthenticated` no longer takes a second parameter. It is now used together with `removeAuthenticated` instead.",
     );
   });
 });
@@ -1264,9 +1264,9 @@ describe("setCreator", () => {
     const matcher = mockMatcher(MOCKED_MATCHER_IRI);
     expect(
       // @ts-expect-error The type signature should warn about passing a second argument:
-      () => setCreator(matcher, true)
+      () => setCreator(matcher, true),
     ).toThrow(
-      "The function `setCreator` no longer takes a second parameter. It is now used together with `removeCreator` instead."
+      "The function `setCreator` no longer takes a second parameter. It is now used together with `removeCreator` instead.",
     );
   });
 });
@@ -1335,7 +1335,7 @@ describe("setClient", () => {
     const matcher = mockMatcher(MOCKED_MATCHER_IRI);
     const result = setClient(matcher, MOCK_CLIENT_IDENTIFIER_1.value);
     expect(getUrlAll(result, ACP_CLIENT)).toContain(
-      MOCK_CLIENT_IDENTIFIER_1.value
+      MOCK_CLIENT_IDENTIFIER_1.value,
     );
   });
 
@@ -1345,10 +1345,10 @@ describe("setClient", () => {
     });
     const result = setClient(matcher, MOCK_CLIENT_IDENTIFIER_2.value);
     expect(getUrlAll(result, ACP_CLIENT)).toContain(
-      MOCK_CLIENT_IDENTIFIER_2.value
+      MOCK_CLIENT_IDENTIFIER_2.value,
     );
     expect(getUrlAll(result, ACP_CLIENT)).not.toContain(
-      MOCK_CLIENT_IDENTIFIER_1.value
+      MOCK_CLIENT_IDENTIFIER_1.value,
     );
   });
 
@@ -1358,10 +1358,10 @@ describe("setClient", () => {
     });
     setClient(matcher, MOCK_CLIENT_IDENTIFIER_2.value);
     expect(getUrlAll(matcher, ACP_CLIENT)).not.toContain(
-      MOCK_CLIENT_IDENTIFIER_2.value
+      MOCK_CLIENT_IDENTIFIER_2.value,
     );
     expect(getUrlAll(matcher, ACP_CLIENT)).toContain(
-      MOCK_CLIENT_IDENTIFIER_1.value
+      MOCK_CLIENT_IDENTIFIER_1.value,
     );
   });
 
@@ -1379,7 +1379,7 @@ describe("addClient", () => {
     const matcher = mockMatcher(MOCKED_MATCHER_IRI);
     const result = addClient(matcher, MOCK_CLIENT_IDENTIFIER_1.value);
     expect(getUrlAll(result, ACP_CLIENT)).toContain(
-      MOCK_CLIENT_IDENTIFIER_1.value
+      MOCK_CLIENT_IDENTIFIER_1.value,
     );
   });
 
@@ -1387,7 +1387,7 @@ describe("addClient", () => {
     const matcher = mockMatcher(MOCKED_MATCHER_IRI);
     const result = addClient(matcher, MOCK_CLIENT_ID_3);
     expect(getStringNoLocaleAll(result, ACP_CLIENT)).toContain(
-      MOCK_CLIENT_ID_3
+      MOCK_CLIENT_ID_3,
     );
   });
 
@@ -1398,10 +1398,10 @@ describe("addClient", () => {
     });
     const result = addClient(matcher, MOCK_CLIENT_IDENTIFIER_2.value);
     expect(getUrlAll(result, ACP_CLIENT)).toContain(
-      MOCK_CLIENT_IDENTIFIER_1.value
+      MOCK_CLIENT_IDENTIFIER_1.value,
     );
     expect(getUrlAll(result, ACP_CLIENT)).toContain(
-      MOCK_CLIENT_IDENTIFIER_2.value
+      MOCK_CLIENT_IDENTIFIER_2.value,
     );
     expect(getUrlAll(result, ACP_CLIENT)).toContain(SOLID_PUBLIC_CLIENT.value);
   });
@@ -1414,10 +1414,10 @@ describe("removeClient", () => {
     });
     const result = removeClient(matcher, MOCK_CLIENT_IDENTIFIER_1.value);
     expect(getUrlAll(result, ACP_CLIENT)).not.toContain(
-      MOCK_CLIENT_IDENTIFIER_1.value
+      MOCK_CLIENT_IDENTIFIER_1.value,
     );
     expect(getUrlAll(result, ACP_CLIENT)).toContain(
-      MOCK_CLIENT_IDENTIFIER_2.value
+      MOCK_CLIENT_IDENTIFIER_2.value,
     );
   });
 
@@ -1427,10 +1427,10 @@ describe("removeClient", () => {
     });
     const result = removeClient(matcher, MOCK_CLIENT_ID_3);
     expect(getStringNoLocaleAll(result, ACP_CLIENT)).not.toContain(
-      MOCK_CLIENT_ID_3
+      MOCK_CLIENT_ID_3,
     );
     expect(getStringNoLocaleAll(result, ACP_CLIENT)).toContain(
-      MOCK_CLIENT_ID_4
+      MOCK_CLIENT_ID_4,
     );
   });
 
@@ -1441,10 +1441,10 @@ describe("removeClient", () => {
     });
     const result = removeClient(matcher, MOCK_CLIENT_IDENTIFIER_2.value);
     expect(getUrlAll(result, ACP_CLIENT)).not.toContain(
-      MOCK_CLIENT_IDENTIFIER_2.value
+      MOCK_CLIENT_IDENTIFIER_2.value,
     );
     expect(getUrlAll(result, ACP_CLIENT)).toContain(
-      MOCK_CLIENT_IDENTIFIER_1.value
+      MOCK_CLIENT_IDENTIFIER_1.value,
     );
     expect(getUrlAll(result, ACP_CLIENT)).toContain(SOLID_PUBLIC_CLIENT.value);
   });
@@ -1484,7 +1484,7 @@ describe("setAnyClient", () => {
     const matcher = mockMatcher(MOCKED_MATCHER_IRI);
     setAnyClient(matcher);
     expect(getUrlAll(matcher, ACP_CLIENT)).not.toContain(
-      SOLID_PUBLIC_CLIENT.value
+      SOLID_PUBLIC_CLIENT.value,
     );
   });
 
@@ -1494,7 +1494,7 @@ describe("setAnyClient", () => {
     });
     const result = setAnyClient(matcher);
     expect(getUrlAll(result, ACP_CLIENT)).toContain(
-      MOCK_CLIENT_IDENTIFIER_1.value
+      MOCK_CLIENT_IDENTIFIER_1.value,
     );
   });
 });
@@ -1506,7 +1506,7 @@ describe("removeAnyClient", () => {
     });
     const result = removeAnyClient(matcher);
     expect(getUrlAll(result, ACP_CLIENT)).not.toContain(
-      SOLID_PUBLIC_CLIENT.value
+      SOLID_PUBLIC_CLIENT.value,
     );
   });
 
@@ -1523,7 +1523,7 @@ describe("removeAnyClient", () => {
     });
     const result = removeAnyClient(matcher);
     expect(getUrlAll(result, ACP_CLIENT)).toContain(
-      MOCK_CLIENT_IDENTIFIER_1.value
+      MOCK_CLIENT_IDENTIFIER_1.value,
     );
   });
 });
@@ -1535,7 +1535,7 @@ describe("matcherAsMarkdown", () => {
     expect(matcherAsMarkdown(matcher)).toBe(
       "## Matcher: https://some.pod/policyResource#matcher\n" +
         "\n" +
-        "<empty>\n"
+        "<empty>\n",
     );
   });
 
@@ -1561,7 +1561,7 @@ describe("matcherAsMarkdown", () => {
         "  - https://some.pod/profile#agent\n" +
         "  - https://some-other.pod/profile#agent\n" +
         "- Users of the following client applications:\n" +
-        "  - https://some.app/registration#it\n"
+        "  - https://some.app/registration#it\n",
     );
   });
 });

@@ -51,7 +51,7 @@ import {
  * @returns Access Modes granted to the public in general for the Resource, or `null` if it could not be determined (e.g. because the current user does not have Control Access to a given Resource or its Container).
  */
 export function getPublicAccess(
-  resourceInfo: WithAcl & WithServerResourceInfo
+  resourceInfo: WithAcl & WithServerResourceInfo,
 ): Access | null {
   if (hasResourceAcl(resourceInfo)) {
     return getPublicResourceAccess(resourceInfo.internal_acl.resourceAcl);
@@ -81,11 +81,11 @@ export function getPublicResourceAccess(aclDataset: AclDataset): Access {
   const allRules = internal_getAclRules(aclDataset);
   const resourceRules = internal_getResourceAclRulesForResource(
     allRules,
-    aclDataset.internal_accessTo
+    aclDataset.internal_accessTo,
   );
   const publicResourceRules = getClassAclRulesForClass(
     resourceRules,
-    foaf.Agent
+    foaf.Agent,
   );
   const publicAccessModes = publicResourceRules.map(internal_getAccess);
   return internal_combineAccessModes(publicAccessModes);
@@ -110,11 +110,11 @@ export function getPublicDefaultAccess(aclDataset: AclDataset): Access {
   const allRules = internal_getAclRules(aclDataset);
   const resourceRules = internal_getDefaultAclRulesForResource(
     allRules,
-    aclDataset.internal_accessTo
+    aclDataset.internal_accessTo,
   );
   const publicResourceRules = getClassAclRulesForClass(
     resourceRules,
-    foaf.Agent
+    foaf.Agent,
   );
   const publicAccessModes = publicResourceRules.map(internal_getAccess);
   return internal_combineAccessModes(publicAccessModes);
@@ -143,14 +143,14 @@ export function getPublicDefaultAccess(aclDataset: AclDataset): Access {
  */
 export function setPublicResourceAccess(
   aclDataset: AclDataset,
-  access: Access
+  access: Access,
 ): AclDataset & WithChangeLog {
   return internal_setActorAccess(
     aclDataset,
     access,
     acl.agentClass,
     "resource",
-    foaf.Agent
+    foaf.Agent,
   );
 }
 
@@ -177,20 +177,20 @@ export function setPublicResourceAccess(
  */
 export function setPublicDefaultAccess(
   aclDataset: AclDataset,
-  access: Access
+  access: Access,
 ): AclDataset & WithChangeLog {
   return internal_setActorAccess(
     aclDataset,
     access,
     acl.agentClass,
     "default",
-    foaf.Agent
+    foaf.Agent,
   );
 }
 
 function getClassAclRulesForClass(
   aclRules: AclRule[],
-  agentClass: IriString
+  agentClass: IriString,
 ): AclRule[] {
   return aclRules.filter((rule) => appliesToClass(rule, agentClass));
 }

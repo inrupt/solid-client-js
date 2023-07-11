@@ -43,7 +43,7 @@ describe("getMemberAccessControlUrlAll()", () => {
           DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
           [[ACP.memberAccessControl, [TEST_URL.memberAccessControl1]]],
         ],
-      ])
+      ]),
     );
 
     expect(getMemberAccessControlUrlAll(resource)).toStrictEqual([
@@ -63,7 +63,7 @@ describe("getMemberAccessControlUrlAll()", () => {
             ],
           ],
         ],
-      ])
+      ]),
     );
 
     expect(getMemberAccessControlUrlAll(resource)).toStrictEqual([

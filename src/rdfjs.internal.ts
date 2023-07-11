@@ -49,7 +49,7 @@ type QuadParseOptions = Partial<{
 export function addRdfJsQuadToDataset(
   dataset: ImmutableDataset,
   quad: RdfJs.Quad,
-  quadParseOptions: QuadParseOptions = {}
+  quadParseOptions: QuadParseOptions = {},
 ): ImmutableDataset {
   const supportedGraphTypes: Array<typeof quad.graph.termType> = [
     "NamedNode",
@@ -57,7 +57,7 @@ export function addRdfJsQuadToDataset(
   ];
   if (!supportedGraphTypes.includes(quad.graph.termType)) {
     throw new Error(
-      `Cannot parse Quads with nodes of type [${quad.graph.termType}] as their Graph node.`
+      `Cannot parse Quads with nodes of type [${quad.graph.termType}] as their Graph node.`,
     );
   }
   const graphId =
@@ -76,7 +76,7 @@ export function addRdfJsQuadToDataset(
 function addRdfJsQuadToGraph(
   graph: Graph,
   quad: RdfJs.Quad,
-  quadParseOptions: QuadParseOptions
+  quadParseOptions: QuadParseOptions,
 ): Graph {
   const supportedSubjectTypes: Array<typeof quad.subject.termType> = [
     "NamedNode",
@@ -84,7 +84,7 @@ function addRdfJsQuadToGraph(
   ];
   if (!supportedSubjectTypes.includes(quad.subject.termType)) {
     throw new Error(
-      `Cannot parse Quads with nodes of type [${quad.subject.termType}] as their Subject node.`
+      `Cannot parse Quads with nodes of type [${quad.subject.termType}] as their Subject node.`,
     );
   }
 
@@ -107,14 +107,14 @@ function addRdfJsQuadToGraph(
 function addRdfJsQuadToSubject(
   subject: Subject,
   quad: RdfJs.Quad,
-  quadParseOptions: QuadParseOptions
+  quadParseOptions: QuadParseOptions,
 ): Subject {
   return freeze({
     ...subject,
     predicates: addRdfJsQuadToPredicates(
       subject.predicates,
       quad,
-      quadParseOptions
+      quadParseOptions,
     ),
   });
 }
@@ -122,14 +122,14 @@ function addRdfJsQuadToSubject(
 function addRdfJsQuadToPredicates(
   predicates: Predicates,
   quad: RdfJs.Quad,
-  quadParseOptions: QuadParseOptions
+  quadParseOptions: QuadParseOptions,
 ): Predicates {
   const supportedPredicateTypes: Array<typeof quad.predicate.termType> = [
     "NamedNode",
   ];
   if (!supportedPredicateTypes.includes(quad.predicate.termType)) {
     throw new Error(
-      `Cannot parse Quads with nodes of type [${quad.predicate.termType}] as their Predicate node.`
+      `Cannot parse Quads with nodes of type [${quad.predicate.termType}] as their Predicate node.`,
     );
   }
   const predicateIri = quad.predicate.value;
@@ -143,7 +143,7 @@ function addRdfJsQuadToPredicates(
 function addRdfJsQuadToObjects(
   objects: Objects,
   quad: RdfJs.Quad,
-  quadParseOptions: QuadParseOptions
+  quadParseOptions: QuadParseOptions,
 ): Objects {
   if (quad.object.termType === "NamedNode") {
     const namedNodes = freeze([
@@ -191,7 +191,7 @@ function addRdfJsQuadToObjects(
   if (quad.object.termType === "BlankNode") {
     const blankNodePredicates = getPredicatesForBlankNode(
       quad.object,
-      quadParseOptions
+      quadParseOptions,
     );
     const blankNodes = freeze([
       ...(objects.blankNodes ?? []),
@@ -204,13 +204,13 @@ function addRdfJsQuadToObjects(
   }
 
   throw new Error(
-    `Objects of type [${quad.object.termType}] are not supported.`
+    `Objects of type [${quad.object.termType}] are not supported.`,
   );
 }
 
 function getPredicatesForBlankNode(
   node: RdfJs.BlankNode,
-  quadParseOptions: QuadParseOptions
+  quadParseOptions: QuadParseOptions,
 ): Predicates | BlankNodeId {
   const chainBlankNodes = quadParseOptions.chainBlankNodes ?? [];
   if (
@@ -226,7 +226,7 @@ function getPredicatesForBlankNode(
   /* istanbul ignore next: If there are chain nodes, there will always be other Quads, so the `?? []` can't be reached: */
   const quads = quadParseOptions.otherQuads ?? [];
   const quadsWithNodeAsSubject = quads.filter((quad) =>
-    quad.subject.equals(node)
+    quad.subject.equals(node),
   );
 
   // First add the Quads with regular Objects
@@ -238,7 +238,7 @@ function getPredicatesForBlankNode(
       ];
       if (!supportedPredicateTypes.includes(quad.predicate.termType)) {
         throw new Error(
-          `Cannot parse Quads with nodes of type [${quad.predicate.termType}] as their Predicate node.`
+          `Cannot parse Quads with nodes of type [${quad.predicate.termType}] as their Predicate node.`,
         );
       }
       const objects: Objects = predicatesAcc[quad.predicate.value] ?? {};
@@ -247,7 +247,7 @@ function getPredicatesForBlankNode(
         [quad.predicate.value]: addRdfJsQuadToObjects(
           objects,
           quad,
-          quadParseOptions
+          quadParseOptions,
         ),
       });
     }, {} as Predicates);
@@ -255,7 +255,7 @@ function getPredicatesForBlankNode(
   // And then also add the Quads that have another Blank Node as the Object
   // in addition to the Blank Node `node` as the Subject:
   const blankNodeObjectQuads = quadsWithNodeAsSubject.filter((quad) =>
-    isBlankNode(quad.object)
+    isBlankNode(quad.object),
   );
   return blankNodeObjectQuads.reduce((predicatesAcc, quad) => {
     const supportedPredicateTypes: Array<typeof quad.predicate.termType> = [
@@ -263,7 +263,7 @@ function getPredicatesForBlankNode(
     ];
     if (!supportedPredicateTypes.includes(quad.predicate.termType)) {
       throw new Error(
-        `Cannot parse Quads with nodes of type [${quad.predicate.termType}] as their Predicate node.`
+        `Cannot parse Quads with nodes of type [${quad.predicate.termType}] as their Predicate node.`,
       );
     }
     /* istanbul ignore next: The `?? {}` doesn't get hit; presumably it's initialised above. */
@@ -279,7 +279,7 @@ function getPredicatesForBlankNode(
           ...blankNodes,
           getPredicatesForBlankNode(
             quad.object as RdfJs.BlankNode,
-            quadParseOptions
+            quadParseOptions,
           ),
         ],
       },
@@ -310,7 +310,7 @@ export function getChainBlankNodes(quads: RdfJs.Quad[]): RdfJs.BlankNode[] {
     // to their value and using native JS comparisons, assuming every node is
     // either a Blank or a Named Node.
     return nodes.every((otherNode) =>
-      nodes.every((anotherNode) => otherNode.equals(anotherNode))
+      nodes.every((anotherNode) => otherNode.equals(anotherNode)),
     );
   }
 
@@ -331,7 +331,7 @@ export function getChainBlankNodes(quads: RdfJs.Quad[]): RdfJs.BlankNode[] {
       // ....removing those Blank Nodes that are part of a cycle...
       if (
         cycleBlankNodes.some((cycleBlankNode) =>
-          cycleBlankNode.equals(blankNode)
+          cycleBlankNode.equals(blankNode),
         )
       ) {
         return false;
@@ -353,7 +353,7 @@ export function getChainBlankNodes(quads: RdfJs.Quad[]): RdfJs.BlankNode[] {
 
 export function toRdfJsQuads(
   dataset: ImmutableDataset,
-  options: ToRdfJsOptions = {}
+  options: ToRdfJsOptions = {},
 ): RdfJs.Quad[] {
   const quads: RdfJs.Quad[] = [];
   const dataFactory = options.dataFactory ?? RdfJsDataFactory;
@@ -371,7 +371,7 @@ export function toRdfJsQuads(
         ? dataFactory.blankNode(getBlankNodeValue(subjectIri))
         : dataFactory.namedNode(subjectIri);
       quads.push(
-        ...subjectToRdfJsQuads(predicates, subjectNode, graphNode, options)
+        ...subjectToRdfJsQuads(predicates, subjectNode, graphNode, options),
       );
     });
   });
@@ -383,7 +383,7 @@ export function subjectToRdfJsQuads(
   predicates: Predicates,
   subjectNode: RdfJs.NamedNode | RdfJs.BlankNode,
   graphNode: RdfJs.NamedNode | RdfJs.DefaultGraph,
-  options: ToRdfJsOptions = {}
+  options: ToRdfJsOptions = {},
 ): RdfJs.Quad[] {
   const quads: RdfJs.Quad[] = [];
   const dataFactory = options.dataFactory ?? RdfJsDataFactory;
@@ -406,8 +406,8 @@ export function subjectToRdfJsQuads(
             subjectNode,
             predicateNode,
             literalNode,
-            graphNode
-          ) as RdfJs.Quad
+            graphNode,
+          ) as RdfJs.Quad,
         );
       });
     });
@@ -422,8 +422,8 @@ export function subjectToRdfJsQuads(
             subjectNode,
             predicateNode,
             langStringNode,
-            graphNode
-          ) as RdfJs.Quad
+            graphNode,
+          ) as RdfJs.Quad,
         );
       });
     });
@@ -435,23 +435,23 @@ export function subjectToRdfJsQuads(
           subjectNode,
           predicateNode,
           node,
-          graphNode
-        ) as RdfJs.Quad
+          graphNode,
+        ) as RdfJs.Quad,
       );
     });
 
     blankNodes.forEach((blankNodeIdOrPredicates) => {
       if (isBlankNodeId(blankNodeIdOrPredicates)) {
         const blankNode = dataFactory.blankNode(
-          getBlankNodeValue(blankNodeIdOrPredicates)
+          getBlankNodeValue(blankNodeIdOrPredicates),
         );
         quads.push(
           dataFactory.quad(
             subjectNode,
             predicateNode,
             blankNode,
-            graphNode
-          ) as RdfJs.Quad
+            graphNode,
+          ) as RdfJs.Quad,
         );
       } else {
         const node = dataFactory.blankNode();
@@ -459,12 +459,12 @@ export function subjectToRdfJsQuads(
           subjectNode,
           predicateNode,
           node,
-          graphNode
+          graphNode,
         ) as RdfJs.Quad;
         const blankNodeSubjectQuads = subjectToRdfJsQuads(
           blankNodeIdOrPredicates,
           node,
-          graphNode
+          graphNode,
         );
         quads.push(blankNodeObjectQuad);
         quads.push(...blankNodeSubjectQuads);
@@ -485,13 +485,13 @@ export function subjectToRdfJsQuads(
 function getCycleBlankNodes(
   currentNode: RdfJs.BlankNode,
   quads: RdfJs.Quad[],
-  traversedBlankNodes: RdfJs.BlankNode[] = []
+  traversedBlankNodes: RdfJs.BlankNode[] = [],
 ): RdfJs.BlankNode[] {
   // If we've encountered `currentNode` before, all the Blank Nodes we've
   // encountered so far are part of a cycle. Return those.
   if (
     traversedBlankNodes.find((traversedBlankNode) =>
-      traversedBlankNode.equals(currentNode)
+      traversedBlankNode.equals(currentNode),
     ) !== undefined
   ) {
     return traversedBlankNodes;
@@ -500,7 +500,7 @@ function getCycleBlankNodes(
   // Find all Blank Nodes that are connected to `currentNode`:
   const blankNodeObjects = quads
     .filter(
-      (quad) => quad.subject.equals(currentNode) && isBlankNode(quad.object)
+      (quad) => quad.subject.equals(currentNode) && isBlankNode(quad.object),
     )
     .map((quad) => quad.object as RdfJs.BlankNode);
 
@@ -515,7 +515,7 @@ function getCycleBlankNodes(
   // Nodes connected to it, which will then take up the role of `currentNode`:
   const nextTraversedNodes = [...traversedBlankNodes, currentNode];
   const cycleBlankNodeArrays = blankNodeObjects.map((nextNode) =>
-    getCycleBlankNodes(nextNode, quads, nextTraversedNodes)
+    getCycleBlankNodes(nextNode, quads, nextTraversedNodes),
   );
   // Collect all the cycle Blank Nodes found in those traverals,
   // then return them:

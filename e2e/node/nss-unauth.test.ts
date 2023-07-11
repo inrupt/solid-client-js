@@ -74,39 +74,39 @@ describe("End-to-end tests with pre-existing data against resources in an NSS se
     const dataset = await getSolidDataset(`${rootContainer}lit-pod-test.ttl`);
     const existingThing = getThing(
       dataset,
-      `${rootContainer}lit-pod-test.ttl#thing1`
+      `${rootContainer}lit-pod-test.ttl#thing1`,
     );
 
     if (existingThing === null) {
       throw new Error(
-        `The test data did not look like we expected it to. Check whether [${rootContainer}lit-pod-test.ttl#thing1] exists.`
+        `The test data did not look like we expected it to. Check whether [${rootContainer}lit-pod-test.ttl#thing1] exists.`,
       );
     }
 
     expect(getStringNoLocale(existingThing, foaf.name)).toBe(
-      "Thing for first end-to-end test"
+      "Thing for first end-to-end test",
     );
 
     let updatedThing = setDatetime(
       existingThing,
       schema.dateModified,
-      new Date()
+      new Date(),
     );
     updatedThing = setStringNoLocale(updatedThing, foaf.nick, randomNick);
 
     const updatedDataset = setThing(dataset, updatedThing);
     const savedDataset = await saveSolidDatasetAt(
       `${rootContainer}lit-pod-test.ttl`,
-      updatedDataset
+      updatedDataset,
     );
 
     const savedThing = getThing(
       savedDataset,
-      `${rootContainer}lit-pod-test.ttl#thing1`
+      `${rootContainer}lit-pod-test.ttl#thing1`,
     );
     expect(savedThing).not.toBeNull();
     expect(getStringNoLocale(savedThing!, foaf.name)).toBe(
-      "Thing for first end-to-end test"
+      "Thing for first end-to-end test",
     );
     expect(getStringNoLocale(savedThing!, foaf.nick)).toBe(randomNick);
   });
@@ -115,48 +115,48 @@ describe("End-to-end tests with pre-existing data against resources in an NSS se
     const dataset = await getSolidDataset(`${rootContainer}lit-pod-test.ttl`);
     const existingThing = getThing(
       dataset,
-      `${rootContainer}lit-pod-test.ttl#thing2`
+      `${rootContainer}lit-pod-test.ttl#thing2`,
     );
 
     if (existingThing === null) {
       throw new Error(
-        `The test data did not look like we expected it to. Check whether [${rootContainer}lit-pod-test.ttl#thing2] exists.`
+        `The test data did not look like we expected it to. Check whether [${rootContainer}lit-pod-test.ttl#thing2] exists.`,
       );
     }
 
     const currentValue = getBoolean(
       existingThing,
-      "https://example.com/boolean"
+      "https://example.com/boolean",
     );
     const updatedThing = setBoolean(
       existingThing,
       "https://example.com/boolean",
-      !currentValue
+      !currentValue,
     );
 
     const updatedDataset = setThing(dataset, updatedThing);
     const savedDataset = await saveSolidDatasetAt(
       `${rootContainer}lit-pod-test.ttl`,
-      updatedDataset
+      updatedDataset,
     );
 
     const savedThing = getThing(
       savedDataset,
-      `${rootContainer}lit-pod-test.ttl#thing2`
+      `${rootContainer}lit-pod-test.ttl#thing2`,
     );
 
     expect(savedThing).not.toBeNull();
     expect(getBoolean(savedThing!, "https://example.com/boolean")).toBe(
-      !currentValue
+      !currentValue,
     );
   });
 
   it("can differentiate between RDF and non-RDF Resources", async () => {
     const rdfResourceInfo = await getResourceInfoWithAcl(
-      `${rootContainer}lit-pod-resource-info-test/litdataset.ttl`
+      `${rootContainer}lit-pod-resource-info-test/litdataset.ttl`,
     );
     const nonRdfResourceInfo = await getResourceInfoWithAcl(
-      `${rootContainer}lit-pod-resource-info-test/not-a-litdataset.png`
+      `${rootContainer}lit-pod-resource-info-test/not-a-litdataset.png`,
     );
     expect(isRawData(rdfResourceInfo)).toBe(false);
     expect(isRawData(nonRdfResourceInfo)).toBe(true);
@@ -164,15 +164,15 @@ describe("End-to-end tests with pre-existing data against resources in an NSS se
 
   it("can create and remove empty Containers", async () => {
     const newContainer1 = await createContainerAt(
-      `${rootContainer}container-test/some-container/`
+      `${rootContainer}container-test/some-container/`,
     );
     const newContainer2 = await createContainerInContainer(
       "https://lit-e2e-test.inrupt.net/public/container-test/",
-      { slugSuggestion: "some-other-container" }
+      { slugSuggestion: "some-other-container" },
     );
 
     expect(getSourceUrl(newContainer1)).toBe(
-      `${rootContainer}container-test/some-container/`
+      `${rootContainer}container-test/some-container/`,
     );
 
     await deleteFile(`${rootContainer}container-test/some-container/`);
@@ -183,10 +183,10 @@ describe("End-to-end tests with pre-existing data against resources in an NSS se
     const fakeWebId = `https://example.com/fake-webid#${Date.now().toString()}${Math.random().toString()}`;
 
     const datasetWithAcl = await getSolidDatasetWithAcl(
-      `${rootContainer}lit-pod-acl-test/passthrough-container/resource-with-acl.ttl`
+      `${rootContainer}lit-pod-acl-test/passthrough-container/resource-with-acl.ttl`,
     );
     const datasetWithoutAcl = await getSolidDatasetWithAcl(
-      `${rootContainer}lit-pod-acl-test/passthrough-container/resource-without-acl.ttl`
+      `${rootContainer}lit-pod-acl-test/passthrough-container/resource-without-acl.ttl`,
     );
 
     expect(hasResourceAcl(datasetWithAcl)).toBe(true);
@@ -200,8 +200,8 @@ describe("End-to-end tests with pre-existing data against resources in an NSS se
     expect(
       getAgentAccess(
         datasetWithAcl,
-        "https://vincentt.inrupt.net/profile/card#me"
-      )
+        "https://vincentt.inrupt.net/profile/card#me",
+      ),
     ).toEqual({
       read: false,
       append: true,
@@ -211,8 +211,8 @@ describe("End-to-end tests with pre-existing data against resources in an NSS se
     expect(
       getAgentAccess(
         datasetWithoutAcl,
-        "https://vincentt.inrupt.net/profile/card#me"
-      )
+        "https://vincentt.inrupt.net/profile/card#me",
+      ),
     ).toEqual({
       read: true,
       append: false,
@@ -221,12 +221,12 @@ describe("End-to-end tests with pre-existing data against resources in an NSS se
     });
     const fallbackAclForDatasetWithoutAcl = getFallbackAcl(datasetWithoutAcl);
     expect(fallbackAclForDatasetWithoutAcl?.internal_accessTo).toBe(
-      `${rootContainer}lit-pod-acl-test/`
+      `${rootContainer}lit-pod-acl-test/`,
     );
 
     if (!hasResourceAcl(datasetWithAcl)) {
       throw new Error(
-        `The Resource at ${rootContainer}lit-pod-acl-test/passthrough-container/resource-with-acl.ttl does not seem to have an ACL. The end-to-end tests do expect it to have one.`
+        `The Resource at ${rootContainer}lit-pod-acl-test/passthrough-container/resource-with-acl.ttl does not seem to have an ACL. The end-to-end tests do expect it to have one.`,
       );
     }
     const acl = getResourceAcl(datasetWithAcl);
@@ -257,7 +257,7 @@ describe("End-to-end tests with pre-existing data against resources in an NSS se
 
   it("can copy default rules from the fallback ACL as Resource rules to a new ACL", async () => {
     const dataset = await getSolidDatasetWithAcl(
-      `${rootContainer}lit-pod-acl-initialisation-test/resource.ttl`
+      `${rootContainer}lit-pod-acl-initialisation-test/resource.ttl`,
     );
     if (
       !hasFallbackAcl(dataset) ||
@@ -265,13 +265,13 @@ describe("End-to-end tests with pre-existing data against resources in an NSS se
       hasResourceAcl(dataset)
     ) {
       throw new Error(
-        `The Resource at ${rootContainer}lit-pod-acl-initialisation-test/resource.ttl appears to not have an accessible fallback ACL, or it already has an ACL, which the end-to-end tests do not expect.`
+        `The Resource at ${rootContainer}lit-pod-acl-initialisation-test/resource.ttl appears to not have an accessible fallback ACL, or it already has an ACL, which the end-to-end tests do not expect.`,
       );
     }
     const newResourceAcl = createAclFromFallbackAcl(dataset);
     const existingFallbackAcl = getFallbackAcl(dataset);
     expect(getPublicDefaultAccess(existingFallbackAcl)).toEqual(
-      getPublicResourceAccess(newResourceAcl)
+      getPublicResourceAccess(newResourceAcl),
     );
   });
 

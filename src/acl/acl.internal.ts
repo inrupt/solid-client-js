@@ -71,7 +71,7 @@ export async function internal_fetchAcl(
   resourceInfo: WithServerResourceInfo,
   options: Partial<
     typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  > = internal_defaultFetchOptions,
 ): Promise<WithAcl["internal_acl"]> {
   if (!hasAccessibleAcl(resourceInfo)) {
     return {
@@ -109,7 +109,7 @@ export async function internal_fetchResourceAcl(
   dataset: WithServerResourceInfo,
   options: Partial<
     typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  > = internal_defaultFetchOptions,
 ): Promise<AclDataset | null> {
   if (!hasAccessibleAcl(dataset)) {
     return null;
@@ -118,7 +118,7 @@ export async function internal_fetchResourceAcl(
   try {
     const aclSolidDataset = await getSolidDataset(
       dataset.internal_resourceInfo.aclUrl,
-      options
+      options,
     );
     if (isAcr(aclSolidDataset)) {
       throw new AclIsAcrError(dataset, aclSolidDataset);
@@ -143,7 +143,7 @@ export async function internal_fetchFallbackAcl(
   resource: WithAccessibleAcl,
   options: Partial<
     typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  > = internal_defaultFetchOptions,
 ): Promise<AclDataset | null> {
   const resourceUrl = new URL(getSourceUrl(resource));
   const resourcePath = resourceUrl.pathname;
@@ -187,7 +187,7 @@ export function internal_getContainerPath(resourcePath: string): string {
 
   const containerPath = `${resourcePath.substring(
     0,
-    resourcePathWithoutTrailingSlash.lastIndexOf("/")
+    resourcePathWithoutTrailingSlash.lastIndexOf("/"),
   )}/`;
 
   return containerPath;
@@ -215,7 +215,7 @@ function isResourceAclRule(aclRule: AclRule): boolean {
 /** @internal */
 export function internal_getResourceAclRulesForResource(
   aclRules: AclRule[],
-  resource: IriString
+  resource: IriString,
 ): AclRule[] {
   return aclRules.filter((rule) => appliesToResource(rule, resource));
 }
@@ -239,7 +239,7 @@ function isDefaultAclRule(aclRule: AclRule): boolean {
 /** @internal */
 export function internal_getDefaultAclRulesForResource(
   aclRules: AclRule[],
-  resource: IriString
+  resource: IriString,
 ): AclRule[] {
   return aclRules.filter((rule) => isDefaultForResource(rule, resource));
 }
@@ -255,7 +255,7 @@ function isDefaultForResource(aclRule: AclRule, resource: IriString): boolean {
 export function internal_getAccess(rule: AclRule): Access {
   const ruleAccessModes = getIriAll(rule, acl.mode);
   const writeAccess = ruleAccessModes.includes(
-    internal_accessModeIriStrings.write
+    internal_accessModeIriStrings.write,
   );
   return writeAccess
     ? {
@@ -263,7 +263,7 @@ export function internal_getAccess(rule: AclRule): Access {
         append: true,
         write: true,
         control: ruleAccessModes.includes(
-          internal_accessModeIriStrings.control
+          internal_accessModeIriStrings.control,
         ),
       }
     : {
@@ -271,7 +271,7 @@ export function internal_getAccess(rule: AclRule): Access {
         append: ruleAccessModes.includes(internal_accessModeIriStrings.append),
         write: false,
         control: ruleAccessModes.includes(
-          internal_accessModeIriStrings.control
+          internal_accessModeIriStrings.control,
         ),
       };
 }
@@ -295,13 +295,13 @@ export function internal_combineAccessModes(modes: Access[]): Access {
             control: accumulator.control || current.control,
           };
     },
-    { read: false, append: false, write: false, control: false }
+    { read: false, append: false, write: false, control: false },
   );
 }
 
 /** @internal */
 export function internal_removeEmptyAclRules<Dataset extends AclDataset>(
-  aclDataset: Dataset
+  aclDataset: Dataset,
 ): Dataset {
   const aclRules = internal_getAclRules(aclDataset);
   const aclRulesToRemove = aclRules.filter(isEmptyAclRule);
@@ -319,7 +319,7 @@ function isEmptyAclRule(aclRule: AclRule): boolean {
     subjectToRdfJsQuads(
       aclRule.predicates,
       DataFactory.namedNode(aclRule.url),
-      DataFactory.defaultGraph()
+      DataFactory.defaultGraph(),
     ).some((quad) => !isAclQuad(quad))
   ) {
     return false;
@@ -370,7 +370,7 @@ function isAclQuad(quad: Quad): boolean {
   if (
     predicate.equals(DataFactory.namedNode(acl.mode)) &&
     Object.values(internal_accessModeIriStrings).some((mode) =>
-      object.equals(DataFactory.namedNode(mode))
+      object.equals(DataFactory.namedNode(mode)),
     )
   ) {
     return true;
@@ -412,10 +412,10 @@ type AccessModeIriString =
 export function internal_getAclRulesForIri(
   aclRules: AclRule[],
   targetIri: IriString,
-  targetType: typeof acl.agent | typeof acl.agentGroup
+  targetType: typeof acl.agent | typeof acl.agentGroup,
 ): AclRule[] {
   return aclRules.filter((rule) =>
-    getIriAll(rule, targetType).includes(targetIri)
+    getIriAll(rule, targetType).includes(targetIri),
   );
 }
 
@@ -427,7 +427,7 @@ export function internal_getAclRulesForIri(
  */
 export function internal_getAccessByIri(
   aclRules: AclRule[],
-  targetType: typeof acl.agent | typeof acl.agentGroup
+  targetType: typeof acl.agent | typeof acl.agentGroup,
 ): Record<IriString, Access> {
   const targetIriAccess: Record<IriString, Access> = {};
 
@@ -486,11 +486,11 @@ export function internal_duplicateAclRule(sourceRule: AclRule): AclRule {
   function copyIris(
     inputRule: typeof sourceRule,
     outputRule: typeof targetRule,
-    predicate: IriString
+    predicate: IriString,
   ) {
     return getIriAll(inputRule, predicate).reduce(
       (outputRule, iriTarget) => addIri(outputRule, predicate, iriTarget),
-      outputRule
+      outputRule,
     );
   }
 
@@ -515,19 +515,19 @@ export function internal_duplicateAclRule(sourceRule: AclRule): AclRule {
  */
 export function internal_setAcl<ResourceExt extends WithServerResourceInfo>(
   resource: ResourceExt,
-  acl: WithResourceAcl["internal_acl"]
+  acl: WithResourceAcl["internal_acl"],
 ): ResourceExt & WithResourceAcl;
 export function internal_setAcl<ResourceExt extends WithServerResourceInfo>(
   resource: ResourceExt,
-  acl: WithFallbackAcl["internal_acl"]
+  acl: WithFallbackAcl["internal_acl"],
 ): ResourceExt & WithFallbackAcl;
 export function internal_setAcl<ResourceExt extends WithServerResourceInfo>(
   resource: ResourceExt,
-  acl: WithAcl["internal_acl"]
+  acl: WithAcl["internal_acl"],
 ): ResourceExt & WithAcl;
 export function internal_setAcl<ResourceExt extends WithServerResourceInfo>(
   resource: ResourceExt,
-  acl: WithAcl["internal_acl"]
+  acl: WithAcl["internal_acl"],
 ): ResourceExt & WithAcl {
   return Object.assign(internal_cloneResource(resource), { internal_acl: acl });
 }
@@ -566,7 +566,7 @@ function internal_removeActorFromRule(
   actor: IriString,
   actorPredicate: SupportedActorPredicate,
   resourceIri: IriString,
-  ruleType: "resource" | "default"
+  ruleType: "resource" | "default",
 ): [AclRule, AclRule] {
   // If the existing Rule does not apply to the given Actor, we don't need to split up.
   // Without this check, we'd be creating a new rule for the given Actor (ruleForOtherTargets)
@@ -588,14 +588,14 @@ function internal_removeActorFromRule(
   ruleForOtherTargets = removeIri(
     ruleForOtherTargets,
     ruleType === "resource" ? acl.accessTo : acl.default,
-    resourceIri
+    resourceIri,
   );
   // Prevents the legacy predicate 'acl:defaultForNew' to lead to privilege escalation
   if (ruleType === "default") {
     ruleForOtherTargets = removeIri(
       ruleForOtherTargets,
       acl.defaultForNew,
-      resourceIri
+      resourceIri,
     );
   }
   // ...and only apply the new Rule to the given Actor (because the existing Rule covers the others):
@@ -636,7 +636,7 @@ export function internal_setActorAccess(
   access: Access,
   actorPredicate: SupportedActorPredicate,
   accessType: "default" | "resource",
-  actor: IriString
+  actor: IriString,
 ): AclDataset & WithChangeLog {
   // First make sure that none of the pre-existing rules in the given ACL SolidDataset
   // give the Agent access to the Resource:
@@ -652,7 +652,7 @@ export function internal_setActorAccess(
       actor,
       actorPredicate,
       aclDataset.internal_accessTo,
-      accessType
+      accessType,
     );
     filteredAcl = setThing(filteredAcl, filteredRule);
     filteredAcl = setThing(filteredAcl, remainingRule);
@@ -663,7 +663,7 @@ export function internal_setActorAccess(
   newRule = setIri(
     newRule,
     accessType === "resource" ? acl.accessTo : acl.default,
-    aclDataset.internal_accessTo
+    aclDataset.internal_accessTo,
   );
   newRule = setIri(newRule, actorPredicate, actor);
   const updatedAcl = setThing(filteredAcl, newRule);
@@ -673,7 +673,7 @@ export function internal_setActorAccess(
 }
 
 export function internal_setResourceAcl<
-  T extends WithServerResourceInfo & WithAcl
+  T extends WithServerResourceInfo & WithAcl,
 >(resource: T, acl: AclDataset): T & WithResourceAcl {
   const newAcl: WithResourceAcl["internal_acl"] = {
     resourceAcl: acl,
@@ -683,7 +683,7 @@ export function internal_setResourceAcl<
 }
 
 export function internal_getResourceAcl(
-  resource: WithServerResourceInfo & WithResourceAcl
+  resource: WithServerResourceInfo & WithResourceAcl,
 ): AclDataset {
   return resource.internal_acl.resourceAcl;
 }
@@ -695,14 +695,14 @@ export function internal_getResourceAcl(
 class AclIsAcrError extends Error {
   constructor(
     sourceResource: WithServerResourceInfo,
-    aclResource: WithServerResourceInfo
+    aclResource: WithServerResourceInfo,
   ) {
     super(
       `[${getSourceIri(
-        sourceResource
+        sourceResource,
       )}] is governed by Access Control Policies in [${getSourceIri(
-        aclResource
-      )}] rather than by Web Access Control.`
+        aclResource,
+      )}] rather than by Web Access Control.`,
     );
   }
 }

@@ -53,9 +53,9 @@ describe("getAgentUrlAll", () => {
                 ],
               ],
             ],
-          ])
-        )
-      )
+          ]),
+        ),
+      ),
     ).toStrictEqual([
       "https://example.org/x",
       "https://example.org/y",
@@ -85,9 +85,9 @@ describe("getAgentUrlAll", () => {
               "https://example.org/subject_resource_2",
               [[ACP.agent, ["https://example.org/x"]]],
             ],
-          ])
-        )
-      )
+          ]),
+        ),
+      ),
     ).toStrictEqual([
       "https://example.org/x",
       "https://example.org/y",

@@ -31,7 +31,7 @@ import type { AccessControlResource } from "../type/AccessControlResource";
  */
 export function setAcr<T extends WithAccessibleAcr>(
   resource: T,
-  acr: AccessControlResource
+  acr: AccessControlResource,
 ): T {
   return Object.assign(internal_cloneResource(resource), {
     internal_acp: {

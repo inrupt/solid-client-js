@@ -27,7 +27,7 @@ import { internal_cloneResource as cloneResource } from "../../resource/resource
 /** @hidden */
 export function setAccessControlResourceThing<T extends WithAccessibleAcr>(
   resource: T,
-  thing: ThingPersisted
+  thing: ThingPersisted,
 ): T {
   return Object.assign(cloneResource(resource), {
     internal_acp: {

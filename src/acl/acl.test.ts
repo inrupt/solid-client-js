@@ -65,8 +65,8 @@ jest.mock("../fetcher.ts", () => ({
     Promise.resolve(
       new Response(undefined, {
         headers: { Location: "https://arbitrary.pod/resource" },
-      })
-    )
+      }),
+    ),
   ),
 }));
 
@@ -90,7 +90,7 @@ describe("fetchAcl", () => {
     await internal_fetchAcl(mockResourceInfo);
 
     expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
-      "https://some.pod/resource.acl"
+      "https://some.pod/resource.acl",
     );
   });
 
@@ -128,8 +128,8 @@ describe("fetchAcl", () => {
           {
             headers,
           },
-          url as string
-        )
+          url as string,
+        ),
       );
     });
 
@@ -151,7 +151,7 @@ describe("fetchAcl", () => {
     expect(fetchedAcl).not.toBeNull();
     expect(fetchedAcl.fallbackAcl).toBeNull();
     expect(fetchedAcl.resourceAcl?.internal_resourceInfo.sourceIri).toBe(
-      "https://some.pod/resource.acl"
+      "https://some.pod/resource.acl",
     );
   });
 
@@ -167,8 +167,8 @@ describe("fetchAcl", () => {
                 "Content-Type": "text/turtle",
               },
             },
-            "https://some.pod/resource.acl"
-          )
+            "https://some.pod/resource.acl",
+          ),
         );
       }
 
@@ -181,8 +181,8 @@ describe("fetchAcl", () => {
               Link: '<resource.acl>; rel="acl"',
             },
           },
-          url as string
-        )
+          url as string,
+        ),
       );
     });
 
@@ -214,8 +214,8 @@ describe("fetchAcl", () => {
             {
               status: 404,
             },
-            "https://some.pod/resource.acl"
-          )
+            "https://some.pod/resource.acl",
+          ),
         );
       }
 
@@ -231,8 +231,8 @@ describe("fetchAcl", () => {
           {
             headers,
           },
-          url as string
-        )
+          url as string,
+        ),
       );
     });
 
@@ -253,7 +253,7 @@ describe("fetchAcl", () => {
 
     expect(fetchedAcl.resourceAcl).toBeNull();
     expect(fetchedAcl.fallbackAcl?.internal_resourceInfo.sourceIri).toBe(
-      "https://some.pod/.acl"
+      "https://some.pod/.acl",
     );
   });
 });
@@ -277,9 +277,9 @@ describe("fetchResourceAcl", () => {
           {
             headers: { "Content-Type": "text/turtle" },
           },
-          "https://some.pod/resource.acl"
-        )
-      )
+          "https://some.pod/resource.acl",
+        ),
+      ),
     );
 
     const fetchedAcl = await internal_fetchResourceAcl(sourceDataset, {
@@ -288,7 +288,7 @@ describe("fetchResourceAcl", () => {
 
     expect(fetchedAcl?.internal_accessTo).toBe("https://some.pod/resource");
     expect(fetchedAcl?.internal_resourceInfo.sourceIri).toBe(
-      "https://some.pod/resource.acl"
+      "https://some.pod/resource.acl",
     );
     expect(mockFetch.mock.calls).toHaveLength(1);
     expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource.acl");
@@ -312,7 +312,7 @@ describe("fetchResourceAcl", () => {
     await internal_fetchResourceAcl(sourceDataset);
 
     expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
-      "https://some.pod/resource.acl"
+      "https://some.pod/resource.acl",
     );
   });
 
@@ -348,9 +348,9 @@ describe("fetchResourceAcl", () => {
           {
             status: 404,
           },
-          "https://some.pod/resource.acl"
-        )
-      )
+          "https://some.pod/resource.acl",
+        ),
+      ),
     );
 
     const fetchedAcl = await internal_fetchResourceAcl(sourceDataset, {
@@ -382,16 +382,16 @@ describe("fetchResourceAcl", () => {
             Link: '<http://www.w3.org/ns/solid/acp#AccessControlResource>; rel="type"',
           },
         },
-        "https://some.pod/resource?ext=acr"
-      )
+        "https://some.pod/resource?ext=acr",
+      ),
     );
 
     await expect(
       internal_fetchResourceAcl(sourceDataset, {
         fetch: mockFetch,
-      })
+      }),
     ).rejects.toThrow(
-      "[https://some.pod/resource] is governed by Access Control Policies in [https://some.pod/resource?ext=acr] rather than by Web Access Control."
+      "[https://some.pod/resource] is governed by Access Control Policies in [https://some.pod/resource?ext=acr] rather than by Web Access Control.",
     );
   });
 
@@ -415,16 +415,16 @@ describe("fetchResourceAcl", () => {
             Link: '<https://arbitrary.vocab/type>; rel="type", <http://www.w3.org/ns/solid/acp#AccessControlResource>; rel="type"',
           },
         },
-        "https://some.pod/resource?ext=acr"
-      )
+        "https://some.pod/resource?ext=acr",
+      ),
     );
 
     await expect(
       internal_fetchResourceAcl(sourceDataset, {
         fetch: mockFetch,
-      })
+      }),
     ).rejects.toThrow(
-      "[https://some.pod/resource] is governed by Access Control Policies in [https://some.pod/resource?ext=acr] rather than by Web Access Control."
+      "[https://some.pod/resource] is governed by Access Control Policies in [https://some.pod/resource?ext=acr] rather than by Web Access Control.",
     );
   });
 });
@@ -453,9 +453,9 @@ describe("fetchFallbackAcl", () => {
               Link: '<.acl>; rel="acl"',
             },
           },
-          "https://some.pod/"
-        )
-      )
+          "https://some.pod/",
+        ),
+      ),
     );
     mockFetch.mockReturnValueOnce(
       Promise.resolve(
@@ -464,9 +464,9 @@ describe("fetchFallbackAcl", () => {
           {
             headers: { "Content-Type": "text/turtle" },
           },
-          "https://some.pod/.acl"
-        )
-      )
+          "https://some.pod/.acl",
+        ),
+      ),
     );
 
     const fetchedAcl = await internal_fetchFallbackAcl(sourceDataset, {
@@ -475,7 +475,7 @@ describe("fetchFallbackAcl", () => {
 
     expect(fetchedAcl?.internal_accessTo).toBe("https://some.pod/");
     expect(fetchedAcl?.internal_resourceInfo.sourceIri).toBe(
-      "https://some.pod/.acl"
+      "https://some.pod/.acl",
     );
     expect(mockFetch.mock.calls).toHaveLength(2);
     expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/");
@@ -526,9 +526,9 @@ describe("fetchFallbackAcl", () => {
               Link: '<.acl>; rel="acl"',
             },
           },
-          "https://some.pod/with-acl/without-acl/"
-        )
-      )
+          "https://some.pod/with-acl/without-acl/",
+        ),
+      ),
     );
     mockFetch.mockReturnValueOnce(
       Promise.resolve(
@@ -537,9 +537,9 @@ describe("fetchFallbackAcl", () => {
           {
             status: 404,
           },
-          "https://some.pod/with-acl/without-acl/.acl"
-        )
-      )
+          "https://some.pod/with-acl/without-acl/.acl",
+        ),
+      ),
     );
     mockFetch.mockReturnValueOnce(
       Promise.resolve(
@@ -550,9 +550,9 @@ describe("fetchFallbackAcl", () => {
               Link: '<.acl>; rel="acl"',
             },
           },
-          "https://some.pod/with-acl/"
-        )
-      )
+          "https://some.pod/with-acl/",
+        ),
+      ),
     );
     mockFetch.mockReturnValueOnce(
       Promise.resolve(
@@ -561,9 +561,9 @@ describe("fetchFallbackAcl", () => {
           {
             headers: { "Content-Type": "text/turtle" },
           },
-          "https://some.pod/with-acl/.acl"
-        )
-      )
+          "https://some.pod/with-acl/.acl",
+        ),
+      ),
     );
 
     const fetchedAcl = await internal_fetchFallbackAcl(sourceDataset, {
@@ -572,14 +572,14 @@ describe("fetchFallbackAcl", () => {
 
     expect(fetchedAcl?.internal_accessTo).toBe("https://some.pod/with-acl/");
     expect(fetchedAcl?.internal_resourceInfo.sourceIri).toBe(
-      "https://some.pod/with-acl/.acl"
+      "https://some.pod/with-acl/.acl",
     );
     expect(mockFetch.mock.calls).toHaveLength(4);
     expect(mockFetch.mock.calls[0][0]).toBe(
-      "https://some.pod/with-acl/without-acl/"
+      "https://some.pod/with-acl/without-acl/",
     );
     expect(mockFetch.mock.calls[1][0]).toBe(
-      "https://some.pod/with-acl/without-acl/.acl"
+      "https://some.pod/with-acl/without-acl/.acl",
     );
     expect(mockFetch.mock.calls[2][0]).toBe("https://some.pod/with-acl/");
     expect(mockFetch.mock.calls[3][0]).toBe("https://some.pod/with-acl/.acl");
@@ -610,9 +610,9 @@ describe("fetchFallbackAcl", () => {
           mockResponse(
             undefined,
             {},
-            "https://some.pod/arbitrary-parent/no-control-access/"
-          )
-        )
+            "https://some.pod/arbitrary-parent/no-control-access/",
+          ),
+        ),
       );
 
     const fetchedAcl = await internal_fetchFallbackAcl(sourceDataset, {
@@ -622,7 +622,7 @@ describe("fetchFallbackAcl", () => {
     expect(fetchedAcl).toBeNull();
     expect(mockFetch.mock.calls).toHaveLength(1);
     expect(mockFetch.mock.calls[0][0]).toBe(
-      "https://some.pod/arbitrary-parent/no-control-access/"
+      "https://some.pod/arbitrary-parent/no-control-access/",
     );
   });
 
@@ -650,9 +650,9 @@ describe("fetchFallbackAcl", () => {
               Link: '<.acl>; rel="acl"',
             },
           },
-          "https://some.pod"
-        )
-      )
+          "https://some.pod",
+        ),
+      ),
     );
     mockFetch.mockReturnValueOnce(
       Promise.resolve(
@@ -661,9 +661,9 @@ describe("fetchFallbackAcl", () => {
           {
             status: 404,
           },
-          "https://some.pod/.acl"
-        )
-      )
+          "https://some.pod/.acl",
+        ),
+      ),
     );
 
     const fetchedAcl = await internal_fetchFallbackAcl(sourceDataset, {
@@ -680,13 +680,13 @@ describe("fetchFallbackAcl", () => {
 describe("getContainerPath", () => {
   it("returns the parent if the input is a Resource path", () => {
     expect(internal_getContainerPath("/container/resource")).toBe(
-      "/container/"
+      "/container/",
     );
   });
 
   it("returns the parent if the input is a Container path", () => {
     expect(internal_getContainerPath("/container/child-container/")).toBe(
-      "/container/"
+      "/container/",
     );
   });
 
@@ -733,22 +733,22 @@ describe("getSolidDatasetWithAcl", () => {
           {
             headers,
           },
-          url as string
-        )
+          url as string,
+        ),
       );
     });
 
     const fetchedSolidDataset = await getSolidDatasetWithAcl(
       "https://some.pod/resource",
-      { fetch: mockFetch }
+      { fetch: mockFetch },
     );
 
     expect(fetchedSolidDataset.internal_resourceInfo.sourceIri).toBe(
-      "https://some.pod/resource"
+      "https://some.pod/resource",
     );
     expect(
       fetchedSolidDataset.internal_acl?.resourceAcl?.internal_resourceInfo
-        .sourceIri
+        .sourceIri,
     ).toBe("https://some.pod/resource.acl");
     expect(fetchedSolidDataset.internal_acl?.fallbackAcl).toBeNull();
     expect(mockFetch.mock.calls).toHaveLength(2);
@@ -774,23 +774,23 @@ describe("getSolidDatasetWithAcl", () => {
           {
             headers,
           },
-          url as string
-        )
+          url as string,
+        ),
       );
     });
 
     const fetchedSolidDataset = await getSolidDatasetWithAcl(
       "https://some.pod/resource",
-      { fetch: mockFetch }
+      { fetch: mockFetch },
     );
 
     expect(fetchedSolidDataset.internal_resourceInfo.sourceIri).toBe(
-      "https://some.pod/resource"
+      "https://some.pod/resource",
     );
     expect(fetchedSolidDataset.internal_acl?.resourceAcl).toBeNull();
     expect(
       fetchedSolidDataset.internal_acl?.fallbackAcl?.internal_resourceInfo
-        .sourceIri
+        .sourceIri,
     ).toBe("https://some.pod/.acl");
     expect(mockFetch.mock.calls).toHaveLength(4);
     expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
@@ -811,7 +811,7 @@ describe("getSolidDatasetWithAcl", () => {
     });
 
     expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
-      "https://some.pod/resource"
+      "https://some.pod/resource",
     );
   });
 
@@ -828,14 +828,14 @@ describe("getSolidDatasetWithAcl", () => {
               "Content-Type": "text/turtle",
             },
           },
-          "https://some.pod/resource"
-        )
-      )
+          "https://some.pod/resource",
+        ),
+      ),
     );
 
     const fetchedSolidDataset = await getSolidDatasetWithAcl(
       "https://some.pod/resource",
-      { fetch: mockFetch }
+      { fetch: mockFetch },
     );
 
     expect(mockFetch.mock.calls).toHaveLength(1);
@@ -848,8 +848,8 @@ describe("getSolidDatasetWithAcl", () => {
       .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
-          new Response("Not allowed", { status: 403, statusText: "Forbidden" })
-        )
+          new Response("Not allowed", { status: 403, statusText: "Forbidden" }),
+        ),
       );
 
     const fetchPromise = getSolidDatasetWithAcl("https://some.pod/resource", {
@@ -857,7 +857,7 @@ describe("getSolidDatasetWithAcl", () => {
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      /Fetching the Resource at \[https:\/\/some.pod\/resource\] failed: \[403\] \[Forbidden\]/
+      /Fetching the Resource at \[https:\/\/some.pod\/resource\] failed: \[403\] \[Forbidden\]/,
     );
   });
 
@@ -866,8 +866,8 @@ describe("getSolidDatasetWithAcl", () => {
       .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
-          new Response("Not found", { status: 404, statusText: "Not Found" })
-        )
+          new Response("Not found", { status: 404, statusText: "Not Found" }),
+        ),
       );
 
     const fetchPromise = getSolidDatasetWithAcl("https://some.pod/resource", {
@@ -875,7 +875,7 @@ describe("getSolidDatasetWithAcl", () => {
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      /Fetching the Resource at \[https:\/\/some.pod\/resource\] failed: \[404\] \[Not Found\]/
+      /Fetching the Resource at \[https:\/\/some.pod\/resource\] failed: \[404\] \[Not Found\]/,
     );
   });
 
@@ -885,15 +885,15 @@ describe("getSolidDatasetWithAcl", () => {
         new Response("I'm a teapot!", {
           status: 418,
           statusText: "I'm a teapot!",
-        })
-      )
+        }),
+      ),
     );
 
     const fetchPromise = getSolidDatasetWithAcl(
       "https://arbitrary.pod/resource",
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     await expect(fetchPromise).rejects.toMatchObject({
@@ -911,8 +911,8 @@ describe("getFileWithAcl", () => {
 
     fetcher.fetch.mockReturnValue(
       Promise.resolve(
-        new Response("Some data", { status: 200, statusText: "OK" })
-      )
+        new Response("Some data", { status: 200, statusText: "OK" }),
+      ),
     );
 
     await getFileWithAcl("https://some.url");
@@ -924,8 +924,8 @@ describe("getFileWithAcl", () => {
       .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
-          new Response("Some data", { status: 200, statusText: "OK" })
-        )
+          new Response("Some data", { status: 200, statusText: "OK" }),
+        ),
       );
 
     const response = await getFileWithAcl("https://some.url", {
@@ -974,15 +974,15 @@ describe("getFileWithAcl", () => {
 
     const fetchedSolidDataset = await getFileWithAcl(
       "https://some.pod/resource",
-      { fetch: mockFetch }
+      { fetch: mockFetch },
     );
 
     expect(fetchedSolidDataset.internal_resourceInfo.sourceIri).toBe(
-      "https://some.pod/resource"
+      "https://some.pod/resource",
     );
     expect(
       fetchedSolidDataset.internal_acl?.resourceAcl?.internal_resourceInfo
-        .sourceIri
+        .sourceIri,
     ).toBe("https://some.pod/resource.acl");
     expect(fetchedSolidDataset.internal_acl?.fallbackAcl).toBeNull();
     expect(mockFetch.mock.calls).toHaveLength(2);
@@ -1008,16 +1008,16 @@ describe("getFileWithAcl", () => {
 
     const fetchedSolidDataset = await getFileWithAcl(
       "https://some.pod/resource",
-      { fetch: mockFetch }
+      { fetch: mockFetch },
     );
 
     expect(fetchedSolidDataset.internal_resourceInfo.sourceIri).toBe(
-      "https://some.pod/resource"
+      "https://some.pod/resource",
     );
     expect(fetchedSolidDataset.internal_acl?.resourceAcl).toBeNull();
     expect(
       fetchedSolidDataset.internal_acl?.fallbackAcl?.internal_resourceInfo
-        .sourceIri
+        .sourceIri,
     ).toBe("https://some.pod/.acl");
     expect(mockFetch.mock.calls).toHaveLength(4);
     expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
@@ -1035,12 +1035,12 @@ describe("getFileWithAcl", () => {
       url: "https://some.pod/resource",
     };
     mockFetch.mockReturnValueOnce(
-      Promise.resolve(new Response(undefined, init))
+      Promise.resolve(new Response(undefined, init)),
     );
 
     const fetchedSolidDataset = await getFileWithAcl(
       "https://some.pod/resource",
-      { fetch: mockFetch }
+      { fetch: mockFetch },
     );
 
     expect(mockFetch.mock.calls).toHaveLength(1);
@@ -1053,8 +1053,8 @@ describe("getFileWithAcl", () => {
       .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
-          new Response("Not allowed", { status: 403, statusText: "Forbidden" })
-        )
+          new Response("Not allowed", { status: 403, statusText: "Forbidden" }),
+        ),
       );
 
     const fetchPromise = getFileWithAcl("https://arbitrary.pod/resource", {
@@ -1062,7 +1062,7 @@ describe("getFileWithAcl", () => {
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      /Fetching the File failed: \[403\] \[Forbidden\]./
+      /Fetching the File failed: \[403\] \[Forbidden\]./,
     );
   });
 
@@ -1071,8 +1071,8 @@ describe("getFileWithAcl", () => {
       .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
-          new Response("Not found", { status: 404, statusText: "Not Found" })
-        )
+          new Response("Not found", { status: 404, statusText: "Not Found" }),
+        ),
       );
 
     const fetchPromise = getFileWithAcl("https://arbitrary.pod/resource", {
@@ -1080,7 +1080,7 @@ describe("getFileWithAcl", () => {
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      /Fetching the File failed: \[404\] \[Not Found\]/
+      /Fetching the File failed: \[404\] \[Not Found\]/,
     );
   });
 
@@ -1090,8 +1090,8 @@ describe("getFileWithAcl", () => {
         new Response("I'm a teapot!", {
           status: 418,
           statusText: "I'm a teapot!",
-        })
-      )
+        }),
+      ),
     );
 
     const fetchPromise = getFileWithAcl("https://arbitrary.pod/resource", {
@@ -1109,8 +1109,8 @@ describe("getFileWithAcl", () => {
       .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
-          new Response("Some data", { status: 200, statusText: "OK" })
-        )
+          new Response("Some data", { status: 200, statusText: "OK" }),
+        ),
       );
 
     const response = await getFile("https://some.url", {
@@ -1135,15 +1135,15 @@ describe("getFileWithAcl", () => {
       .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
-          new Response(undefined, { status: 400, statusText: "Bad request" })
-        )
+          new Response(undefined, { status: 400, statusText: "Bad request" }),
+        ),
       );
 
     const response = getFile("https://some.url", {
       fetch: mockFetch,
     });
     await expect(response).rejects.toThrow(
-      "Fetching the File failed: [400] [Bad request]"
+      "Fetching the File failed: [400] [Bad request]",
     );
   });
 });
@@ -1163,22 +1163,22 @@ describe("getResourceInfoWithAcl", () => {
           {
             headers,
           },
-          url as string
-        )
+          url as string,
+        ),
       );
     });
 
     const fetchedSolidDataset = await getResourceInfoWithAcl(
       "https://some.pod/resource",
-      { fetch: mockFetch }
+      { fetch: mockFetch },
     );
 
     expect(fetchedSolidDataset.internal_resourceInfo.sourceIri).toBe(
-      "https://some.pod/resource"
+      "https://some.pod/resource",
     );
     expect(
       fetchedSolidDataset.internal_acl?.resourceAcl?.internal_resourceInfo
-        .sourceIri
+        .sourceIri,
     ).toBe("https://some.pod/resource.acl");
     expect(fetchedSolidDataset.internal_acl?.fallbackAcl).toBeNull();
     expect(mockFetch.mock.calls).toHaveLength(2);
@@ -1204,23 +1204,23 @@ describe("getResourceInfoWithAcl", () => {
           {
             headers,
           },
-          url as string
-        )
+          url as string,
+        ),
       );
     });
 
     const fetchedSolidDataset = await getResourceInfoWithAcl(
       "https://some.pod/resource",
-      { fetch: mockFetch }
+      { fetch: mockFetch },
     );
 
     expect(fetchedSolidDataset.internal_resourceInfo.sourceIri).toBe(
-      "https://some.pod/resource"
+      "https://some.pod/resource",
     );
     expect(fetchedSolidDataset.internal_acl?.resourceAcl).toBeNull();
     expect(
       fetchedSolidDataset.internal_acl?.fallbackAcl?.internal_resourceInfo
-        .sourceIri
+        .sourceIri,
     ).toBe("https://some.pod/.acl");
     expect(mockFetch.mock.calls).toHaveLength(4);
     expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
@@ -1258,14 +1258,14 @@ describe("getResourceInfoWithAcl", () => {
               Link: "",
             },
           },
-          "https://some.pod/resource"
-        )
-      )
+          "https://some.pod/resource",
+        ),
+      ),
     );
 
     const fetchedSolidDataset = await getResourceInfoWithAcl(
       "https://some.pod/resource",
-      { fetch: mockFetch }
+      { fetch: mockFetch },
     );
 
     expect(mockFetch.mock.calls).toHaveLength(1);
@@ -1282,9 +1282,9 @@ describe("getResourceInfoWithAcl", () => {
             status: 403,
             statusText: "Forbidden",
           },
-          "https://some.pod/resource"
-        )
-      )
+          "https://some.pod/resource",
+        ),
+      ),
     );
 
     const fetchPromise = getResourceInfoWithAcl("https://some.pod/resource", {
@@ -1292,7 +1292,7 @@ describe("getResourceInfoWithAcl", () => {
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      /Fetching the metadata of the Resource at \[https:\/\/some.pod\/resource\] failed: \[403\] \[Forbidden\]/
+      /Fetching the metadata of the Resource at \[https:\/\/some.pod\/resource\] failed: \[403\] \[Forbidden\]/,
     );
   });
 
@@ -1305,9 +1305,9 @@ describe("getResourceInfoWithAcl", () => {
             status: 404,
             statusText: "Not Found",
           },
-          "https://some.pod/resource"
-        )
-      )
+          "https://some.pod/resource",
+        ),
+      ),
     );
 
     const fetchPromise = getResourceInfoWithAcl("https://some.pod/resource", {
@@ -1315,7 +1315,7 @@ describe("getResourceInfoWithAcl", () => {
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      /Fetching the metadata of the Resource at \[https:\/\/some.pod\/resource\] failed: \[404\] \[Not Found\]/
+      /Fetching the metadata of the Resource at \[https:\/\/some.pod\/resource\] failed: \[404\] \[Not Found\]/,
     );
   });
 
@@ -1325,15 +1325,15 @@ describe("getResourceInfoWithAcl", () => {
         new Response("I'm a teapot!", {
           status: 418,
           statusText: "I'm a teapot!",
-        })
-      )
+        }),
+      ),
     );
 
     const fetchPromise = getResourceInfoWithAcl(
       "https://arbitrary.pod/resource",
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     await expect(fetchPromise).rejects.toMatchObject({
@@ -1347,8 +1347,8 @@ describe("getResourceInfoWithAcl", () => {
       .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
-          mockResponse(undefined, {}, "https://some.pod/resource")
-        )
+          mockResponse(undefined, {}, "https://some.pod/resource"),
+        ),
       );
 
     await getResourceInfoWithAcl("https://some.pod/resource", {
@@ -1377,7 +1377,7 @@ describe("getResourceAcl", () => {
         {
           resourceAcl: aclDataset,
           fallbackAcl: null,
-        }
+        },
       ),
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource",
@@ -1406,7 +1406,7 @@ describe("getResourceAcl", () => {
         {
           resourceAcl: aclDataset,
           fallbackAcl: null,
-        }
+        },
       ),
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource",
@@ -1435,7 +1435,7 @@ describe("getResourceAcl", () => {
         {
           resourceAcl: aclDataset,
           fallbackAcl: null,
-        }
+        },
       ),
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource",
@@ -1456,7 +1456,7 @@ describe("getResourceAcl", () => {
         {
           resourceAcl: null,
           fallbackAcl: null,
-        }
+        },
       ),
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource",
@@ -1483,7 +1483,7 @@ describe("getFallbackAcl", () => {
       {
         resourceAcl: null,
         fallbackAcl: aclDataset,
-      }
+      },
     );
     expect(getFallbackAcl(solidDataset)).toEqual(aclDataset);
   });
@@ -1494,7 +1494,7 @@ describe("getFallbackAcl", () => {
       {
         resourceAcl: null,
         fallbackAcl: null,
-      }
+      },
     );
     expect(getFallbackAcl(solidDataset)).toBeNull();
   });
@@ -1508,7 +1508,7 @@ describe("createAcl", () => {
         {
           resourceAcl: null,
           fallbackAcl: null,
-        }
+        },
       ),
       internal_resourceInfo: {
         sourceIri: "https://some.pod/container/resource",
@@ -1524,10 +1524,10 @@ describe("createAcl", () => {
 
     expect(getThingAll(resourceAcl)).toHaveLength(0);
     expect(resourceAcl.internal_accessTo).toBe(
-      "https://some.pod/container/resource"
+      "https://some.pod/container/resource",
     );
     expect(resourceAcl.internal_resourceInfo.sourceIri).toBe(
-      "https://some.pod/container/resource.acl"
+      "https://some.pod/container/resource.acl",
     );
   });
 });
@@ -1546,22 +1546,22 @@ describe("createAclFromFallbackAcl", () => {
     rule = addIri(
       rule,
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-      "http://www.w3.org/ns/auth/acl#Authorization"
+      "http://www.w3.org/ns/auth/acl#Authorization",
     );
     rule = addIri(
       rule,
       "http://www.w3.org/ns/auth/acl#default",
-      "https://arbitrary.pod/container/"
+      "https://arbitrary.pod/container/",
     );
     rule = addIri(
       rule,
       "http://www.w3.org/ns/auth/acl#agent",
-      "https://arbitrary.pod/profileDoc#webId"
+      "https://arbitrary.pod/profileDoc#webId",
     );
     rule = addIri(
       rule,
       "http://www.w3.org/ns/auth/acl#mode",
-      "http://www.w3.org/ns/auth/acl#Read"
+      "http://www.w3.org/ns/auth/acl#Read",
     );
     aclDataset = setThing(aclDataset, rule);
     const solidDataset = {
@@ -1570,7 +1570,7 @@ describe("createAclFromFallbackAcl", () => {
         {
           resourceAcl: null,
           fallbackAcl: aclDataset,
-        }
+        },
       ),
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/container/resource",
@@ -1586,16 +1586,16 @@ describe("createAclFromFallbackAcl", () => {
 
     const firstControl = getThingAll(resourceAcl)[0];
     expect(getIri(firstControl, "http://www.w3.org/ns/auth/acl#accessTo")).toBe(
-      "https://arbitrary.pod/container/resource"
+      "https://arbitrary.pod/container/resource",
     );
     expect(getIri(firstControl, "http://www.w3.org/ns/auth/acl#default")).toBe(
-      "https://arbitrary.pod/container/resource"
+      "https://arbitrary.pod/container/resource",
     );
     expect(resourceAcl.internal_accessTo).toBe(
-      "https://arbitrary.pod/container/resource"
+      "https://arbitrary.pod/container/resource",
     );
     expect(resourceAcl.internal_resourceInfo.sourceIri).toBe(
-      "https://arbitrary.pod/container/resource.acl"
+      "https://arbitrary.pod/container/resource.acl",
     );
   });
 
@@ -1612,22 +1612,22 @@ describe("createAclFromFallbackAcl", () => {
     rule = addIri(
       rule,
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-      "http://www.w3.org/ns/auth/acl#Authorization"
+      "http://www.w3.org/ns/auth/acl#Authorization",
     );
     rule = addIri(
       rule,
       "http://www.w3.org/ns/auth/acl#defaultForNew",
-      "https://arbitrary.pod/container/"
+      "https://arbitrary.pod/container/",
     );
     rule = addIri(
       rule,
       "http://www.w3.org/ns/auth/acl#agent",
-      "https://arbitrary.pod/profileDoc#webId"
+      "https://arbitrary.pod/profileDoc#webId",
     );
     rule = addIri(
       rule,
       "http://www.w3.org/ns/auth/acl#mode",
-      "http://www.w3.org/ns/auth/acl#Read"
+      "http://www.w3.org/ns/auth/acl#Read",
     );
     aclDataset = setThing(aclDataset, rule);
     const solidDataset = {
@@ -1636,7 +1636,7 @@ describe("createAclFromFallbackAcl", () => {
         {
           resourceAcl: null,
           fallbackAcl: aclDataset,
-        }
+        },
       ),
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/container/resource",
@@ -1652,16 +1652,16 @@ describe("createAclFromFallbackAcl", () => {
 
     const firstControl = getThingAll(resourceAcl)[0];
     expect(getIri(firstControl, "http://www.w3.org/ns/auth/acl#accessTo")).toBe(
-      "https://arbitrary.pod/container/resource"
+      "https://arbitrary.pod/container/resource",
     );
     expect(getIri(firstControl, "http://www.w3.org/ns/auth/acl#default")).toBe(
-      "https://arbitrary.pod/container/resource"
+      "https://arbitrary.pod/container/resource",
     );
     expect(resourceAcl.internal_accessTo).toBe(
-      "https://arbitrary.pod/container/resource"
+      "https://arbitrary.pod/container/resource",
     );
     expect(resourceAcl.internal_resourceInfo.sourceIri).toBe(
-      "https://arbitrary.pod/container/resource.acl"
+      "https://arbitrary.pod/container/resource.acl",
     );
   });
 
@@ -1678,22 +1678,22 @@ describe("createAclFromFallbackAcl", () => {
     rule = addIri(
       rule,
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-      "http://www.w3.org/ns/auth/acl#Authorization"
+      "http://www.w3.org/ns/auth/acl#Authorization",
     );
     rule = addIri(
       rule,
       "http://www.w3.org/ns/auth/acl#accessTo",
-      "https://arbitrary.pod/container/"
+      "https://arbitrary.pod/container/",
     );
     rule = addIri(
       rule,
       "http://www.w3.org/ns/auth/acl#agent",
-      "https://arbitrary.pod/profileDoc#webId"
+      "https://arbitrary.pod/profileDoc#webId",
     );
     rule = addIri(
       rule,
       "http://www.w3.org/ns/auth/acl#mode",
-      "http://www.w3.org/ns/auth/acl#Read"
+      "http://www.w3.org/ns/auth/acl#Read",
     );
     aclDataset = setThing(aclDataset, rule);
     const solidDataset = {
@@ -1702,7 +1702,7 @@ describe("createAclFromFallbackAcl", () => {
         {
           resourceAcl: null,
           fallbackAcl: aclDataset,
-        }
+        },
       ),
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/container/resource",
@@ -1735,49 +1735,49 @@ describe("getAclRules", () => {
     notARule = addIri(
       notARule,
       "https://arbitrary.vocab/predicate",
-      "https://arbitrary.pod/resource#object"
+      "https://arbitrary.pod/resource#object",
     );
     let classRule = createThing();
     classRule = addIri(
       classRule,
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-      "http://www.w3.org/ns/auth/acl#Authorization"
+      "http://www.w3.org/ns/auth/acl#Authorization",
     );
     classRule = addIri(
       classRule,
       "http://www.w3.org/ns/auth/acl#accessTo",
-      "https://arbitrary.pod/resource"
+      "https://arbitrary.pod/resource",
     );
     classRule = addIri(
       classRule,
       "http://www.w3.org/ns/auth/acl#agentClass",
-      "http://xmlns.com/foaf/0.1/Agent"
+      "http://xmlns.com/foaf/0.1/Agent",
     );
     classRule = addIri(
       classRule,
       "http://www.w3.org/ns/auth/acl#mode",
-      "http://www.w3.org/ns/auth/acl#Append"
+      "http://www.w3.org/ns/auth/acl#Append",
     );
     let agentRule = createThing();
     agentRule = addIri(
       agentRule,
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-      "http://www.w3.org/ns/auth/acl#Authorization"
+      "http://www.w3.org/ns/auth/acl#Authorization",
     );
     agentRule = addIri(
       agentRule,
       "http://www.w3.org/ns/auth/acl#accessTo",
-      "https://arbitrary.pod/resource"
+      "https://arbitrary.pod/resource",
     );
     agentRule = addIri(
       agentRule,
       "http://www.w3.org/ns/auth/acl#agent",
-      "https://arbitrary.pod/profileDoc#webId"
+      "https://arbitrary.pod/profileDoc#webId",
     );
     agentRule = addIri(
       agentRule,
       "http://www.w3.org/ns/auth/acl#mode",
-      "http://www.w3.org/ns/auth/acl#Read"
+      "http://www.w3.org/ns/auth/acl#Read",
     );
     aclDataset = setThing(aclDataset, notARule);
     aclDataset = setThing(aclDataset, classRule);
@@ -1804,27 +1804,27 @@ describe("getAclRules", () => {
     ruleWithMultipleTypes = addIri(
       ruleWithMultipleTypes,
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-      "https://arbitrary.vocab/not-an#Authorization"
+      "https://arbitrary.vocab/not-an#Authorization",
     );
     ruleWithMultipleTypes = addIri(
       ruleWithMultipleTypes,
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-      "http://www.w3.org/ns/auth/acl#Authorization"
+      "http://www.w3.org/ns/auth/acl#Authorization",
     );
     ruleWithMultipleTypes = addIri(
       ruleWithMultipleTypes,
       "http://www.w3.org/ns/auth/acl#accessTo",
-      "https://arbitrary.pod/resource"
+      "https://arbitrary.pod/resource",
     );
     ruleWithMultipleTypes = addIri(
       ruleWithMultipleTypes,
       "http://www.w3.org/ns/auth/acl#agent",
-      "https://arbitrary.pod/profileDoc#webId"
+      "https://arbitrary.pod/profileDoc#webId",
     );
     ruleWithMultipleTypes = addIri(
       ruleWithMultipleTypes,
       "http://www.w3.org/ns/auth/acl#mode",
-      "http://www.w3.org/ns/auth/acl#Append"
+      "http://www.w3.org/ns/auth/acl#Append",
     );
     aclDataset = setThing(aclDataset, ruleWithMultipleTypes);
 
@@ -1840,28 +1840,28 @@ describe("getResourceAclRules", () => {
     resourceAclRule1 = addIri(
       resourceAclRule1,
       "http://www.w3.org/ns/auth/acl#accessTo",
-      "https://arbitrary.pod/resource1"
+      "https://arbitrary.pod/resource1",
     );
 
     let defaultAclRule1 = createThing();
     defaultAclRule1 = addIri(
       defaultAclRule1,
       "http://www.w3.org/ns/auth/acl#default",
-      "https://arbitrary.pod/container1/"
+      "https://arbitrary.pod/container1/",
     );
 
     let resourceAclRule2 = createThing();
     resourceAclRule2 = addIri(
       resourceAclRule2,
       "http://www.w3.org/ns/auth/acl#accessTo",
-      "https://arbitrary.pod/resource2"
+      "https://arbitrary.pod/resource2",
     );
 
     let defaultAclRule2 = createThing();
     defaultAclRule2 = addIri(
       defaultAclRule2,
       "http://www.w3.org/ns/auth/acl#default",
-      "https://arbitrary.pod/container2/"
+      "https://arbitrary.pod/container2/",
     );
 
     const aclRules = [
@@ -1883,21 +1883,21 @@ describe("getResourceAclRulesForResource", () => {
     targetResourceAclRule = addIri(
       targetResourceAclRule,
       "http://www.w3.org/ns/auth/acl#accessTo",
-      "https://some.pod/resource"
+      "https://some.pod/resource",
     );
 
     let defaultAclRule = createThing();
     defaultAclRule = addIri(
       defaultAclRule,
       "http://www.w3.org/ns/auth/acl#default",
-      "https://arbitrary.pod/container/"
+      "https://arbitrary.pod/container/",
     );
 
     let otherResourceAclRule = createThing();
     otherResourceAclRule = addIri(
       otherResourceAclRule,
       "http://www.w3.org/ns/auth/acl#accessTo",
-      "https://some-other.pod/resource"
+      "https://some-other.pod/resource",
     );
 
     const aclRules = [
@@ -1908,7 +1908,7 @@ describe("getResourceAclRulesForResource", () => {
 
     const resourceRules = internal_getResourceAclRulesForResource(
       aclRules,
-      "https://some.pod/resource"
+      "https://some.pod/resource",
     );
 
     expect(resourceRules).toEqual([targetResourceAclRule]);
@@ -1921,28 +1921,28 @@ describe("getDefaultAclRules", () => {
     resourceAclRule1 = addIri(
       resourceAclRule1,
       "http://www.w3.org/ns/auth/acl#accessTo",
-      "https://arbitrary.pod/resource1"
+      "https://arbitrary.pod/resource1",
     );
 
     let defaultAclRule1 = createThing();
     defaultAclRule1 = addIri(
       defaultAclRule1,
       "http://www.w3.org/ns/auth/acl#default",
-      "https://arbitrary.pod/container1/"
+      "https://arbitrary.pod/container1/",
     );
 
     let resourceAclRule2 = createThing();
     resourceAclRule2 = addIri(
       resourceAclRule2,
       "http://www.w3.org/ns/auth/acl#accessTo",
-      "https://arbitrary.pod/resource2"
+      "https://arbitrary.pod/resource2",
     );
 
     let defaultAclRule2 = createThing();
     defaultAclRule2 = addIri(
       defaultAclRule2,
       "http://www.w3.org/ns/auth/acl#default",
-      "https://arbitrary.pod/container2/"
+      "https://arbitrary.pod/container2/",
     );
 
     const aclRules = [
@@ -1964,21 +1964,21 @@ describe("getDefaultAclRulesForResource", () => {
     resourceAclRule = addIri(
       resourceAclRule,
       "http://www.w3.org/ns/auth/acl#accessTo",
-      "https://arbitrary.pod/resource"
+      "https://arbitrary.pod/resource",
     );
 
     let targetDefaultAclRule = createThing();
     targetDefaultAclRule = addIri(
       targetDefaultAclRule,
       "http://www.w3.org/ns/auth/acl#default",
-      "https://some.pod/container/"
+      "https://some.pod/container/",
     );
 
     let otherDefaultAclRule = createThing();
     otherDefaultAclRule = addIri(
       otherDefaultAclRule,
       "http://www.w3.org/ns/auth/acl#accessTo",
-      "https://some-other.pod/container/"
+      "https://some-other.pod/container/",
     );
 
     const aclRules = [
@@ -1989,7 +1989,7 @@ describe("getDefaultAclRulesForResource", () => {
 
     const resourceRules = internal_getDefaultAclRulesForResource(
       aclRules,
-      "https://some.pod/container/"
+      "https://some.pod/container/",
     );
 
     expect(resourceRules).toEqual([targetDefaultAclRule]);
@@ -2002,22 +2002,22 @@ describe("getAccess", () => {
     mockRule = addIri(
       mockRule,
       "http://www.w3.org/ns/auth/acl#mode",
-      "http://www.w3.org/ns/auth/acl#Read"
+      "http://www.w3.org/ns/auth/acl#Read",
     );
     mockRule = addIri(
       mockRule,
       "http://www.w3.org/ns/auth/acl#mode",
-      "http://www.w3.org/ns/auth/acl#Append"
+      "http://www.w3.org/ns/auth/acl#Append",
     );
     mockRule = addIri(
       mockRule,
       "http://www.w3.org/ns/auth/acl#mode",
-      "http://www.w3.org/ns/auth/acl#Write"
+      "http://www.w3.org/ns/auth/acl#Write",
     );
     mockRule = addIri(
       mockRule,
       "http://www.w3.org/ns/auth/acl#mode",
-      "http://www.w3.org/ns/auth/acl#Control"
+      "http://www.w3.org/ns/auth/acl#Control",
     );
 
     expect(internal_getAccess(mockRule)).toEqual({
@@ -2044,7 +2044,7 @@ describe("getAccess", () => {
     mockRule = addIri(
       mockRule,
       "http://www.w3.org/ns/auth/acl#mode",
-      "http://www.w3.org/ns/auth/acl#Write"
+      "http://www.w3.org/ns/auth/acl#Write",
     );
 
     expect(internal_getAccess(mockRule)).toEqual({
@@ -2127,17 +2127,17 @@ describe("removeEmptyAclRules", () => {
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-      "http://www.w3.org/ns/auth/acl#Authorization"
+      "http://www.w3.org/ns/auth/acl#Authorization",
     );
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/ns/auth/acl#accessTo",
-      "https://arbitrary.pod/resource"
+      "https://arbitrary.pod/resource",
     );
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/ns/auth/acl#mode",
-      "http://www.w3.org/ns/auth/acl#Read"
+      "http://www.w3.org/ns/auth/acl#Read",
     );
     aclDataset = setThing(aclDataset, emptyRule);
 
@@ -2159,17 +2159,17 @@ describe("removeEmptyAclRules", () => {
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-      "http://www.w3.org/ns/auth/acl#Authorization"
+      "http://www.w3.org/ns/auth/acl#Authorization",
     );
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/ns/auth/acl#accessTo",
-      "https://arbitrary.pod/resource"
+      "https://arbitrary.pod/resource",
     );
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/ns/auth/acl#mode",
-      "http://www.w3.org/ns/auth/acl#Read"
+      "http://www.w3.org/ns/auth/acl#Read",
     );
     aclDataset = setThing(aclDataset, emptyRule);
 
@@ -2192,17 +2192,17 @@ describe("removeEmptyAclRules", () => {
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-      "http://www.w3.org/ns/auth/acl#Authorization"
+      "http://www.w3.org/ns/auth/acl#Authorization",
     );
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/ns/auth/acl#accessTo",
-      "https://arbitrary.pod/resource"
+      "https://arbitrary.pod/resource",
     );
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/ns/auth/acl#agent",
-      "https://arbitrary.pod/profileDoc#webId"
+      "https://arbitrary.pod/profileDoc#webId",
     );
     aclDataset = setThing(aclDataset, emptyRule);
 
@@ -2224,17 +2224,17 @@ describe("removeEmptyAclRules", () => {
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-      "http://www.w3.org/ns/auth/acl#Authorization"
+      "http://www.w3.org/ns/auth/acl#Authorization",
     );
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/ns/auth/acl#mode",
-      "http://www.w3.org/ns/auth/acl#Read"
+      "http://www.w3.org/ns/auth/acl#Read",
     );
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/ns/auth/acl#agent",
-      "https://arbitrary.pod/profileDoc#webId"
+      "https://arbitrary.pod/profileDoc#webId",
     );
     aclDataset = setThing(aclDataset, emptyRule);
 
@@ -2256,22 +2256,22 @@ describe("removeEmptyAclRules", () => {
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-      "http://www.w3.org/ns/auth/acl#Authorization"
+      "http://www.w3.org/ns/auth/acl#Authorization",
     );
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/ns/auth/acl#accessTo",
-      "https://arbitrary.pod/resource"
+      "https://arbitrary.pod/resource",
     );
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/ns/auth/acl#mode",
-      "http://www.w3.org/ns/auth/acl#Read"
+      "http://www.w3.org/ns/auth/acl#Read",
     );
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/ns/auth/acl#origin",
-      "https://arbitrary.origin"
+      "https://arbitrary.origin",
     );
     aclDataset = setThing(aclDataset, emptyRule);
 
@@ -2293,27 +2293,27 @@ describe("removeEmptyAclRules", () => {
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-      "http://www.w3.org/ns/auth/acl#Authorization"
+      "http://www.w3.org/ns/auth/acl#Authorization",
     );
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-      "https://arbitrary.vocab/not/an/Authorization"
+      "https://arbitrary.vocab/not/an/Authorization",
     );
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/ns/auth/acl#accessTo",
-      "https://arbitrary.pod/resource"
+      "https://arbitrary.pod/resource",
     );
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/ns/auth/acl#mode",
-      "http://www.w3.org/ns/auth/acl#Read"
+      "http://www.w3.org/ns/auth/acl#Read",
     );
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/ns/auth/acl#agent",
-      "https://arbitrary.pod/profileDoc#webId"
+      "https://arbitrary.pod/profileDoc#webId",
     );
     aclDataset = setThing(aclDataset, emptyRule);
 
@@ -2335,27 +2335,27 @@ describe("removeEmptyAclRules", () => {
     emptyRule = addStringNoLocale(
       emptyRule,
       "https://arbitrary.vocab/predicate",
-      "Arbitrary non-ACL value"
+      "Arbitrary non-ACL value",
     );
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-      "http://www.w3.org/ns/auth/acl#Authorization"
+      "http://www.w3.org/ns/auth/acl#Authorization",
     );
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/ns/auth/acl#accessTo",
-      "https://arbitrary.pod/resource"
+      "https://arbitrary.pod/resource",
     );
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/ns/auth/acl#mode",
-      "http://www.w3.org/ns/auth/acl#Read"
+      "http://www.w3.org/ns/auth/acl#Read",
     );
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/ns/auth/acl#agent",
-      "https://arbitrary.pod/profileDoc#webId"
+      "https://arbitrary.pod/profileDoc#webId",
     );
     aclDataset = setThing(aclDataset, emptyRule);
 
@@ -2377,22 +2377,22 @@ describe("removeEmptyAclRules", () => {
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-      "http://www.w3.org/ns/auth/acl#Authorization"
+      "http://www.w3.org/ns/auth/acl#Authorization",
     );
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/ns/auth/acl#default",
-      "https://arbitrary.pod/container/"
+      "https://arbitrary.pod/container/",
     );
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/ns/auth/acl#mode",
-      "http://www.w3.org/ns/auth/acl#Read"
+      "http://www.w3.org/ns/auth/acl#Read",
     );
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/ns/auth/acl#agent",
-      "https://arbitrary.pod/profileDoc#webId"
+      "https://arbitrary.pod/profileDoc#webId",
     );
     aclDataset = setThing(aclDataset, emptyRule);
 
@@ -2414,22 +2414,22 @@ describe("removeEmptyAclRules", () => {
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-      "http://www.w3.org/ns/auth/acl#Authorization"
+      "http://www.w3.org/ns/auth/acl#Authorization",
     );
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/ns/auth/acl#accessTo",
-      "https://arbitrary.pod/resource"
+      "https://arbitrary.pod/resource",
     );
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/ns/auth/acl#mode",
-      "http://www.w3.org/ns/auth/acl#Read"
+      "http://www.w3.org/ns/auth/acl#Read",
     );
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/ns/auth/acl#agent",
-      "https://arbitrary.pod/profileDoc#webId"
+      "https://arbitrary.pod/profileDoc#webId",
     );
     aclDataset = setThing(aclDataset, emptyRule);
 
@@ -2451,22 +2451,22 @@ describe("removeEmptyAclRules", () => {
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-      "http://www.w3.org/ns/auth/acl#Authorization"
+      "http://www.w3.org/ns/auth/acl#Authorization",
     );
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/ns/auth/acl#accessTo",
-      "https://arbitrary.pod/resource"
+      "https://arbitrary.pod/resource",
     );
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/ns/auth/acl#mode",
-      "http://www.w3.org/ns/auth/acl#Read"
+      "http://www.w3.org/ns/auth/acl#Read",
     );
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/ns/auth/acl#agentGroup",
-      "https://arbitrary.pod/groups#colleagues"
+      "https://arbitrary.pod/groups#colleagues",
     );
     aclDataset = setThing(aclDataset, emptyRule);
 
@@ -2488,22 +2488,22 @@ describe("removeEmptyAclRules", () => {
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-      "http://www.w3.org/ns/auth/acl#Authorization"
+      "http://www.w3.org/ns/auth/acl#Authorization",
     );
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/ns/auth/acl#accessTo",
-      "https://arbitrary.pod/resource"
+      "https://arbitrary.pod/resource",
     );
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/ns/auth/acl#mode",
-      "http://www.w3.org/ns/auth/acl#Read"
+      "http://www.w3.org/ns/auth/acl#Read",
     );
     emptyRule = addIri(
       emptyRule,
       "http://www.w3.org/ns/auth/acl#agentClass",
-      "http://xmlns.com/foaf/0.1/Agent"
+      "http://xmlns.com/foaf/0.1/Agent",
     );
     aclDataset = setThing(aclDataset, emptyRule);
 
@@ -2593,7 +2593,7 @@ describe("saveAclFor", () => {
     const fetchPromise = saveAclFor(withResourceInfo, aclResource);
 
     await expect(fetchPromise).rejects.toThrow(
-      "Could not determine the location of the ACL for the Resource at [https://arbitrary.pod/resource]; possibly the current user does not have Control access to that Resource. Try calling `hasAccessibleAcl()` before calling `saveAclFor()`."
+      "Could not determine the location of the ACL for the Resource at [https://arbitrary.pod/resource]; possibly the current user does not have Control access to that Resource. Try calling `hasAccessibleAcl()` before calling `saveAclFor()`.",
     );
   });
 
@@ -2603,8 +2603,8 @@ describe("saveAclFor", () => {
         new Response("Not allowed", {
           status: 403,
           statusText: "Forbidden",
-        })
-      )
+        }),
+      ),
     );
     const withResourceInfo = {
       internal_resourceInfo: {
@@ -2630,7 +2630,7 @@ describe("saveAclFor", () => {
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      /Storing the Resource at \[https:\/\/arbitrary.pod\/resource.acl\] failed: \[403\] \[Forbidden\]/
+      /Storing the Resource at \[https:\/\/arbitrary.pod\/resource.acl\] failed: \[403\] \[Forbidden\]/,
     );
   });
 
@@ -2818,8 +2818,8 @@ describe("deleteAclFor", () => {
         new Response("Not allowed", {
           status: 403,
           statusText: "Forbidden",
-        })
-      )
+        }),
+      ),
     );
 
     const mockResource: WithServerResourceInfo & WithAccessibleAcl = {
@@ -2838,7 +2838,7 @@ describe("deleteAclFor", () => {
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      /Deleting the ACL of the Resource at \[https:\/\/some.pod\/resource\] failed: \[403\] \[Forbidden\]/
+      /Deleting the ACL of the Resource at \[https:\/\/some.pod\/resource\] failed: \[403\] \[Forbidden\]/,
     );
   });
 
@@ -2847,8 +2847,8 @@ describe("deleteAclFor", () => {
       .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
-          new Response("Not found", { status: 404, statusText: "Not Found" })
-        )
+          new Response("Not found", { status: 404, statusText: "Not Found" }),
+        ),
       );
 
     const mockResource: WithServerResourceInfo & WithAccessibleAcl = {
@@ -2867,7 +2867,7 @@ describe("deleteAclFor", () => {
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      /Deleting the ACL of the Resource at \[https:\/\/some.pod\/resource\] failed: \[404\] \[Not Found\]/
+      /Deleting the ACL of the Resource at \[https:\/\/some.pod\/resource\] failed: \[404\] \[Not Found\]/,
     );
   });
 });

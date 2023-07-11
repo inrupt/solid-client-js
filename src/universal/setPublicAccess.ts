@@ -67,7 +67,7 @@ import { getPublicAccess as getPublicAccessAcp } from "./getPublicAccess";
 export async function setPublicAccess(
   resourceUrl: UrlString,
   access: Partial<AccessModes>,
-  options?: DefaultOptions
+  options?: DefaultOptions,
 ): Promise<AccessModes | null> {
   const resourceInfo = await getResourceInfo(resourceUrl, options);
   const acr = await getResourceAcr(resourceInfo, options);

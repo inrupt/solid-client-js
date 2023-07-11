@@ -47,7 +47,7 @@ describe("getPolicyUrlAll()", () => {
           TEST_URL.accessControl1,
           [[ACP.apply, [TEST_URL.accessControl1Policy1]]],
         ],
-      ])
+      ]),
     );
 
     expect(getPolicyUrlAll(resource)).toStrictEqual([
@@ -80,7 +80,7 @@ describe("getPolicyUrlAll()", () => {
             ],
           ],
         ],
-      ])
+      ]),
     );
 
     expect(getPolicyUrlAll(resource)).toStrictEqual([
@@ -126,7 +126,7 @@ describe("getPolicyUrlAll()", () => {
             [ACP.apply, [TEST_URL.memberAccessControl1Policy1]],
           ],
         ],
-      ])
+      ]),
     );
 
     expect(getPolicyUrlAll(resource)).toStrictEqual([

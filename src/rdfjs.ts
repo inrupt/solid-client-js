@@ -62,7 +62,7 @@ const rdfJsDataset = rdfjsDatasetModule.dataset;
  * @since 1.9.0
  */
 export function fromRdfJsDataset(
-  rdfJsDataset: RdfJs.DatasetCore
+  rdfJsDataset: RdfJs.DatasetCore,
 ): ImmutableDataset {
   const dataset: ImmutableDataset = {
     graphs: { default: {} },
@@ -77,8 +77,8 @@ export function fromRdfJsDataset(
   // Blank Nodes are referred to in an Object. See `addRdfJsQuadToObjects`.
   const quadsWithoutChainBlankNodeSubjects = quads.filter((quad) =>
     chainBlankNodes.every(
-      (chainBlankNode) => !chainBlankNode.equals(quad.subject)
-    )
+      (chainBlankNode) => !chainBlankNode.equals(quad.subject),
+    ),
   );
 
   return quadsWithoutChainBlankNodeSubjects.reduce(
@@ -87,7 +87,7 @@ export function fromRdfJsDataset(
         otherQuads: quads,
         chainBlankNodes,
       }),
-    dataset
+    dataset,
   );
 }
 
@@ -110,7 +110,7 @@ export type ToRdfJsOptions = Partial<{
  */
 export function toRdfJsDataset(
   set: ImmutableDataset,
-  options: ToRdfJsOptions = {}
+  options: ToRdfJsOptions = {},
 ): RdfJs.DatasetCore {
   const datasetFactory = options.datasetFactory?.dataset ?? rdfJsDataset;
   return datasetFactory(toRdfJsQuads(set, options));

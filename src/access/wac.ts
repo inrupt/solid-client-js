@@ -73,7 +73,7 @@ export type WacAccess = (
 
 function universalAccessToAcl(
   newAccess: Partial<WacAccess>,
-  previousAccess: AclAccess
+  previousAccess: AclAccess,
 ): AclAccess {
   // Universal access is aligned on ACP, which means there is a distinction between
   // controlRead and controlWrite. This split doesn't exist in WAC, which is why
@@ -81,7 +81,7 @@ function universalAccessToAcl(
   // universal Access type.
   if (newAccess.controlRead !== newAccess.controlWrite) {
     throw new Error(
-      "For Pods using Web Access Control, controlRead and controlWrite must be equal."
+      "For Pods using Web Access Control, controlRead and controlWrite must be equal.",
     );
   }
   return {
@@ -111,12 +111,12 @@ async function getActorAccess(
   resource: WithServerResourceInfo,
   actor: IriString,
   accessEvaluationCallback: typeof getAgentAccessWac,
-  options: Partial<typeof internal_defaultFetchOptions>
+  options: Partial<typeof internal_defaultFetchOptions>,
 ): Promise<Access | null> {
   const resourceAcl = await internal_fetchAcl(resource, options);
   const wacAccess = accessEvaluationCallback(
     internal_setAcl(resource, resourceAcl),
-    actor
+    actor,
   );
   if (wacAccess === null) {
     return null;
@@ -127,11 +127,11 @@ async function getActorAccess(
 async function getActorClassAccess(
   resource: WithServerResourceInfo,
   accessEvaluationCallback: typeof getPublicAccessWac,
-  options: Partial<typeof internal_defaultFetchOptions>
+  options: Partial<typeof internal_defaultFetchOptions>,
 ): Promise<Access | null> {
   const resourceAcl = await internal_fetchAcl(resource, options);
   const wacAccess = accessEvaluationCallback(
-    internal_setAcl(resource, resourceAcl)
+    internal_setAcl(resource, resourceAcl),
   );
   if (wacAccess === null) {
     return null;
@@ -142,11 +142,11 @@ async function getActorClassAccess(
 async function getActorAccessAll(
   resource: WithServerResourceInfo,
   accessEvaluationCallback: typeof getAgentAccessAllWac,
-  options: Partial<typeof internal_defaultFetchOptions>
+  options: Partial<typeof internal_defaultFetchOptions>,
 ): Promise<Record<WebId, WacAccess> | null> {
   const resourceAcl = await internal_fetchAcl(resource, options);
   const wacAgentAccess = accessEvaluationCallback(
-    internal_setAcl(resource, resourceAcl)
+    internal_setAcl(resource, resourceAcl),
   );
   if (wacAgentAccess === null) {
     return null;
@@ -177,7 +177,7 @@ export function getAgentAccess(
   agent: WebId,
   options: Partial<
     typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  > = internal_defaultFetchOptions,
 ): Promise<Access | null> {
   return getActorAccess(resource, agent, getAgentAccessWac, options);
 }
@@ -201,7 +201,7 @@ export function getGroupAccess(
   group: UrlString,
   options: Partial<
     typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  > = internal_defaultFetchOptions,
 ): Promise<Access | null> {
   return getActorAccess(resource, group, getGroupAccessWac, options);
 }
@@ -222,7 +222,7 @@ export function getPublicAccess(
   resource: WithServerResourceInfo,
   options: Partial<
     typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  > = internal_defaultFetchOptions,
 ): Promise<Access | null> {
   return getActorClassAccess(resource, getPublicAccessWac, options);
 }
@@ -244,7 +244,7 @@ export function getAgentAccessAll(
   resource: WithServerResourceInfo,
   options: Partial<
     typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  > = internal_defaultFetchOptions,
 ): Promise<Record<WebId, WacAccess> | null> {
   return getActorAccessAll(resource, getAgentAccessAllWac, options);
 }
@@ -266,14 +266,14 @@ export function getGroupAccessAll(
   resource: WithServerResourceInfo,
   options: Partial<
     typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  > = internal_defaultFetchOptions,
 ): Promise<Record<WebId, WacAccess> | null> {
   return getActorAccessAll(resource, getGroupAccessAllWac, options);
 }
 
 async function prepareResourceAcl<T extends WithServerResourceInfo>(
   resource: T,
-  options: Partial<typeof internal_defaultFetchOptions>
+  options: Partial<typeof internal_defaultFetchOptions>,
 ): Promise<(T & WithResourceAcl & WithAccessibleAcl) | null> {
   if (!hasAccessibleAcl(resource)) {
     return null;
@@ -296,11 +296,11 @@ async function prepareResourceAcl<T extends WithServerResourceInfo>(
 }
 
 async function saveUpdatedAcl<
-  T extends WithServerResourceInfo & WithAccessibleAcl & WithResourceAcl
+  T extends WithServerResourceInfo & WithAccessibleAcl & WithResourceAcl,
 >(
   resource: T,
   acl: AclDataset,
-  options: Partial<typeof internal_defaultFetchOptions>
+  options: Partial<typeof internal_defaultFetchOptions>,
 ): Promise<T | null> {
   let savedAcl: AclDataset | null = null;
   try {
@@ -316,7 +316,7 @@ async function setActorClassAccess<T extends WithServerResourceInfo>(
   access: Partial<WacAccess>,
   getAccess: typeof getPublicAccessWac,
   setAccess: typeof setPublicResourceAccessWac,
-  options: Partial<typeof internal_defaultFetchOptions>
+  options: Partial<typeof internal_defaultFetchOptions>,
 ): Promise<(T & WithResourceAcl) | null> {
   const resourceWithOldAcl = await prepareResourceAcl(resource, options);
 
@@ -338,7 +338,7 @@ async function setActorAccess<T extends WithServerResourceInfo>(
   access: Partial<WacAccess>,
   getAccess: typeof getAgentAccessWac,
   setAccess: typeof setAgentResourceAccessWac,
-  options: Partial<typeof internal_defaultFetchOptions>
+  options: Partial<typeof internal_defaultFetchOptions>,
 ): Promise<(T & WithResourceAcl) | null> {
   const resourceWithOldAcl = await prepareResourceAcl(resource, options);
 
@@ -379,7 +379,7 @@ export async function setAgentResourceAccess<T extends WithServerResourceInfo>(
   access: Partial<WacAccess>,
   options: Partial<
     typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  > = internal_defaultFetchOptions,
 ): Promise<(T & WithResourceAcl) | null> {
   return setActorAccess(
     resource,
@@ -387,7 +387,7 @@ export async function setAgentResourceAccess<T extends WithServerResourceInfo>(
     access,
     getAgentAccessWac,
     setAgentResourceAccessWac,
-    options
+    options,
   );
 }
 
@@ -416,7 +416,7 @@ export async function setGroupResourceAccess<T extends WithServerResourceInfo>(
   access: Partial<WacAccess>,
   options: Partial<
     typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  > = internal_defaultFetchOptions,
 ): Promise<(T & WithResourceAcl) | null> {
   return setActorAccess(
     resource,
@@ -424,7 +424,7 @@ export async function setGroupResourceAccess<T extends WithServerResourceInfo>(
     access,
     getGroupAccessWac,
     setGroupResourceAccessWac,
-    options
+    options,
   );
 }
 
@@ -451,13 +451,13 @@ export async function setPublicResourceAccess<T extends WithServerResourceInfo>(
   access: Partial<WacAccess>,
   options: Partial<
     typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  > = internal_defaultFetchOptions,
 ): Promise<(T & WithResourceAcl) | null> {
   return setActorClassAccess(
     resource,
     access,
     getPublicAccessWac,
     setPublicResourceAccessWac,
-    options
+    options,
   );
 }
