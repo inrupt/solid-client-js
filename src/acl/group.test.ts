@@ -50,13 +50,13 @@ function addAclRuleQuads(
   group: IriString,
   resource: IriString,
   access: Access,
-  type: "resource" | "default"
+  type: "resource" | "default",
 ): AclDataset {
   let newRule = createThing();
   newRule = addIri(
     newRule,
     "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-    "http://www.w3.org/ns/auth/acl#Authorization"
+    "http://www.w3.org/ns/auth/acl#Authorization",
   );
   const resourceRelation: IriString =
     type === "resource"
@@ -68,28 +68,28 @@ function addAclRuleQuads(
     newRule = addIri(
       newRule,
       "http://www.w3.org/ns/auth/acl#mode",
-      "http://www.w3.org/ns/auth/acl#Read"
+      "http://www.w3.org/ns/auth/acl#Read",
     );
   }
   if (access.append) {
     newRule = addIri(
       newRule,
       "http://www.w3.org/ns/auth/acl#mode",
-      "http://www.w3.org/ns/auth/acl#Append"
+      "http://www.w3.org/ns/auth/acl#Append",
     );
   }
   if (access.write) {
     newRule = addIri(
       newRule,
       "http://www.w3.org/ns/auth/acl#mode",
-      "http://www.w3.org/ns/auth/acl#Write"
+      "http://www.w3.org/ns/auth/acl#Write",
     );
   }
   if (access.control) {
     newRule = addIri(
       newRule,
       "http://www.w3.org/ns/auth/acl#mode",
-      "http://www.w3.org/ns/auth/acl#Control"
+      "http://www.w3.org/ns/auth/acl#Control",
     );
   }
   aclDataset = setThing(aclDataset, newRule);
@@ -99,7 +99,7 @@ function addAclRuleQuads(
 function addAclDatasetToSolidDataset(
   solidDataset: SolidDataset & WithServerResourceInfo,
   aclDataset: AclDataset,
-  type: "resource" | "fallback"
+  type: "resource" | "fallback",
 ): SolidDataset & WithServerResourceInfo & WithAcl {
   const acl: WithAcl["internal_acl"] = {
     ...((solidDataset as any as WithAcl).internal_acl ?? {
@@ -121,24 +121,24 @@ function addAclDatasetToSolidDataset(
 describe("getGroupAccess", () => {
   it("returns the Resource's own applicable ACL rules", () => {
     const solidDataset = mockSolidDatasetFrom(
-      "https://some.pod/container/resource"
+      "https://some.pod/container/resource",
     );
     const resourceAcl = addAclRuleQuads(
       mockSolidDatasetFrom("https://some.pod/container/resource.acl"),
       "https://some.pod/group#id",
       "https://some.pod/container/resource",
       { read: false, append: false, write: false, control: true },
-      "resource"
+      "resource",
     );
     const solidDatasetWithAcl = addAclDatasetToSolidDataset(
       solidDataset,
       resourceAcl,
-      "resource"
+      "resource",
     );
 
     const access = getGroupAccess(
       solidDatasetWithAcl,
-      "https://some.pod/group#id"
+      "https://some.pod/group#id",
     );
 
     expect(access).toEqual({
@@ -151,24 +151,24 @@ describe("getGroupAccess", () => {
 
   it("returns the fallback ACL rules if no Resource ACL SolidDataset is available", () => {
     const solidDataset = mockSolidDatasetFrom(
-      "https://some.pod/container/resource"
+      "https://some.pod/container/resource",
     );
     const fallbackAcl = addAclRuleQuads(
       mockSolidDatasetFrom("https://some.pod/container/.acl"),
       "https://some.pod/group#id",
       "https://some.pod/container/",
       { read: false, append: false, write: false, control: true },
-      "default"
+      "default",
     );
     const solidDatasetWithAcl = addAclDatasetToSolidDataset(
       solidDataset,
       fallbackAcl,
-      "fallback"
+      "fallback",
     );
 
     const access = getGroupAccess(
       solidDatasetWithAcl,
-      "https://some.pod/group#id"
+      "https://some.pod/group#id",
     );
 
     expect(access).toEqual({
@@ -181,7 +181,7 @@ describe("getGroupAccess", () => {
 
   it("returns null if neither the Resource's own nor a fallback ACL was accessible", () => {
     const solidDataset = mockSolidDatasetFrom(
-      "https://some.pod/container/resource"
+      "https://some.pod/container/resource",
     );
     const solidDatasetWithInaccessibleAcl = internal_setAcl(solidDataset, {
       fallbackAcl: null,
@@ -191,43 +191,43 @@ describe("getGroupAccess", () => {
     expect(
       getGroupAccess(
         solidDatasetWithInaccessibleAcl,
-        "https://arbitrary.pod/profileDoc#webId"
-      )
+        "https://arbitrary.pod/profileDoc#webId",
+      ),
     ).toBeNull();
   });
 
   it("ignores the fallback ACL rules if a Resource ACL SolidDataset is available", () => {
     const solidDataset = mockSolidDatasetFrom(
-      "https://some.pod/container/resource"
+      "https://some.pod/container/resource",
     );
     const resourceAcl = addAclRuleQuads(
       mockSolidDatasetFrom("https://some.pod/container/resource.acl"),
       "https://some.pod/group#id",
       "https://some.pod/container/resource",
       { read: true, append: false, write: false, control: false },
-      "resource"
+      "resource",
     );
     const fallbackAcl = addAclRuleQuads(
       mockSolidDatasetFrom("https://some.pod/container/.acl"),
       "https://some.pod/group#id",
       "https://some.pod/container/",
       { read: false, append: false, write: false, control: true },
-      "default"
+      "default",
     );
     const solidDatasetWithJustResourceAcl = addAclDatasetToSolidDataset(
       solidDataset,
       resourceAcl,
-      "resource"
+      "resource",
     );
     const solidDatasetWithAcl = addAclDatasetToSolidDataset(
       solidDatasetWithJustResourceAcl,
       fallbackAcl,
-      "fallback"
+      "fallback",
     );
 
     const access = getGroupAccess(
       solidDatasetWithAcl,
-      "https://some.pod/group#id"
+      "https://some.pod/group#id",
     );
 
     expect(access).toEqual({
@@ -245,24 +245,24 @@ describe("getGroupAccess", () => {
       "https://some.pod/group#id",
       "https://some.pod/container/",
       { read: true, append: false, write: false, control: false },
-      "resource"
+      "resource",
     );
     const resourceAclWithDefaultRules = addAclRuleQuads(
       resourceAcl,
       "https://some.pod/group#id",
       "https://some.pod/container/",
       { read: false, append: false, write: false, control: true },
-      "default"
+      "default",
     );
     const solidDatasetWithAcl = addAclDatasetToSolidDataset(
       solidDataset,
       resourceAclWithDefaultRules,
-      "resource"
+      "resource",
     );
 
     const access = getGroupAccess(
       solidDatasetWithAcl,
-      "https://some.pod/group#id"
+      "https://some.pod/group#id",
     );
 
     expect(access).toEqual({
@@ -275,31 +275,31 @@ describe("getGroupAccess", () => {
 
   it("ignores Resource ACL rules from the fallback ACL SolidDataset", () => {
     const solidDataset = mockSolidDatasetFrom(
-      "https://some.pod/container/resource"
+      "https://some.pod/container/resource",
     );
     const fallbackAcl = addAclRuleQuads(
       mockSolidDatasetFrom("https://some.pod/container/.acl"),
       "https://some.pod/group#id",
       "https://some.pod/container/",
       { read: true, append: false, write: false, control: false },
-      "resource"
+      "resource",
     );
     const fallbackAclWithDefaultRules = addAclRuleQuads(
       fallbackAcl,
       "https://some.pod/group#id",
       "https://some.pod/container/",
       { read: false, append: false, write: false, control: true },
-      "default"
+      "default",
     );
     const solidDatasetWithAcl = addAclDatasetToSolidDataset(
       solidDataset,
       fallbackAclWithDefaultRules,
-      "fallback"
+      "fallback",
     );
 
     const access = getGroupAccess(
       solidDatasetWithAcl,
-      "https://some.pod/group#id"
+      "https://some.pod/group#id",
     );
 
     expect(access).toEqual({
@@ -314,19 +314,19 @@ describe("getGroupAccess", () => {
 describe("getGroupAccessAll", () => {
   it("returns the Resource's own applicable ACL rules, grouped by Group URL", () => {
     const solidDataset = mockSolidDatasetFrom(
-      "https://some.pod/container/resource"
+      "https://some.pod/container/resource",
     );
     const resourceAcl = addAclRuleQuads(
       mockSolidDatasetFrom("https://some.pod/container/resource.acl"),
       "https://some.pod/group#id",
       "https://some.pod/container/resource",
       { read: false, append: false, write: false, control: true },
-      "resource"
+      "resource",
     );
     const solidDatasetWithAcl = addAclDatasetToSolidDataset(
       solidDataset,
       resourceAcl,
-      "resource"
+      "resource",
     );
 
     const access = getGroupAccessAll(solidDatasetWithAcl);
@@ -343,19 +343,19 @@ describe("getGroupAccessAll", () => {
 
   it("returns the fallback ACL rules if no Resource ACL SolidDataset is available", () => {
     const solidDataset = mockSolidDatasetFrom(
-      "https://some.pod/container/resource"
+      "https://some.pod/container/resource",
     );
     const fallbackAcl = addAclRuleQuads(
       mockSolidDatasetFrom("https://some.pod/container/.acl"),
       "https://some.pod/group#id",
       "https://some.pod/container/",
       { read: false, append: false, write: false, control: true },
-      "default"
+      "default",
     );
     const solidDatasetWithAcl = addAclDatasetToSolidDataset(
       solidDataset,
       fallbackAcl,
-      "fallback"
+      "fallback",
     );
 
     const access = getGroupAccessAll(solidDatasetWithAcl);
@@ -372,7 +372,7 @@ describe("getGroupAccessAll", () => {
 
   it("returns null if neither the Resource's own nor a fallback ACL was accessible", () => {
     const solidDataset = mockSolidDatasetFrom(
-      "https://some.pod/container/resource"
+      "https://some.pod/container/resource",
     );
     const solidDatasetWithInaccessibleAcl = internal_setAcl(solidDataset, {
       fallbackAcl: null,
@@ -384,31 +384,31 @@ describe("getGroupAccessAll", () => {
 
   it("ignores the fallback ACL rules if a Resource ACL SolidDataset is available", () => {
     const solidDataset = mockSolidDatasetFrom(
-      "https://some.pod/container/resource"
+      "https://some.pod/container/resource",
     );
     const resourceAcl = addAclRuleQuads(
       mockSolidDatasetFrom("https://some.pod/container/resource.acl"),
       "https://some.pod/group#id",
       "https://some.pod/container/resource",
       { read: true, append: false, write: false, control: false },
-      "resource"
+      "resource",
     );
     const fallbackAcl = addAclRuleQuads(
       mockSolidDatasetFrom("https://some.pod/container/.acl"),
       "https://some.pod/group#id",
       "https://some.pod/container/",
       { read: false, append: false, write: false, control: true },
-      "default"
+      "default",
     );
     const solidDatasetWithJustResourceAcl = addAclDatasetToSolidDataset(
       solidDataset,
       resourceAcl,
-      "resource"
+      "resource",
     );
     const solidDatasetWithAcl = addAclDatasetToSolidDataset(
       solidDatasetWithJustResourceAcl,
       fallbackAcl,
-      "fallback"
+      "fallback",
     );
 
     const access = getGroupAccessAll(solidDatasetWithAcl);
@@ -425,31 +425,31 @@ describe("getGroupAccessAll", () => {
 
   it("does not merge fallback ACL rules with a Resource's own ACL rules, if available", () => {
     const solidDataset = mockSolidDatasetFrom(
-      "https://some.pod/container/resource"
+      "https://some.pod/container/resource",
     );
     const resourceAcl = addAclRuleQuads(
       mockSolidDatasetFrom("https://some.pod/container/resource.acl"),
       "https://some.pod/group#id",
       "https://some.pod/container/resource",
       { read: true, append: false, write: false, control: false },
-      "resource"
+      "resource",
     );
     const fallbackAcl = addAclRuleQuads(
       mockSolidDatasetFrom("https://some.pod/container/.acl"),
       "https://some-other.pod/profileDoc#webId",
       "https://some.pod/container/",
       { read: false, append: false, write: false, control: true },
-      "default"
+      "default",
     );
     const solidDatasetWithJustResourceAcl = addAclDatasetToSolidDataset(
       solidDataset,
       resourceAcl,
-      "resource"
+      "resource",
     );
     const solidDatasetWithAcl = addAclDatasetToSolidDataset(
       solidDatasetWithJustResourceAcl,
       fallbackAcl,
-      "fallback"
+      "fallback",
     );
 
     const access = getGroupAccessAll(solidDatasetWithAcl);
@@ -473,19 +473,19 @@ describe("getGroupAccessAll", () => {
       "https://some.pod/group#id",
       "https://some.pod/container/",
       { read: true, append: false, write: false, control: false },
-      "resource"
+      "resource",
     );
     const resourceAclWithDefaultRules = addAclRuleQuads(
       resourceAcl,
       "https://some.pod/group#id",
       "https://some.pod/container/",
       { read: false, append: false, write: false, control: true },
-      "default"
+      "default",
     );
     const solidDatasetWithAcl = addAclDatasetToSolidDataset(
       solidDataset,
       resourceAclWithDefaultRules,
-      "resource"
+      "resource",
     );
 
     const access = getGroupAccessAll(solidDatasetWithAcl);
@@ -502,26 +502,26 @@ describe("getGroupAccessAll", () => {
 
   it("ignores Resource ACL rules from the fallback ACL SolidDataset", () => {
     const solidDataset = mockSolidDatasetFrom(
-      "https://some.pod/container/resource"
+      "https://some.pod/container/resource",
     );
     const fallbackAcl = addAclRuleQuads(
       mockSolidDatasetFrom("https://some.pod/container/.acl"),
       "https://some.pod/group#id",
       "https://some.pod/container/",
       { read: true, append: false, write: false, control: false },
-      "resource"
+      "resource",
     );
     const fallbackAclWithDefaultRules = addAclRuleQuads(
       fallbackAcl,
       "https://some.pod/group#id",
       "https://some.pod/container/",
       { read: false, append: false, write: false, control: true },
-      "default"
+      "default",
     );
     const solidDatasetWithAcl = addAclDatasetToSolidDataset(
       solidDataset,
       fallbackAclWithDefaultRules,
-      "fallback"
+      "fallback",
     );
 
     const access = getGroupAccessAll(solidDatasetWithAcl);
@@ -544,12 +544,12 @@ describe("getGroupResourceAccess", () => {
       "https://some.pod/group#id",
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: true },
-      "resource"
+      "resource",
     );
 
     const groupAccess = getGroupResourceAccess(
       resourceAcl,
-      "https://some.pod/group#id"
+      "https://some.pod/group#id",
     );
 
     expect(groupAccess).toEqual({
@@ -566,19 +566,19 @@ describe("getGroupResourceAccess", () => {
       "https://some.pod/group#id",
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
-      "resource"
+      "resource",
     );
     resourceAcl = addAclRuleQuads(
       resourceAcl,
       "https://some.pod/group#id",
       "https://arbitrary.pod/resource",
       { read: false, append: true, write: false, control: false },
-      "resource"
+      "resource",
     );
 
     const groupAccess = getGroupResourceAccess(
       resourceAcl,
-      "https://some.pod/group#id"
+      "https://some.pod/group#id",
     );
 
     expect(groupAccess).toEqual({
@@ -595,12 +595,12 @@ describe("getGroupResourceAccess", () => {
       "https://some.pod/group#id",
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
-      "resource"
+      "resource",
     );
 
     const groupAccess = getGroupResourceAccess(
       resourceAcl,
-      "https://some-other.pod/group#id"
+      "https://some-other.pod/group#id",
     );
 
     expect(groupAccess).toEqual({
@@ -617,19 +617,19 @@ describe("getGroupResourceAccess", () => {
       "https://some-other.pod/group#id",
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
-      "resource"
+      "resource",
     );
     resourceAcl = addAclRuleQuads(
       resourceAcl,
       "https://some.pod/group#id",
       "https://arbitrary.pod/resource",
       { read: false, append: true, write: false, control: false },
-      "resource"
+      "resource",
     );
 
     const groupAccess = getGroupResourceAccess(
       resourceAcl,
-      "https://some.pod/group#id"
+      "https://some.pod/group#id",
     );
 
     expect(groupAccess).toEqual({
@@ -646,19 +646,19 @@ describe("getGroupResourceAccess", () => {
       "https://arbitrary.pod/group#id",
       "https://some-other.pod/resource",
       { read: true, append: false, write: false, control: false },
-      "resource"
+      "resource",
     );
     resourceAcl = addAclRuleQuads(
       resourceAcl,
       "https://arbitrary.pod/group#id",
       "https://some.pod/resource",
       { read: false, append: true, write: false, control: false },
-      "resource"
+      "resource",
     );
 
     const groupAccess = getGroupResourceAccess(
       resourceAcl,
-      "https://arbitrary.pod/group#id"
+      "https://arbitrary.pod/group#id",
     );
 
     expect(groupAccess).toEqual({
@@ -677,14 +677,14 @@ describe("getGroupResourceAccessAll", () => {
       "https://some-other.pod/group#id",
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
-      "resource"
+      "resource",
     );
     resourceAcl = addAclRuleQuads(
       resourceAcl,
       "https://some.pod/group#id",
       "https://arbitrary.pod/resource",
       { read: false, append: true, write: false, control: false },
-      "resource"
+      "resource",
     );
 
     const groupAccess = getGroupResourceAccessAll(resourceAcl);
@@ -711,14 +711,14 @@ describe("getGroupResourceAccessAll", () => {
       "https://some.pod/group#id",
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
-      "resource"
+      "resource",
     );
     resourceAcl = addAclRuleQuads(
       resourceAcl,
       "https://some.pod/group#id",
       "https://arbitrary.pod/resource",
       { read: false, append: true, write: false, control: false },
-      "resource"
+      "resource",
     );
 
     const groupAccess = getGroupResourceAccessAll(resourceAcl);
@@ -739,13 +739,13 @@ describe("getGroupResourceAccessAll", () => {
       "https://some.pod/group#id",
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
-      "resource"
+      "resource",
     );
     let firstControl = getThingAll(resourceAcl)[0];
     firstControl = addIri(
       firstControl,
       "http://www.w3.org/ns/auth/acl#agentGroup",
-      "https://some-other.pod/group#id"
+      "https://some-other.pod/group#id",
     );
     resourceAcl = setThing(resourceAcl, firstControl);
 
@@ -773,23 +773,23 @@ describe("getGroupResourceAccessAll", () => {
       "https://some.pod/group#id",
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
-      "resource"
+      "resource",
     );
     let agentClassRule = createThing();
     agentClassRule = addIri(
       agentClassRule,
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-      "http://www.w3.org/ns/auth/acl#Authorization"
+      "http://www.w3.org/ns/auth/acl#Authorization",
     );
     agentClassRule = addIri(
       agentClassRule,
       "http://www.w3.org/ns/auth/acl#accessTo",
-      "https://arbitrary.pod/resource"
+      "https://arbitrary.pod/resource",
     );
     agentClassRule = addIri(
       agentClassRule,
       "http://www.w3.org/ns/auth/acl#agent",
-      "https://some.pod/profile#agent"
+      "https://some.pod/profile#agent",
     );
     resourceAcl = setThing(resourceAcl, agentClassRule);
 
@@ -811,14 +811,14 @@ describe("getGroupResourceAccessAll", () => {
       "https://arbitrary.pod/group#id",
       "https://some-other.pod/resource",
       { read: true, append: false, write: false, control: false },
-      "resource"
+      "resource",
     );
     resourceAcl = addAclRuleQuads(
       resourceAcl,
       "https://some.pod/group#id",
       "https://some.pod/resource",
       { read: false, append: true, write: false, control: false },
-      "resource"
+      "resource",
     );
 
     const groupAccess = getGroupResourceAccessAll(resourceAcl);
@@ -841,12 +841,12 @@ describe("getGroupDefaultAccess", () => {
       "https://some.pod/group#id",
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: true },
-      "default"
+      "default",
     );
 
     const groupAccess = getGroupDefaultAccess(
       containerAcl,
-      "https://some.pod/group#id"
+      "https://some.pod/group#id",
     );
 
     expect(groupAccess).toEqual({
@@ -863,19 +863,19 @@ describe("getGroupDefaultAccess", () => {
       "https://some.pod/group#id",
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
-      "default"
+      "default",
     );
     containerAcl = addAclRuleQuads(
       containerAcl,
       "https://some.pod/group#id",
       "https://arbitrary.pod/container/",
       { read: false, append: true, write: false, control: false },
-      "default"
+      "default",
     );
 
     const groupAccess = getGroupDefaultAccess(
       containerAcl,
-      "https://some.pod/group#id"
+      "https://some.pod/group#id",
     );
 
     expect(groupAccess).toEqual({
@@ -892,12 +892,12 @@ describe("getGroupDefaultAccess", () => {
       "https://some.pod/group#id",
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
-      "default"
+      "default",
     );
 
     const groupAccess = getGroupDefaultAccess(
       containerAcl,
-      "https://some-other.pod/group#id"
+      "https://some-other.pod/group#id",
     );
 
     expect(groupAccess).toEqual({
@@ -914,19 +914,19 @@ describe("getGroupDefaultAccess", () => {
       "https://some-other.pod/group#id",
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
-      "default"
+      "default",
     );
     containerAcl = addAclRuleQuads(
       containerAcl,
       "https://some.pod/group#id",
       "https://arbitrary.pod/container/",
       { read: false, append: true, write: false, control: false },
-      "default"
+      "default",
     );
 
     const groupAccess = getGroupDefaultAccess(
       containerAcl,
-      "https://some.pod/group#id"
+      "https://some.pod/group#id",
     );
 
     expect(groupAccess).toEqual({
@@ -943,19 +943,19 @@ describe("getGroupDefaultAccess", () => {
       "https://arbitrary.pod/group#id",
       "https://some-other.pod/container/",
       { read: true, append: false, write: false, control: false },
-      "default"
+      "default",
     );
     containerAcl = addAclRuleQuads(
       containerAcl,
       "https://arbitrary.pod/group#id",
       "https://some.pod/container/",
       { read: false, append: true, write: false, control: false },
-      "default"
+      "default",
     );
 
     const groupAccess = getGroupDefaultAccess(
       containerAcl,
-      "https://arbitrary.pod/group#id"
+      "https://arbitrary.pod/group#id",
     );
 
     expect(groupAccess).toEqual({
@@ -974,14 +974,14 @@ describe("getGroupDefaultAccessAll", () => {
       "https://some-other.pod/group#id",
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
-      "default"
+      "default",
     );
     containerAcl = addAclRuleQuads(
       containerAcl,
       "https://some.pod/group#id",
       "https://arbitrary.pod/container/",
       { read: false, append: true, write: false, control: false },
-      "default"
+      "default",
     );
 
     const groupAccess = getGroupDefaultAccessAll(containerAcl);
@@ -1008,14 +1008,14 @@ describe("getGroupDefaultAccessAll", () => {
       "https://some.pod/group#id",
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
-      "default"
+      "default",
     );
     containerAcl = addAclRuleQuads(
       containerAcl,
       "https://some.pod/group#id",
       "https://arbitrary.pod/container/",
       { read: false, append: true, write: false, control: false },
-      "default"
+      "default",
     );
 
     const groupAccess = getGroupDefaultAccessAll(containerAcl);
@@ -1036,13 +1036,13 @@ describe("getGroupDefaultAccessAll", () => {
       "https://some.pod/group#id",
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
-      "default"
+      "default",
     );
     let firstControl = getThingAll(containerAcl)[0];
     firstControl = addIri(
       firstControl,
       "http://www.w3.org/ns/auth/acl#agentGroup",
-      "https://some-other.pod/group#id"
+      "https://some-other.pod/group#id",
     );
     containerAcl = setThing(containerAcl, firstControl);
 
@@ -1070,23 +1070,23 @@ describe("getGroupDefaultAccessAll", () => {
       "https://some.pod/group#id",
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
-      "default"
+      "default",
     );
     let agentClassRule = createThing();
     agentClassRule = addIri(
       agentClassRule,
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-      "http://www.w3.org/ns/auth/acl#Authorization"
+      "http://www.w3.org/ns/auth/acl#Authorization",
     );
     agentClassRule = addIri(
       agentClassRule,
       "http://www.w3.org/ns/auth/acl#default",
-      "https://arbitrary.pod/container/"
+      "https://arbitrary.pod/container/",
     );
     agentClassRule = addIri(
       agentClassRule,
       "http://www.w3.org/ns/auth/acl#agent",
-      "https://some.pod/agent#profile"
+      "https://some.pod/agent#profile",
     );
     containerAcl = setThing(containerAcl, agentClassRule);
 
@@ -1108,14 +1108,14 @@ describe("getGroupDefaultAccessAll", () => {
       "https://arbitrary.pod/group#id",
       "https://some-other.pod/container/",
       { read: true, append: false, write: false, control: false },
-      "default"
+      "default",
     );
     containerAcl = addAclRuleQuads(
       containerAcl,
       "https://some.pod/group#id",
       "https://some.pod/container/",
       { read: false, append: true, write: false, control: false },
-      "default"
+      "default",
     );
 
     const groupAccess = getGroupDefaultAccessAll(containerAcl);
@@ -1146,27 +1146,27 @@ describe("setGroupDefaultAccess", () => {
         append: true,
         write: true,
         control: true,
-      }
+      },
     );
 
     const newControl = getThingAll(updatedDataset)[0];
     expect(
-      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
     ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
     expect(
-      getIriAll(newControl, "http://www.w3.org/ns/auth/acl#mode")
+      getIriAll(newControl, "http://www.w3.org/ns/auth/acl#mode"),
     ).toContain("http://www.w3.org/ns/auth/acl#Read");
     expect(
-      getIriAll(newControl, "http://www.w3.org/ns/auth/acl#mode")
+      getIriAll(newControl, "http://www.w3.org/ns/auth/acl#mode"),
     ).toContain("http://www.w3.org/ns/auth/acl#Write");
     expect(
-      getIriAll(newControl, "http://www.w3.org/ns/auth/acl#mode")
+      getIriAll(newControl, "http://www.w3.org/ns/auth/acl#mode"),
     ).toContain("http://www.w3.org/ns/auth/acl#Control");
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#default")).toBe(
-      "https://arbitrary.pod/container/"
+      "https://arbitrary.pod/container/",
     );
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#agentGroup")).toBe(
-      "https://some.pod/groups#group"
+      "https://some.pod/groups#group",
     );
   });
 
@@ -1177,7 +1177,7 @@ describe("setGroupDefaultAccess", () => {
       "https://arbitrary.pod/resource",
       { read: true, append: true, write: true, control: true },
       "resource",
-      "https://arbitrary.pod/resource/?ext=acl#owner"
+      "https://arbitrary.pod/resource/?ext=acl#owner",
     );
     sourceDataset = addMockAclRuleQuads(
       sourceDataset,
@@ -1185,7 +1185,7 @@ describe("setGroupDefaultAccess", () => {
       "https://arbitrary.pod/resource",
       { read: true, append: true, write: true, control: true },
       "default",
-      "https://arbitrary.pod/resource/?ext=acl#owner"
+      "https://arbitrary.pod/resource/?ext=acl#owner",
     );
 
     const updatedDataset = setGroupDefaultAccess(
@@ -1196,7 +1196,7 @@ describe("setGroupDefaultAccess", () => {
         append: true,
         write: false,
         control: false,
-      }
+      },
     );
 
     // Explicitly check that the agent given resource access doesn't get additional privilege
@@ -1204,12 +1204,12 @@ describe("setGroupDefaultAccess", () => {
       // The agent given default access should not have resource access
       const expectedNrOfResourceRules = getIriAll(
         thing,
-        "http://www.w3.org/ns/auth/acl#agentGroup"
+        "http://www.w3.org/ns/auth/acl#agentGroup",
       ).includes("https://some.pod/groups#group")
         ? 0
         : 1;
       expect(
-        getIriAll(thing, "http://www.w3.org/ns/auth/acl#accessTo")
+        getIriAll(thing, "http://www.w3.org/ns/auth/acl#accessTo"),
       ).toHaveLength(expectedNrOfResourceRules);
     });
   });
@@ -1222,7 +1222,7 @@ describe("setGroupDefaultAccess", () => {
       { read: true, append: false, write: false, control: false },
       "resource",
       "https://arbitrary.pod/resource/?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+      "http://www.w3.org/ns/auth/acl#agentGroup",
     );
     sourceDataset = addMockAclRuleQuads(
       sourceDataset,
@@ -1231,7 +1231,7 @@ describe("setGroupDefaultAccess", () => {
       { read: true, append: true, write: false, control: false },
       "resource",
       "https://arbitrary.pod/resource/?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#agentClass"
+      "http://www.w3.org/ns/auth/acl#agentClass",
     );
     sourceDataset = addMockAclRuleQuads(
       sourceDataset,
@@ -1240,7 +1240,7 @@ describe("setGroupDefaultAccess", () => {
       { read: true, append: true, write: false, control: false },
       "resource",
       "https://arbitrary.pod/resource/?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#agent"
+      "http://www.w3.org/ns/auth/acl#agent",
     );
     sourceDataset = addMockAclRuleQuads(
       sourceDataset,
@@ -1249,7 +1249,7 @@ describe("setGroupDefaultAccess", () => {
       { read: true, append: true, write: false, control: false },
       "resource",
       "https://arbitrary.pod/resource/?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#origin"
+      "http://www.w3.org/ns/auth/acl#origin",
     );
 
     const updatedDataset = setGroupDefaultAccess(
@@ -1260,7 +1260,7 @@ describe("setGroupDefaultAccess", () => {
         append: true,
         write: true,
         control: true,
-      }
+      },
     );
 
     // Explicitly check that the group ACL is separate from the modified agent ACL
@@ -1310,7 +1310,7 @@ describe("setGroupDefaultAccess", () => {
         append: false,
         write: false,
         control: false,
-      }
+      },
     );
 
     const deletedQuads = updatedDataset.internal_changeLog.deletions;
@@ -1318,23 +1318,23 @@ describe("setGroupDefaultAccess", () => {
     const addedQuads = updatedDataset.internal_changeLog.additions;
     expect(addedQuads).toHaveLength(4);
     expect(addedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
     );
     expect(addedQuads[0].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Authorization"
+      "http://www.w3.org/ns/auth/acl#Authorization",
     );
     expect(addedQuads[1].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
+      "http://www.w3.org/ns/auth/acl#mode",
     );
     expect(addedQuads[1].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Read"
+      "http://www.w3.org/ns/auth/acl#Read",
     );
     expect(addedQuads[2].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#default"
+      "http://www.w3.org/ns/auth/acl#default",
     );
     expect(addedQuads[2].object.value).toBe("https://arbitrary.pod/container/");
     expect(addedQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+      "http://www.w3.org/ns/auth/acl#agentGroup",
     );
     expect(addedQuads[3].object.value).toBe("https://some.pod/groups#group");
   });
@@ -1356,21 +1356,21 @@ describe("setGroupDefaultAccess", () => {
         append: true,
         write: false,
         control: false,
-      }
+      },
     );
 
     const newControl = getThingAll(updatedDataset)[0];
     expect(
-      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
     ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#mode")).toBe(
-      "http://www.w3.org/ns/auth/acl#Append"
+      "http://www.w3.org/ns/auth/acl#Append",
     );
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#default")).toBe(
-      "https://arbitrary.pod/container/"
+      "https://arbitrary.pod/container/",
     );
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#agentGroup")).toBe(
-      "https://some.pod/groups#group"
+      "https://some.pod/groups#group",
     );
   });
 
@@ -1382,7 +1382,7 @@ describe("setGroupDefaultAccess", () => {
       { read: false, append: false, write: false, control: true },
       "default",
       "https://arbitrary.pod/resource/?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+      "http://www.w3.org/ns/auth/acl#agentGroup",
     );
 
     const updatedDataset = setGroupDefaultAccess(
@@ -1393,21 +1393,21 @@ describe("setGroupDefaultAccess", () => {
         append: false,
         write: false,
         control: false,
-      }
+      },
     );
 
     const newControl = getThingAll(updatedDataset)[0];
     expect(
-      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
     ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#mode")).toBe(
-      "http://www.w3.org/ns/auth/acl#Read"
+      "http://www.w3.org/ns/auth/acl#Read",
     );
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#default")).toBe(
-      "https://arbitrary.pod/container/"
+      "https://arbitrary.pod/container/",
     );
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#agentGroup")).toBe(
-      "https://some.pod/groups#group"
+      "https://some.pod/groups#group",
     );
   });
 
@@ -1419,7 +1419,7 @@ describe("setGroupDefaultAccess", () => {
       { read: true, append: false, write: false, control: false },
       "default",
       "https://arbitrary.pod/resource/?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+      "http://www.w3.org/ns/auth/acl#agentGroup",
     );
 
     const updatedDataset = setGroupDefaultAccess(
@@ -1430,7 +1430,7 @@ describe("setGroupDefaultAccess", () => {
         append: false,
         write: false,
         control: false,
-      }
+      },
     );
 
     expect(getThingAll(updatedDataset)).toHaveLength(0);
@@ -1444,13 +1444,13 @@ describe("setGroupDefaultAccess", () => {
       { read: true, append: false, write: false, control: false },
       "default",
       "https://arbitrary.pod/resource/?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+      "http://www.w3.org/ns/auth/acl#agentGroup",
     );
     let firstControl = getThingAll(sourceDataset)[0];
     firstControl = addIri(
       firstControl,
       "http://www.w3.org/ns/auth/acl#accessTo",
-      "https://arbitrary.pod/container/"
+      "https://arbitrary.pod/container/",
     );
     sourceDataset = setThing(sourceDataset, firstControl);
 
@@ -1462,21 +1462,21 @@ describe("setGroupDefaultAccess", () => {
         append: false,
         write: false,
         control: false,
-      }
+      },
     );
 
     const newControl = getThingAll(updatedDataset)[0];
     expect(
-      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
     ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#mode")).toBe(
-      "http://www.w3.org/ns/auth/acl#Read"
+      "http://www.w3.org/ns/auth/acl#Read",
     );
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#accessTo")).toBe(
-      "https://arbitrary.pod/container/"
+      "https://arbitrary.pod/container/",
     );
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#agentGroup")).toBe(
-      "https://some.pod/groups#group"
+      "https://some.pod/groups#group",
     );
   });
 
@@ -1488,13 +1488,13 @@ describe("setGroupDefaultAccess", () => {
       { read: true, append: false, write: false, control: false },
       "default",
       "https://arbitrary.pod/resource/?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+      "http://www.w3.org/ns/auth/acl#agentGroup",
     );
     let firstControl = getThingAll(sourceDataset)[0];
     firstControl = addIri(
       firstControl,
       "http://www.w3.org/ns/auth/acl#default",
-      "https://arbitrary.pod/other-container/"
+      "https://arbitrary.pod/other-container/",
     );
     sourceDataset = setThing(sourceDataset, firstControl);
 
@@ -1506,21 +1506,21 @@ describe("setGroupDefaultAccess", () => {
         append: false,
         write: false,
         control: false,
-      }
+      },
     );
 
     const newControl = getThingAll(updatedDataset)[0];
     expect(
-      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
     ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#mode")).toBe(
-      "http://www.w3.org/ns/auth/acl#Read"
+      "http://www.w3.org/ns/auth/acl#Read",
     );
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#default")).toBe(
-      "https://arbitrary.pod/other-container/"
+      "https://arbitrary.pod/other-container/",
     );
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#agentGroup")).toBe(
-      "https://some.pod/groups#group"
+      "https://some.pod/groups#group",
     );
   });
 
@@ -1532,13 +1532,13 @@ describe("setGroupDefaultAccess", () => {
       { read: true, append: false, write: false, control: false },
       "default",
       "https://arbitrary.pod/resource/?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+      "http://www.w3.org/ns/auth/acl#agentGroup",
     );
     let firstControl = getThingAll(sourceDataset)[0];
     firstControl = addIri(
       firstControl,
       "http://www.w3.org/ns/auth/acl#agentGroup",
-      "https://some-other.pod/groups#group"
+      "https://some-other.pod/groups#group",
     );
     sourceDataset = setThing(sourceDataset, firstControl);
 
@@ -1550,21 +1550,21 @@ describe("setGroupDefaultAccess", () => {
         append: false,
         write: false,
         control: false,
-      }
+      },
     );
 
     const newControl = getThingAll(updatedDataset)[0];
     expect(
-      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
     ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#mode")).toBe(
-      "http://www.w3.org/ns/auth/acl#Read"
+      "http://www.w3.org/ns/auth/acl#Read",
     );
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#default")).toBe(
-      "https://arbitrary.pod/container/"
+      "https://arbitrary.pod/container/",
     );
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#agentGroup")).toBe(
-      "https://some-other.pod/groups#group"
+      "https://some-other.pod/groups#group",
     );
   });
 
@@ -1576,13 +1576,13 @@ describe("setGroupDefaultAccess", () => {
       { read: true, append: false, write: false, control: false },
       "default",
       "https://arbitrary.pod/resource/?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+      "http://www.w3.org/ns/auth/acl#agentGroup",
     );
     let firstControl = getThingAll(sourceDataset)[0];
     firstControl = addIri(
       firstControl,
       "http://www.w3.org/ns/auth/acl#agentClass",
-      "http://xmlns.com/foaf/0.1/Agent"
+      "http://xmlns.com/foaf/0.1/Agent",
     );
     sourceDataset = setThing(sourceDataset, firstControl);
 
@@ -1594,21 +1594,21 @@ describe("setGroupDefaultAccess", () => {
         append: false,
         write: false,
         control: false,
-      }
+      },
     );
 
     const newControl = getThingAll(updatedDataset)[0];
     expect(
-      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
     ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#mode")).toBe(
-      "http://www.w3.org/ns/auth/acl#Read"
+      "http://www.w3.org/ns/auth/acl#Read",
     );
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#default")).toBe(
-      "https://arbitrary.pod/container/"
+      "https://arbitrary.pod/container/",
     );
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#agentClass")).toBe(
-      "http://xmlns.com/foaf/0.1/Agent"
+      "http://xmlns.com/foaf/0.1/Agent",
     );
   });
 
@@ -1620,13 +1620,13 @@ describe("setGroupDefaultAccess", () => {
       { read: true, append: false, write: false, control: false },
       "default",
       "https://arbitrary.pod/resource/?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+      "http://www.w3.org/ns/auth/acl#agentGroup",
     );
     let firstControl = getThingAll(sourceDataset)[0];
     firstControl = addIri(
       firstControl,
       "http://www.w3.org/ns/auth/acl#agentGroup",
-      "https://some-other.pod/groups#group"
+      "https://some-other.pod/groups#group",
     );
     sourceDataset = setThing(sourceDataset, firstControl);
 
@@ -1638,19 +1638,19 @@ describe("setGroupDefaultAccess", () => {
         append: true,
         write: false,
         control: false,
-      }
+      },
     );
 
     const newControls = getThingAll(updatedDataset);
     expect(newControls).toHaveLength(2);
     expect(
-      getIri(newControls[0], "http://www.w3.org/ns/auth/acl#mode")
+      getIri(newControls[0], "http://www.w3.org/ns/auth/acl#mode"),
     ).not.toBeNull();
     expect(
-      getIri(newControls[1], "http://www.w3.org/ns/auth/acl#mode")
+      getIri(newControls[1], "http://www.w3.org/ns/auth/acl#mode"),
     ).not.toBeNull();
     expect(
-      getIri(newControls[0], "http://www.w3.org/ns/auth/acl#mode")
+      getIri(newControls[0], "http://www.w3.org/ns/auth/acl#mode"),
     ).not.toBe(getIri(newControls[1], "http://www.w3.org/ns/auth/acl#mode"));
   });
 
@@ -1662,7 +1662,7 @@ describe("setGroupDefaultAccess", () => {
       { read: true, append: true, write: true, control: true },
       "default",
       "https://arbitrary.pod/resource/?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+      "http://www.w3.org/ns/auth/acl#agentGroup",
     );
     sourceDataset = addMockAclRuleQuads(
       sourceDataset,
@@ -1671,7 +1671,7 @@ describe("setGroupDefaultAccess", () => {
       { read: true, append: true, write: true, control: true },
       "legacyDefault",
       "https://arbitrary.pod/resource/?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+      "http://www.w3.org/ns/auth/acl#agentGroup",
     );
 
     const updatedDataset = setGroupDefaultAccess(
@@ -1682,7 +1682,7 @@ describe("setGroupDefaultAccess", () => {
         append: false,
         write: false,
         control: false,
-      }
+      },
     );
 
     // Explicitly check that the agent given resource access doesn't get additional privilege:
@@ -1690,17 +1690,17 @@ describe("setGroupDefaultAccess", () => {
     getThingAll(updatedDataset).forEach((thing) => {
       if (
         !getIriAll(thing, "http://www.w3.org/ns/auth/acl#agentGroup").includes(
-          "https://some.pod/groups#group"
+          "https://some.pod/groups#group",
         )
       ) {
         return;
       }
       // The agent given resource access should no longer have default access
       expect(
-        getIriAll(thing, "http://www.w3.org/ns/auth/acl#default")
+        getIriAll(thing, "http://www.w3.org/ns/auth/acl#default"),
       ).toHaveLength(0);
       expect(
-        getIriAll(thing, "http://www.w3.org/ns/auth/acl#defaultForNew")
+        getIriAll(thing, "http://www.w3.org/ns/auth/acl#defaultForNew"),
       ).toHaveLength(0);
     });
 
@@ -1716,7 +1716,7 @@ describe("setGroupDefaultAccess", () => {
       { read: true, append: true, write: true, control: true },
       "default",
       "https://arbitrary.pod/resource/?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+      "http://www.w3.org/ns/auth/acl#agentGroup",
     );
     sourceDataset = addMockAclRuleQuads(
       sourceDataset,
@@ -1725,7 +1725,7 @@ describe("setGroupDefaultAccess", () => {
       { read: true, append: true, write: true, control: true },
       "legacyDefault",
       "https://arbitrary.pod/resource/?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+      "http://www.w3.org/ns/auth/acl#agentGroup",
     );
 
     const updatedDataset = setGroupDefaultAccess(
@@ -1736,7 +1736,7 @@ describe("setGroupDefaultAccess", () => {
         append: false,
         write: false,
         control: false,
-      }
+      },
     );
 
     // Explicitly check that the agent given default access no longer has 'defaultForNew'
@@ -1744,17 +1744,17 @@ describe("setGroupDefaultAccess", () => {
     getThingAll(updatedDataset).forEach((thing) => {
       if (
         !getIriAll(thing, "http://www.w3.org/ns/auth/acl#agentGroup").includes(
-          "https://some.pod/groups#group"
+          "https://some.pod/groups#group",
         )
       ) {
         return;
       }
       expect(
-        getIriAll(thing, "http://www.w3.org/ns/auth/acl#default")
+        getIriAll(thing, "http://www.w3.org/ns/auth/acl#default"),
       ).toHaveLength(1);
       // The agent given resource access should no longer have legacy default access.
       expect(
-        getIriAll(thing, "http://www.w3.org/ns/auth/acl#defaultForNew")
+        getIriAll(thing, "http://www.w3.org/ns/auth/acl#defaultForNew"),
       ).toHaveLength(0);
     });
   });
@@ -1775,27 +1775,27 @@ describe("setGroupResourceAccess", () => {
         append: true,
         write: true,
         control: true,
-      }
+      },
     );
 
     const newControl = getThingAll(updatedDataset)[0];
     expect(
-      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
     ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
     expect(
-      getIriAll(newControl, "http://www.w3.org/ns/auth/acl#mode")
+      getIriAll(newControl, "http://www.w3.org/ns/auth/acl#mode"),
     ).toContain("http://www.w3.org/ns/auth/acl#Read");
     expect(
-      getIriAll(newControl, "http://www.w3.org/ns/auth/acl#mode")
+      getIriAll(newControl, "http://www.w3.org/ns/auth/acl#mode"),
     ).toContain("http://www.w3.org/ns/auth/acl#Write");
     expect(
-      getIriAll(newControl, "http://www.w3.org/ns/auth/acl#mode")
+      getIriAll(newControl, "http://www.w3.org/ns/auth/acl#mode"),
     ).toContain("http://www.w3.org/ns/auth/acl#Control");
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#accessTo")).toBe(
-      "https://arbitrary.pod/resource"
+      "https://arbitrary.pod/resource",
     );
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#agentGroup")).toBe(
-      "https://some.pod/groups#group"
+      "https://some.pod/groups#group",
     );
   });
 
@@ -1806,7 +1806,7 @@ describe("setGroupResourceAccess", () => {
       "https://arbitrary.pod/resource",
       { read: true, append: true, write: true, control: true },
       "default",
-      "https://arbitrary.pod/resource/?ext=acl#owner"
+      "https://arbitrary.pod/resource/?ext=acl#owner",
     );
     sourceDataset = addMockAclRuleQuads(
       sourceDataset,
@@ -1814,7 +1814,7 @@ describe("setGroupResourceAccess", () => {
       "https://arbitrary.pod/resource",
       { read: true, append: true, write: true, control: true },
       "resource",
-      "https://arbitrary.pod/resource/?ext=acl#owner"
+      "https://arbitrary.pod/resource/?ext=acl#owner",
     );
 
     const updatedDataset = setGroupResourceAccess(
@@ -1825,7 +1825,7 @@ describe("setGroupResourceAccess", () => {
         append: true,
         write: false,
         control: false,
-      }
+      },
     );
 
     // Explicitly check that the agent given resource access doesn't get additional privilege
@@ -1833,12 +1833,12 @@ describe("setGroupResourceAccess", () => {
       // The agent given default access should not have resource access
       const expectedNrOfResourceRules = getIriAll(
         thing,
-        "http://www.w3.org/ns/auth/acl#agentGroup"
+        "http://www.w3.org/ns/auth/acl#agentGroup",
       ).includes("https://some.pod/groups#group")
         ? 0
         : 1;
       expect(
-        getIriAll(thing, "http://www.w3.org/ns/auth/acl#default")
+        getIriAll(thing, "http://www.w3.org/ns/auth/acl#default"),
       ).toHaveLength(expectedNrOfResourceRules);
     });
   });
@@ -1851,7 +1851,7 @@ describe("setGroupResourceAccess", () => {
       { read: true, append: true, write: false, control: false },
       "default",
       "https://arbitrary.pod/resource?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+      "http://www.w3.org/ns/auth/acl#agentGroup",
     );
     sourceDataset = addMockAclRuleQuads(
       sourceDataset,
@@ -1860,7 +1860,7 @@ describe("setGroupResourceAccess", () => {
       { read: true, append: true, write: false, control: false },
       "default",
       "https://arbitrary.pod/resource?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#agentClass"
+      "http://www.w3.org/ns/auth/acl#agentClass",
     );
     sourceDataset = addMockAclRuleQuads(
       sourceDataset,
@@ -1869,7 +1869,7 @@ describe("setGroupResourceAccess", () => {
       { read: true, append: true, write: false, control: false },
       "default",
       "https://arbitrary.pod/resource?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#agent"
+      "http://www.w3.org/ns/auth/acl#agent",
     );
     sourceDataset = addMockAclRuleQuads(
       sourceDataset,
@@ -1878,7 +1878,7 @@ describe("setGroupResourceAccess", () => {
       { read: true, append: true, write: false, control: false },
       "default",
       "https://arbitrary.pod/resource?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#origin"
+      "http://www.w3.org/ns/auth/acl#origin",
     );
 
     const updatedDataset = setGroupResourceAccess(
@@ -1889,7 +1889,7 @@ describe("setGroupResourceAccess", () => {
         append: true,
         write: true,
         control: true,
-      }
+      },
     );
 
     // Explicitly check that the group ACL is separate from the modified agent ACL
@@ -1906,7 +1906,7 @@ describe("setGroupResourceAccess", () => {
 
       // Any actors other than the specified group should not have been given resource access:
       expect(
-        getIri(thing, "http://www.w3.org/ns/auth/acl#accessTo")
+        getIri(thing, "http://www.w3.org/ns/auth/acl#accessTo"),
       ).toBeNull();
     });
   });
@@ -1941,7 +1941,7 @@ describe("setGroupResourceAccess", () => {
         append: false,
         write: false,
         control: false,
-      }
+      },
     );
 
     const deletedQuads = updatedDataset.internal_changeLog.deletions;
@@ -1949,23 +1949,23 @@ describe("setGroupResourceAccess", () => {
     const addedQuads = updatedDataset.internal_changeLog.additions;
     expect(addedQuads).toHaveLength(4);
     expect(addedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
     );
     expect(addedQuads[0].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Authorization"
+      "http://www.w3.org/ns/auth/acl#Authorization",
     );
     expect(addedQuads[1].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
+      "http://www.w3.org/ns/auth/acl#mode",
     );
     expect(addedQuads[1].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Read"
+      "http://www.w3.org/ns/auth/acl#Read",
     );
     expect(addedQuads[2].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#accessTo"
+      "http://www.w3.org/ns/auth/acl#accessTo",
     );
     expect(addedQuads[2].object.value).toBe("https://arbitrary.pod/resource");
     expect(addedQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+      "http://www.w3.org/ns/auth/acl#agentGroup",
     );
     expect(addedQuads[3].object.value).toBe("https://some.pod/groups#group");
   });
@@ -1987,21 +1987,21 @@ describe("setGroupResourceAccess", () => {
         append: true,
         write: false,
         control: false,
-      }
+      },
     );
 
     const newControl = getThingAll(updatedDataset)[0];
     expect(
-      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
     ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#mode")).toBe(
-      "http://www.w3.org/ns/auth/acl#Append"
+      "http://www.w3.org/ns/auth/acl#Append",
     );
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#accessTo")).toBe(
-      "https://arbitrary.pod/resource"
+      "https://arbitrary.pod/resource",
     );
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#agentGroup")).toBe(
-      "https://some.pod/groups#group"
+      "https://some.pod/groups#group",
     );
   });
 
@@ -2013,7 +2013,7 @@ describe("setGroupResourceAccess", () => {
       { read: false, append: false, write: false, control: true },
       "resource",
       "https://arbitrary.pod/resource/?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+      "http://www.w3.org/ns/auth/acl#agentGroup",
     );
 
     const updatedDataset = setGroupResourceAccess(
@@ -2024,21 +2024,21 @@ describe("setGroupResourceAccess", () => {
         append: false,
         write: false,
         control: false,
-      }
+      },
     );
 
     const newControl = getThingAll(updatedDataset)[0];
     expect(
-      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
     ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#mode")).toBe(
-      "http://www.w3.org/ns/auth/acl#Read"
+      "http://www.w3.org/ns/auth/acl#Read",
     );
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#accessTo")).toBe(
-      "https://arbitrary.pod/resource"
+      "https://arbitrary.pod/resource",
     );
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#agentGroup")).toBe(
-      "https://some.pod/groups#group"
+      "https://some.pod/groups#group",
     );
   });
 
@@ -2050,7 +2050,7 @@ describe("setGroupResourceAccess", () => {
       { read: true, append: false, write: false, control: false },
       "resource",
       "https://arbitrary.pod/resource?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+      "http://www.w3.org/ns/auth/acl#agentGroup",
     );
 
     const updatedDataset = setGroupResourceAccess(
@@ -2061,7 +2061,7 @@ describe("setGroupResourceAccess", () => {
         append: false,
         write: false,
         control: false,
-      }
+      },
     );
 
     expect(getThingAll(updatedDataset)).toHaveLength(0);
@@ -2075,13 +2075,13 @@ describe("setGroupResourceAccess", () => {
       { read: true, append: false, write: false, control: false },
       "resource",
       "https://arbitrary.pod/resource?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+      "http://www.w3.org/ns/auth/acl#agentGroup",
     );
     let firstControl = getThingAll(sourceDataset)[0];
     firstControl = addIri(
       firstControl,
       "http://www.w3.org/ns/auth/acl#default",
-      "https://arbitrary.pod/container/"
+      "https://arbitrary.pod/container/",
     );
     sourceDataset = setThing(sourceDataset, firstControl);
 
@@ -2093,21 +2093,21 @@ describe("setGroupResourceAccess", () => {
         append: false,
         write: false,
         control: false,
-      }
+      },
     );
 
     const newControl = getThingAll(updatedDataset)[0];
     expect(
-      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
     ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#mode")).toBe(
-      "http://www.w3.org/ns/auth/acl#Read"
+      "http://www.w3.org/ns/auth/acl#Read",
     );
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#default")).toBe(
-      "https://arbitrary.pod/container/"
+      "https://arbitrary.pod/container/",
     );
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#agentGroup")).toBe(
-      "https://some.pod/groups#group"
+      "https://some.pod/groups#group",
     );
   });
 
@@ -2119,13 +2119,13 @@ describe("setGroupResourceAccess", () => {
       { read: true, append: false, write: false, control: false },
       "resource",
       "https://arbitrary.pod/resource/?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+      "http://www.w3.org/ns/auth/acl#agentGroup",
     );
     let firstControl = getThingAll(sourceDataset)[0];
     firstControl = addIri(
       firstControl,
       "http://www.w3.org/ns/auth/acl#accessTo",
-      "https://arbitrary.pod/other-resource"
+      "https://arbitrary.pod/other-resource",
     );
     sourceDataset = setThing(sourceDataset, firstControl);
 
@@ -2137,21 +2137,21 @@ describe("setGroupResourceAccess", () => {
         append: false,
         write: false,
         control: false,
-      }
+      },
     );
 
     const newControl = getThingAll(updatedDataset)[0];
     expect(
-      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
     ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#mode")).toBe(
-      "http://www.w3.org/ns/auth/acl#Read"
+      "http://www.w3.org/ns/auth/acl#Read",
     );
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#accessTo")).toBe(
-      "https://arbitrary.pod/other-resource"
+      "https://arbitrary.pod/other-resource",
     );
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#agentGroup")).toBe(
-      "https://some.pod/groups#group"
+      "https://some.pod/groups#group",
     );
   });
 
@@ -2163,13 +2163,13 @@ describe("setGroupResourceAccess", () => {
       { read: true, append: false, write: false, control: false },
       "resource",
       "https://arbitrary.pod/resource/?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+      "http://www.w3.org/ns/auth/acl#agentGroup",
     );
     let firstControl = getThingAll(sourceDataset)[0];
     firstControl = addIri(
       firstControl,
       "http://www.w3.org/ns/auth/acl#agentGroup",
-      "https://some-other.pod/groups#group"
+      "https://some-other.pod/groups#group",
     );
     sourceDataset = setThing(sourceDataset, firstControl);
 
@@ -2181,21 +2181,21 @@ describe("setGroupResourceAccess", () => {
         append: false,
         write: false,
         control: false,
-      }
+      },
     );
 
     const newControl = getThingAll(updatedDataset)[0];
     expect(
-      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
     ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#mode")).toBe(
-      "http://www.w3.org/ns/auth/acl#Read"
+      "http://www.w3.org/ns/auth/acl#Read",
     );
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#accessTo")).toBe(
-      "https://arbitrary.pod/resource"
+      "https://arbitrary.pod/resource",
     );
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#agentGroup")).toBe(
-      "https://some-other.pod/groups#group"
+      "https://some-other.pod/groups#group",
     );
   });
 
@@ -2207,13 +2207,13 @@ describe("setGroupResourceAccess", () => {
       { read: true, append: false, write: false, control: false },
       "resource",
       "https://arbitrary.pod/resource/?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+      "http://www.w3.org/ns/auth/acl#agentGroup",
     );
     let firstControl = getThingAll(sourceDataset)[0];
     firstControl = addIri(
       firstControl,
       "http://www.w3.org/ns/auth/acl#agentClass",
-      "http://xmlns.com/foaf/0.1/Agent"
+      "http://xmlns.com/foaf/0.1/Agent",
     );
     sourceDataset = setThing(sourceDataset, firstControl);
 
@@ -2225,21 +2225,21 @@ describe("setGroupResourceAccess", () => {
         append: false,
         write: false,
         control: false,
-      }
+      },
     );
 
     const newControl = getThingAll(updatedDataset)[0];
     expect(
-      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+      getIri(newControl, "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
     ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#mode")).toBe(
-      "http://www.w3.org/ns/auth/acl#Read"
+      "http://www.w3.org/ns/auth/acl#Read",
     );
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#accessTo")).toBe(
-      "https://arbitrary.pod/resource"
+      "https://arbitrary.pod/resource",
     );
     expect(getIri(newControl, "http://www.w3.org/ns/auth/acl#agentClass")).toBe(
-      "http://xmlns.com/foaf/0.1/Agent"
+      "http://xmlns.com/foaf/0.1/Agent",
     );
   });
 
@@ -2251,13 +2251,13 @@ describe("setGroupResourceAccess", () => {
       { read: true, append: false, write: false, control: false },
       "resource",
       "https://arbitrary.pod/resource/?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+      "http://www.w3.org/ns/auth/acl#agentGroup",
     );
     let firstControl = getThingAll(sourceDataset)[0];
     firstControl = addIri(
       firstControl,
       "http://www.w3.org/ns/auth/acl#agentGroup",
-      "https://some-other.pod/groups#group"
+      "https://some-other.pod/groups#group",
     );
     sourceDataset = setThing(sourceDataset, firstControl);
 
@@ -2269,19 +2269,19 @@ describe("setGroupResourceAccess", () => {
         append: true,
         write: false,
         control: false,
-      }
+      },
     );
 
     const newControls = getThingAll(updatedDataset);
     expect(newControls).toHaveLength(2);
     expect(
-      getIri(newControls[0], "http://www.w3.org/ns/auth/acl#mode")
+      getIri(newControls[0], "http://www.w3.org/ns/auth/acl#mode"),
     ).not.toBeNull();
     expect(
-      getIri(newControls[1], "http://www.w3.org/ns/auth/acl#mode")
+      getIri(newControls[1], "http://www.w3.org/ns/auth/acl#mode"),
     ).not.toBeNull();
     expect(
-      getIri(newControls[0], "http://www.w3.org/ns/auth/acl#mode")
+      getIri(newControls[0], "http://www.w3.org/ns/auth/acl#mode"),
     ).not.toBe(getIri(newControls[1], "http://www.w3.org/ns/auth/acl#mode"));
   });
 });

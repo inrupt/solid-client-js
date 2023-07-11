@@ -55,7 +55,7 @@ function addAclRuleQuads(
     | "http://www.w3.org/ns/auth/acl#agentClass"
     | "http://www.w3.org/ns/auth/acl#agent"
     | "http://www.w3.org/ns/auth/acl#agentGroup"
-    | "http://www.w3.org/ns/auth/acl#origin" = "http://www.w3.org/ns/auth/acl#agentClass"
+    | "http://www.w3.org/ns/auth/acl#origin" = "http://www.w3.org/ns/auth/acl#agentClass",
 ): AclDataset {
   const thingOptions =
     typeof ruleIri === "string"
@@ -65,7 +65,7 @@ function addAclRuleQuads(
   newControl = addIri(
     newControl,
     "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-    "http://www.w3.org/ns/auth/acl#Authorization"
+    "http://www.w3.org/ns/auth/acl#Authorization",
   );
   let resourceRelation: IriString = "http://www.w3.org/ns/auth/acl#accessTo";
   if (type === "default") {
@@ -80,28 +80,28 @@ function addAclRuleQuads(
     newControl = addIri(
       newControl,
       "http://www.w3.org/ns/auth/acl#mode",
-      "http://www.w3.org/ns/auth/acl#Read"
+      "http://www.w3.org/ns/auth/acl#Read",
     );
   }
   if (access.append) {
     newControl = addIri(
       newControl,
       "http://www.w3.org/ns/auth/acl#mode",
-      "http://www.w3.org/ns/auth/acl#Append"
+      "http://www.w3.org/ns/auth/acl#Append",
     );
   }
   if (access.write) {
     newControl = addIri(
       newControl,
       "http://www.w3.org/ns/auth/acl#mode",
-      "http://www.w3.org/ns/auth/acl#Write"
+      "http://www.w3.org/ns/auth/acl#Write",
     );
   }
   if (access.control) {
     newControl = addIri(
       newControl,
       "http://www.w3.org/ns/auth/acl#mode",
-      "http://www.w3.org/ns/auth/acl#Control"
+      "http://www.w3.org/ns/auth/acl#Control",
     );
   }
 
@@ -112,7 +112,7 @@ function addAclRuleQuads(
 function addAclDatasetToSolidDataset(
   solidDataset: SolidDataset & WithServerResourceInfo,
   aclDataset: AclDataset,
-  type: "resource" | "fallback"
+  type: "resource" | "fallback",
 ): SolidDataset & WithServerResourceInfo & WithAcl {
   const acl: WithAcl["internal_acl"] = {
     ...((solidDataset as any as WithAcl).internal_acl ?? {
@@ -134,19 +134,19 @@ function addAclDatasetToSolidDataset(
 describe("getPublicAccess", () => {
   it("returns the Resource's own applicable ACL rules", () => {
     const solidDataset = mockSolidDatasetFrom(
-      "https://some.pod/container/resource"
+      "https://some.pod/container/resource",
     );
     const resourceAcl = addAclRuleQuads(
       mockSolidDatasetFrom("https://some.pod/container/resource.acl"),
       "https://some.pod/container/resource",
       { read: false, append: false, write: false, control: true },
       "resource",
-      "http://xmlns.com/foaf/0.1/Agent"
+      "http://xmlns.com/foaf/0.1/Agent",
     );
     const solidDatasetWithAcl = addAclDatasetToSolidDataset(
       solidDataset,
       resourceAcl,
-      "resource"
+      "resource",
     );
 
     const access = getPublicAccess(solidDatasetWithAcl);
@@ -161,19 +161,19 @@ describe("getPublicAccess", () => {
 
   it("returns the fallback ACL rules if no Resource ACL SolidDataset is available", () => {
     const solidDataset = mockSolidDatasetFrom(
-      "https://some.pod/container/resource"
+      "https://some.pod/container/resource",
     );
     const fallbackAcl = addAclRuleQuads(
       mockSolidDatasetFrom("https://some.pod/container/.acl"),
       "https://some.pod/container/",
       { read: false, append: false, write: false, control: true },
       "default",
-      "http://xmlns.com/foaf/0.1/Agent"
+      "http://xmlns.com/foaf/0.1/Agent",
     );
     const solidDatasetWithAcl = addAclDatasetToSolidDataset(
       solidDataset,
       fallbackAcl,
-      "fallback"
+      "fallback",
     );
 
     const access = getPublicAccess(solidDatasetWithAcl);
@@ -188,7 +188,7 @@ describe("getPublicAccess", () => {
 
   it("returns null if neither the Resource's own nor a fallback ACL was accessible", () => {
     const solidDataset = mockSolidDatasetFrom(
-      "https://some.pod/container/resource"
+      "https://some.pod/container/resource",
     );
     const solidDatasetWithInaccessibleAcl = internal_setAcl(solidDataset, {
       fallbackAcl: null,
@@ -200,31 +200,31 @@ describe("getPublicAccess", () => {
 
   it("ignores the fallback ACL rules if a Resource ACL SolidDataset is available", () => {
     const solidDataset = mockSolidDatasetFrom(
-      "https://some.pod/container/resource"
+      "https://some.pod/container/resource",
     );
     const resourceAcl = addAclRuleQuads(
       mockSolidDatasetFrom("https://some.pod/container/resource.acl"),
       "https://some.pod/container/resource",
       { read: true, append: false, write: false, control: false },
       "resource",
-      "http://xmlns.com/foaf/0.1/Agent"
+      "http://xmlns.com/foaf/0.1/Agent",
     );
     const fallbackAcl = addAclRuleQuads(
       mockSolidDatasetFrom("https://some.pod/container/.acl"),
       "https://some.pod/container/",
       { read: false, append: false, write: false, control: true },
       "default",
-      "http://xmlns.com/foaf/0.1/Agent"
+      "http://xmlns.com/foaf/0.1/Agent",
     );
     const solidDatasetWithJustResourceAcl = addAclDatasetToSolidDataset(
       solidDataset,
       resourceAcl,
-      "resource"
+      "resource",
     );
     const solidDatasetWithAcl = addAclDatasetToSolidDataset(
       solidDatasetWithJustResourceAcl,
       fallbackAcl,
-      "fallback"
+      "fallback",
     );
 
     const access = getPublicAccess(solidDatasetWithAcl);
@@ -244,19 +244,19 @@ describe("getPublicAccess", () => {
       "https://some.pod/container/",
       { read: true, append: false, write: false, control: false },
       "resource",
-      "http://xmlns.com/foaf/0.1/Agent"
+      "http://xmlns.com/foaf/0.1/Agent",
     );
     const resourceAclWithDefaultRules = addAclRuleQuads(
       resourceAcl,
       "https://some.pod/container/",
       { read: false, append: false, write: false, control: true },
       "default",
-      "http://xmlns.com/foaf/0.1/Agent"
+      "http://xmlns.com/foaf/0.1/Agent",
     );
     const solidDatasetWithAcl = addAclDatasetToSolidDataset(
       solidDataset,
       resourceAclWithDefaultRules,
-      "resource"
+      "resource",
     );
 
     const access = getPublicAccess(solidDatasetWithAcl);
@@ -271,26 +271,26 @@ describe("getPublicAccess", () => {
 
   it("ignores Resource ACL rules from the fallback ACL SolidDataset", () => {
     const solidDataset = mockSolidDatasetFrom(
-      "https://some.pod/container/resource"
+      "https://some.pod/container/resource",
     );
     const fallbackAcl = addAclRuleQuads(
       mockSolidDatasetFrom("https://some.pod/container/.acl"),
       "https://some.pod/container/",
       { read: true, append: false, write: false, control: false },
       "resource",
-      "http://xmlns.com/foaf/0.1/Agent"
+      "http://xmlns.com/foaf/0.1/Agent",
     );
     const fallbackAclWithDefaultRules = addAclRuleQuads(
       fallbackAcl,
       "https://some.pod/container/",
       { read: false, append: false, write: false, control: true },
       "default",
-      "http://xmlns.com/foaf/0.1/Agent"
+      "http://xmlns.com/foaf/0.1/Agent",
     );
     const solidDatasetWithAcl = addAclDatasetToSolidDataset(
       solidDataset,
       fallbackAclWithDefaultRules,
-      "fallback"
+      "fallback",
     );
 
     const access = getPublicAccess(solidDatasetWithAcl);
@@ -311,7 +311,7 @@ describe("getPublicResourceAccess", () => {
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: true },
       "resource",
-      "http://xmlns.com/foaf/0.1/Agent"
+      "http://xmlns.com/foaf/0.1/Agent",
     );
 
     const publicAccess = getPublicResourceAccess(resourceAcl);
@@ -330,14 +330,14 @@ describe("getPublicResourceAccess", () => {
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
       "resource",
-      "http://xmlns.com/foaf/0.1/Agent"
+      "http://xmlns.com/foaf/0.1/Agent",
     );
     resourceAcl = addAclRuleQuads(
       resourceAcl,
       "https://arbitrary.pod/resource",
       { read: false, append: true, write: false, control: false },
       "resource",
-      "http://xmlns.com/foaf/0.1/Agent"
+      "http://xmlns.com/foaf/0.1/Agent",
     );
 
     const agentAccess = getPublicResourceAccess(resourceAcl);
@@ -356,7 +356,7 @@ describe("getPublicResourceAccess", () => {
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
       "resource",
-      "http://www.w3.org/ns/auth/acl#AuthenticatedAgent"
+      "http://www.w3.org/ns/auth/acl#AuthenticatedAgent",
     );
 
     const agentAccess = getPublicResourceAccess(resourceAcl);
@@ -375,14 +375,14 @@ describe("getPublicResourceAccess", () => {
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
       "resource",
-      "http://www.w3.org/ns/auth/acl#AuthenticatedAgent"
+      "http://www.w3.org/ns/auth/acl#AuthenticatedAgent",
     );
     resourceAcl = addAclRuleQuads(
       resourceAcl,
       "https://arbitrary.pod/resource",
       { read: false, append: true, write: false, control: false },
       "resource",
-      "http://xmlns.com/foaf/0.1/Agent"
+      "http://xmlns.com/foaf/0.1/Agent",
     );
 
     const agentAccess = getPublicResourceAccess(resourceAcl);
@@ -401,14 +401,14 @@ describe("getPublicResourceAccess", () => {
       "https://some-other.pod/resource",
       { read: true, append: false, write: false, control: false },
       "resource",
-      "http://xmlns.com/foaf/0.1/Agent"
+      "http://xmlns.com/foaf/0.1/Agent",
     );
     resourceAcl = addAclRuleQuads(
       resourceAcl,
       "https://some.pod/resource",
       { read: false, append: true, write: false, control: false },
       "resource",
-      "http://xmlns.com/foaf/0.1/Agent"
+      "http://xmlns.com/foaf/0.1/Agent",
     );
 
     const agentAccess = getPublicResourceAccess(resourceAcl);
@@ -429,7 +429,7 @@ describe("getPublicDefaultAccess", () => {
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: true },
       "default",
-      "http://xmlns.com/foaf/0.1/Agent"
+      "http://xmlns.com/foaf/0.1/Agent",
     );
 
     const agentAccess = getPublicDefaultAccess(containerAcl);
@@ -448,14 +448,14 @@ describe("getPublicDefaultAccess", () => {
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
       "default",
-      "http://xmlns.com/foaf/0.1/Agent"
+      "http://xmlns.com/foaf/0.1/Agent",
     );
     containerAcl = addAclRuleQuads(
       containerAcl,
       "https://arbitrary.pod/container/",
       { read: false, append: true, write: false, control: false },
       "default",
-      "http://xmlns.com/foaf/0.1/Agent"
+      "http://xmlns.com/foaf/0.1/Agent",
     );
 
     const agentAccess = getPublicDefaultAccess(containerAcl);
@@ -474,7 +474,7 @@ describe("getPublicDefaultAccess", () => {
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
       "default",
-      "http://www.w3.org/ns/auth/acl#AuthenticatedAgent"
+      "http://www.w3.org/ns/auth/acl#AuthenticatedAgent",
     );
 
     const agentAccess = getPublicDefaultAccess(containerAcl);
@@ -493,14 +493,14 @@ describe("getPublicDefaultAccess", () => {
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
       "default",
-      "http://www.w3.org/ns/auth/acl#AuthenticatedAgent"
+      "http://www.w3.org/ns/auth/acl#AuthenticatedAgent",
     );
     containerAcl = addAclRuleQuads(
       containerAcl,
       "https://arbitrary.pod/container/",
       { read: false, append: true, write: false, control: false },
       "default",
-      "http://xmlns.com/foaf/0.1/Agent"
+      "http://xmlns.com/foaf/0.1/Agent",
     );
 
     const agentAccess = getPublicDefaultAccess(containerAcl);
@@ -519,14 +519,14 @@ describe("getPublicDefaultAccess", () => {
       "https://some-other.pod/container/",
       { read: true, append: false, write: false, control: false },
       "default",
-      "http://xmlns.com/foaf/0.1/Agent"
+      "http://xmlns.com/foaf/0.1/Agent",
     );
     containerAcl = addAclRuleQuads(
       containerAcl,
       "https://some.pod/container/",
       { read: false, append: true, write: false, control: false },
       "default",
-      "http://xmlns.com/foaf/0.1/Agent"
+      "http://xmlns.com/foaf/0.1/Agent",
     );
 
     const agentAccess = getPublicDefaultAccess(containerAcl);
@@ -557,22 +557,22 @@ describe("setPublicResourceAccess", () => {
     const controls = getThingAll(updatedDataset);
     expect(controls).toHaveLength(1);
     expect(
-      getIri(controls[0], "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+      getIri(controls[0], "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
     ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
     expect(
-      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#mode")
+      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#mode"),
     ).toContain("http://www.w3.org/ns/auth/acl#Read");
     expect(
-      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#mode")
+      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#mode"),
     ).toContain("http://www.w3.org/ns/auth/acl#Write");
     expect(
-      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#mode")
+      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#mode"),
     ).toContain("http://www.w3.org/ns/auth/acl#Control");
     expect(
-      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#accessTo")
+      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#accessTo"),
     ).toContain("https://arbitrary.pod/resource");
     expect(
-      getIri(controls[0], "http://www.w3.org/ns/auth/acl#agentClass")
+      getIri(controls[0], "http://www.w3.org/ns/auth/acl#agentClass"),
     ).toBe(foaf.Agent);
   });
 
@@ -584,7 +584,7 @@ describe("setPublicResourceAccess", () => {
       "default",
       "http://xmlns.com/foaf/0.1/Agent",
       "https://arbitrary.pod/resource/?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#agentClass"
+      "http://www.w3.org/ns/auth/acl#agentClass",
     );
 
     sourceDataset = addAclRuleQuads(
@@ -594,7 +594,7 @@ describe("setPublicResourceAccess", () => {
       "default",
       "https://arbitrary.pod/profileDoc#someGroup",
       "https://arbitrary.pod/resource/?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+      "http://www.w3.org/ns/auth/acl#agentGroup",
     );
 
     sourceDataset = addAclRuleQuads(
@@ -604,7 +604,7 @@ describe("setPublicResourceAccess", () => {
       "default",
       "https://arbitrary.pod/profileDoc#webId",
       "https://arbitrary.pod/resource/?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#agent"
+      "http://www.w3.org/ns/auth/acl#agent",
     );
 
     sourceDataset = addAclRuleQuads(
@@ -614,7 +614,7 @@ describe("setPublicResourceAccess", () => {
       "default",
       "https://arbitrary.app.origin/",
       "https://arbitrary.pod/resource/?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#origin"
+      "http://www.w3.org/ns/auth/acl#origin",
     );
 
     const updatedDataset = setPublicResourceAccess(sourceDataset, {
@@ -638,7 +638,7 @@ describe("setPublicResourceAccess", () => {
 
       // Any actors other than the specified agent should not have been given resource access:
       expect(
-        getIri(thing, "http://www.w3.org/ns/auth/acl#accessTo")
+        getIri(thing, "http://www.w3.org/ns/auth/acl#accessTo"),
       ).toBeNull();
     });
   });
@@ -677,23 +677,23 @@ describe("setPublicResourceAccess", () => {
     const addedQuads = updatedDataset.internal_changeLog.additions;
     expect(addedQuads).toHaveLength(4);
     expect(addedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
     );
     expect(addedQuads[0].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Authorization"
+      "http://www.w3.org/ns/auth/acl#Authorization",
     );
     expect(addedQuads[1].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
+      "http://www.w3.org/ns/auth/acl#mode",
     );
     expect(addedQuads[1].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Read"
+      "http://www.w3.org/ns/auth/acl#Read",
     );
     expect(addedQuads[2].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#accessTo"
+      "http://www.w3.org/ns/auth/acl#accessTo",
     );
     expect(addedQuads[2].object.value).toBe("https://arbitrary.pod/resource");
     expect(addedQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agentClass"
+      "http://www.w3.org/ns/auth/acl#agentClass",
     );
     expect(addedQuads[3].object.value).toBe(foaf.Agent);
   });
@@ -717,16 +717,16 @@ describe("setPublicResourceAccess", () => {
     const controls = getThingAll(updatedDataset);
     expect(controls).toHaveLength(1);
     expect(
-      getIri(controls[0], "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+      getIri(controls[0], "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
     ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
     expect(
-      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#mode")
+      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#mode"),
     ).toContain("http://www.w3.org/ns/auth/acl#Append");
     expect(
-      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#accessTo")
+      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#accessTo"),
     ).toContain("https://arbitrary.pod/resource");
     expect(
-      getIri(controls[0], "http://www.w3.org/ns/auth/acl#agentClass")
+      getIri(controls[0], "http://www.w3.org/ns/auth/acl#agentClass"),
     ).toBe(foaf.Agent);
   });
 
@@ -736,7 +736,7 @@ describe("setPublicResourceAccess", () => {
       "https://arbitrary.pod/resource",
       { read: false, append: false, write: false, control: true },
       "resource",
-      foaf.Agent
+      foaf.Agent,
     );
 
     const updatedDataset = setPublicResourceAccess(sourceDataset, {
@@ -749,16 +749,16 @@ describe("setPublicResourceAccess", () => {
     const controls = getThingAll(updatedDataset);
     expect(controls).toHaveLength(1);
     expect(
-      getIri(controls[0], "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+      getIri(controls[0], "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
     ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
     expect(
-      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#mode")
+      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#mode"),
     ).toContain("http://www.w3.org/ns/auth/acl#Read");
     expect(
-      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#accessTo")
+      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#accessTo"),
     ).toContain("https://arbitrary.pod/resource");
     expect(
-      getIri(controls[0], "http://www.w3.org/ns/auth/acl#agentClass")
+      getIri(controls[0], "http://www.w3.org/ns/auth/acl#agentClass"),
     ).toBe(foaf.Agent);
   });
 
@@ -768,7 +768,7 @@ describe("setPublicResourceAccess", () => {
       "https://arbitrary.pod/resource",
       { read: true, append: false, write: false, control: false },
       "resource",
-      foaf.Agent
+      foaf.Agent,
     );
 
     const updatedDataset = setPublicResourceAccess(sourceDataset, {
@@ -788,7 +788,7 @@ describe("setPublicResourceAccess", () => {
       { read: true, append: true, write: true, control: true },
       "resource",
       "http://www.w3.org/ns/auth/acl#AuthenticatedAgent",
-      "https://arbitrary.pod/resource/?ext=acl#loggedIn"
+      "https://arbitrary.pod/resource/?ext=acl#loggedIn",
     );
     sourceDataset = addAclRuleQuads(
       sourceDataset,
@@ -796,7 +796,7 @@ describe("setPublicResourceAccess", () => {
       { read: true, append: true, write: true, control: true },
       "default",
       "http://www.w3.org/ns/auth/acl#AuthenticatedAgent",
-      "https://arbitrary.pod/resource/?ext=acl#loggedIn"
+      "https://arbitrary.pod/resource/?ext=acl#loggedIn",
     );
 
     const updatedDataset = setPublicResourceAccess(sourceDataset, {
@@ -811,12 +811,12 @@ describe("setPublicResourceAccess", () => {
       // The agent class given resource access should not have default access
       const expectedNrOfDefaultRules = getIriAll(
         thing,
-        "http://www.w3.org/ns/auth/acl#agentClass"
+        "http://www.w3.org/ns/auth/acl#agentClass",
       ).includes("http://xmlns.com/foaf/0.1/Agent")
         ? 0
         : 1;
       expect(
-        getIriAll(thing, "http://www.w3.org/ns/auth/acl#default")
+        getIriAll(thing, "http://www.w3.org/ns/auth/acl#default"),
       ).toHaveLength(expectedNrOfDefaultRules);
     });
   });
@@ -839,22 +839,22 @@ describe("setPublicDefaultAccess", () => {
     const controls = getThingAll(updatedDataset);
     expect(controls).toHaveLength(1);
     expect(
-      getIri(controls[0], "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+      getIri(controls[0], "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
     ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
     expect(
-      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#mode")
+      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#mode"),
     ).toContain("http://www.w3.org/ns/auth/acl#Read");
     expect(
-      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#mode")
+      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#mode"),
     ).toContain("http://www.w3.org/ns/auth/acl#Write");
     expect(
-      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#mode")
+      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#mode"),
     ).toContain("http://www.w3.org/ns/auth/acl#Control");
     expect(
-      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#default")
+      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#default"),
     ).toContain("https://arbitrary.pod/container/");
     expect(
-      getIri(controls[0], "http://www.w3.org/ns/auth/acl#agentClass")
+      getIri(controls[0], "http://www.w3.org/ns/auth/acl#agentClass"),
     ).toBe(foaf.Agent);
   });
 
@@ -866,7 +866,7 @@ describe("setPublicDefaultAccess", () => {
       "resource",
       "http://xmlns.com/foaf/0.1/Agent",
       "https://arbitrary.pod/resource/?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#agentClass"
+      "http://www.w3.org/ns/auth/acl#agentClass",
     );
 
     sourceDataset = addAclRuleQuads(
@@ -876,7 +876,7 @@ describe("setPublicDefaultAccess", () => {
       "resource",
       "https://arbitrary.pod/profileDoc#someGroup",
       "https://arbitrary.pod/resource/?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#agentGroup"
+      "http://www.w3.org/ns/auth/acl#agentGroup",
     );
 
     sourceDataset = addAclRuleQuads(
@@ -886,7 +886,7 @@ describe("setPublicDefaultAccess", () => {
       "resource",
       "https://arbitrary.pod/profileDoc#webId",
       "https://arbitrary.pod/resource/?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#agent"
+      "http://www.w3.org/ns/auth/acl#agent",
     );
 
     sourceDataset = addAclRuleQuads(
@@ -896,7 +896,7 @@ describe("setPublicDefaultAccess", () => {
       "resource",
       "https://arbitrary.pod/profileDoc#webId",
       "https://arbitrary.pod/resource/?ext=acl#owner",
-      "http://www.w3.org/ns/auth/acl#origin"
+      "http://www.w3.org/ns/auth/acl#origin",
     );
 
     const updatedDataset = setPublicDefaultAccess(sourceDataset, {
@@ -957,23 +957,23 @@ describe("setPublicDefaultAccess", () => {
     const addedQuads = updatedDataset.internal_changeLog.additions;
     expect(addedQuads).toHaveLength(4);
     expect(addedQuads[0].predicate.value).toBe(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
     );
     expect(addedQuads[0].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Authorization"
+      "http://www.w3.org/ns/auth/acl#Authorization",
     );
     expect(addedQuads[1].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#mode"
+      "http://www.w3.org/ns/auth/acl#mode",
     );
     expect(addedQuads[1].object.value).toBe(
-      "http://www.w3.org/ns/auth/acl#Read"
+      "http://www.w3.org/ns/auth/acl#Read",
     );
     expect(addedQuads[2].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#default"
+      "http://www.w3.org/ns/auth/acl#default",
     );
     expect(addedQuads[2].object.value).toBe("https://arbitrary.pod/container/");
     expect(addedQuads[3].predicate.value).toBe(
-      "http://www.w3.org/ns/auth/acl#agentClass"
+      "http://www.w3.org/ns/auth/acl#agentClass",
     );
     expect(addedQuads[3].object.value).toBe(foaf.Agent);
   });
@@ -997,16 +997,16 @@ describe("setPublicDefaultAccess", () => {
     const controls = getThingAll(updatedDataset);
     expect(controls).toHaveLength(1);
     expect(
-      getIri(controls[0], "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+      getIri(controls[0], "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
     ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
     expect(
-      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#mode")
+      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#mode"),
     ).toContain("http://www.w3.org/ns/auth/acl#Append");
     expect(
-      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#default")
+      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#default"),
     ).toContain("https://arbitrary.pod/container/");
     expect(
-      getIri(controls[0], "http://www.w3.org/ns/auth/acl#agentClass")
+      getIri(controls[0], "http://www.w3.org/ns/auth/acl#agentClass"),
     ).toBe(foaf.Agent);
   });
 
@@ -1016,7 +1016,7 @@ describe("setPublicDefaultAccess", () => {
       "https://arbitrary.pod/container/",
       { read: false, append: false, write: false, control: true },
       "default",
-      foaf.Agent
+      foaf.Agent,
     );
 
     const updatedDataset = setPublicDefaultAccess(sourceDataset, {
@@ -1029,16 +1029,16 @@ describe("setPublicDefaultAccess", () => {
     const controls = getThingAll(updatedDataset);
     expect(controls).toHaveLength(1);
     expect(
-      getIri(controls[0], "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+      getIri(controls[0], "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
     ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
     expect(
-      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#mode")
+      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#mode"),
     ).toContain("http://www.w3.org/ns/auth/acl#Read");
     expect(
-      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#default")
+      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#default"),
     ).toContain("https://arbitrary.pod/container/");
     expect(
-      getIri(controls[0], "http://www.w3.org/ns/auth/acl#agentClass")
+      getIri(controls[0], "http://www.w3.org/ns/auth/acl#agentClass"),
     ).toBe(foaf.Agent);
   });
 
@@ -1048,7 +1048,7 @@ describe("setPublicDefaultAccess", () => {
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
       "default",
-      foaf.Agent
+      foaf.Agent,
     );
 
     const updatedDataset = setPublicDefaultAccess(sourceDataset, {
@@ -1067,13 +1067,13 @@ describe("setPublicDefaultAccess", () => {
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
       "default",
-      foaf.Agent
+      foaf.Agent,
     );
     let control = getThingAll(sourceDataset)[0];
     control = addIri(
       control,
       "http://www.w3.org/ns/auth/acl#accessTo",
-      "https://arbitrary.pod/container/"
+      "https://arbitrary.pod/container/",
     );
     sourceDataset = setThing(sourceDataset, control);
 
@@ -1087,16 +1087,16 @@ describe("setPublicDefaultAccess", () => {
     const controls = getThingAll(updatedDataset);
     expect(controls).toHaveLength(1);
     expect(
-      getIri(controls[0], "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+      getIri(controls[0], "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
     ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
     expect(
-      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#mode")
+      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#mode"),
     ).toContain("http://www.w3.org/ns/auth/acl#Read");
     expect(
-      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#accessTo")
+      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#accessTo"),
     ).toContain("https://arbitrary.pod/container/");
     expect(
-      getIri(controls[0], "http://www.w3.org/ns/auth/acl#agentClass")
+      getIri(controls[0], "http://www.w3.org/ns/auth/acl#agentClass"),
     ).toBe(foaf.Agent);
   });
 
@@ -1106,13 +1106,13 @@ describe("setPublicDefaultAccess", () => {
       "https://arbitrary.pod/container/",
       { read: true, append: false, write: false, control: false },
       "default",
-      foaf.Agent
+      foaf.Agent,
     );
     let control = getThingAll(sourceDataset)[0];
     control = addIri(
       control,
       "http://www.w3.org/ns/auth/acl#default",
-      "https://arbitrary.pod/other-container/"
+      "https://arbitrary.pod/other-container/",
     );
     sourceDataset = setThing(sourceDataset, control);
 
@@ -1126,16 +1126,16 @@ describe("setPublicDefaultAccess", () => {
     const controls = getThingAll(updatedDataset);
     expect(controls).toHaveLength(1);
     expect(
-      getIri(controls[0], "http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+      getIri(controls[0], "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
     ).toBe("http://www.w3.org/ns/auth/acl#Authorization");
     expect(
-      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#mode")
+      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#mode"),
     ).toContain("http://www.w3.org/ns/auth/acl#Read");
     expect(
-      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#default")
+      getIriAll(controls[0], "http://www.w3.org/ns/auth/acl#default"),
     ).toContain("https://arbitrary.pod/other-container/");
     expect(
-      getIri(controls[0], "http://www.w3.org/ns/auth/acl#agentClass")
+      getIri(controls[0], "http://www.w3.org/ns/auth/acl#agentClass"),
     ).toBe(foaf.Agent);
   });
 
@@ -1146,7 +1146,7 @@ describe("setPublicDefaultAccess", () => {
       { read: true, append: true, write: true, control: true },
       "default",
       "http://xmlns.com/foaf/0.1/Agent",
-      "https://arbitrary.pod/resource/?ext=acl#owner"
+      "https://arbitrary.pod/resource/?ext=acl#owner",
     );
     sourceDataset = addAclRuleQuads(
       sourceDataset,
@@ -1154,7 +1154,7 @@ describe("setPublicDefaultAccess", () => {
       { read: true, append: true, write: true, control: true },
       "legacyDefault",
       "http://xmlns.com/foaf/0.1/Agent",
-      "https://arbitrary.pod/resource/?ext=acl#owner"
+      "https://arbitrary.pod/resource/?ext=acl#owner",
     );
 
     const updatedDataset = setPublicDefaultAccess(sourceDataset, {
@@ -1169,17 +1169,17 @@ describe("setPublicDefaultAccess", () => {
     getThingAll(updatedDataset).forEach((thing) => {
       if (
         !getIriAll(thing, "http://www.w3.org/ns/auth/acl#agentClass").includes(
-          "http://xmlns.com/foaf/0.1/Agent"
+          "http://xmlns.com/foaf/0.1/Agent",
         )
       ) {
         return;
       }
       expect(
-        getIriAll(thing, "http://www.w3.org/ns/auth/acl#default")
+        getIriAll(thing, "http://www.w3.org/ns/auth/acl#default"),
       ).toHaveLength(0);
       // The public should no longer have legacy default access.
       expect(
-        getIriAll(thing, "http://www.w3.org/ns/auth/acl#defaultForNew")
+        getIriAll(thing, "http://www.w3.org/ns/auth/acl#defaultForNew"),
       ).toHaveLength(0);
     });
 
@@ -1194,7 +1194,7 @@ describe("setPublicDefaultAccess", () => {
       { read: true, append: true, write: true, control: true },
       "default",
       "http://xmlns.com/foaf/0.1/Agent",
-      "https://arbitrary.pod/resource/?ext=acl#owner"
+      "https://arbitrary.pod/resource/?ext=acl#owner",
     );
     sourceDataset = addAclRuleQuads(
       sourceDataset,
@@ -1202,7 +1202,7 @@ describe("setPublicDefaultAccess", () => {
       { read: true, append: true, write: true, control: true },
       "legacyDefault",
       "http://xmlns.com/foaf/0.1/Agent",
-      "https://arbitrary.pod/resource/?ext=acl#owner"
+      "https://arbitrary.pod/resource/?ext=acl#owner",
     );
 
     const updatedDataset = setPublicDefaultAccess(sourceDataset, {
@@ -1217,17 +1217,17 @@ describe("setPublicDefaultAccess", () => {
     getThingAll(updatedDataset).forEach((thing) => {
       if (
         !getIriAll(thing, "http://www.w3.org/ns/auth/acl#agentClass").includes(
-          "http://xmlns.com/foaf/0.1/Agent"
+          "http://xmlns.com/foaf/0.1/Agent",
         )
       ) {
         return;
       }
       // The public should no longer have default access
       expect(
-        getIriAll(thing, "http://www.w3.org/ns/auth/acl#default")
+        getIriAll(thing, "http://www.w3.org/ns/auth/acl#default"),
       ).toHaveLength(1);
       expect(
-        getIriAll(thing, "http://www.w3.org/ns/auth/acl#defaultForNew")
+        getIriAll(thing, "http://www.w3.org/ns/auth/acl#defaultForNew"),
       ).toHaveLength(0);
     });
   });

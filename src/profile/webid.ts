@@ -51,7 +51,7 @@ export type ProfileAll<T extends SolidDataset & WithServerResourceInfo> = {
  */
 export function getAltProfileUrlAllFrom(
   webId: WebId,
-  webIdProfile: SolidDataset
+  webIdProfile: SolidDataset,
 ): UrlString[] {
   const webIdThing = getThing(webIdProfile, webId);
 
@@ -88,14 +88,14 @@ export function getAltProfileUrlAllFrom(
  * @since 1.16.0
  */
 export async function getProfileAll<
-  T extends SolidDataset & WithServerResourceInfo
+  T extends SolidDataset & WithServerResourceInfo,
 >(
   webId: WebId,
   options?: Partial<
     typeof internal_defaultFetchOptions & {
       webIdProfile: T;
     }
-  >
+  >,
 ): Promise<ProfileAll<T>>;
 export async function getProfileAll(
   webId: WebId,
@@ -103,17 +103,17 @@ export async function getProfileAll(
     typeof internal_defaultFetchOptions & {
       webIdProfile: undefined;
     }
-  >
+  >,
 ): Promise<ProfileAll<SolidDataset & WithServerResourceInfo>>;
 export async function getProfileAll<
-  T extends SolidDataset & WithServerResourceInfo
+  T extends SolidDataset & WithServerResourceInfo,
 >(
   webId: WebId,
   options: Partial<
     typeof internal_defaultFetchOptions & {
       webIdProfile: T;
     }
-  > = internal_defaultFetchOptions
+  > = internal_defaultFetchOptions,
 ): Promise<ProfileAll<T | (SolidDataset & WithServerResourceInfo)>> {
   const authFetch = options.fetch ?? defaultFetch;
   const webIdProfile =
@@ -125,14 +125,14 @@ export async function getProfileAll<
   const altProfileAll = (
     await Promise.allSettled(
       getAltProfileUrlAllFrom(webId, webIdProfile).map((uniqueProfileIri) =>
-        getSolidDataset(uniqueProfileIri, { fetch: authFetch })
-      )
+        getSolidDataset(uniqueProfileIri, { fetch: authFetch }),
+      ),
     )
   )
     // Ignore the alternative profiles lookup which failed.
     .filter(
       (result): result is PromiseFulfilledResult<T> =>
-        result.status === "fulfilled"
+        result.status === "fulfilled",
     )
     .map((successfulResult) => successfulResult.value);
 
@@ -161,7 +161,7 @@ export async function getPodUrlAll(
   webId: WebId,
   options: Partial<
     typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions
+  > = internal_defaultFetchOptions,
 ): Promise<UrlString[]> {
   const profiles = await getProfileAll(webId, options);
   return getPodUrlAllFrom(profiles, webId);
@@ -181,7 +181,7 @@ export async function getPodUrlAll(
  */
 export function getPodUrlAllFrom(
   profiles: ProfileAll<SolidDataset & WithServerResourceInfo>,
-  webId: WebId
+  webId: WebId,
 ): UrlString[] {
   const result: Set<string> = new Set();
   [profiles.webIdProfile, ...profiles.altProfileAll].forEach(
@@ -189,10 +189,10 @@ export function getPodUrlAllFrom(
       const webIdThing = getThing(profileResource, webId);
       if (webIdThing !== null) {
         getIriAll(webIdThing, pim.storage).forEach((podIri) =>
-          result.add(podIri)
+          result.add(podIri),
         );
       }
-    }
+    },
   );
   return Array.from(result);
 }
@@ -214,7 +214,7 @@ export function getPodUrlAllFrom(
  * @since 1.24.0
  */
 export async function getWebIdDataset(
-  webId: WebId
+  webId: WebId,
 ): Promise<ReturnType<typeof getSolidDataset>> {
   return getSolidDataset(webId, { fetch: defaultFetch });
 }

@@ -96,63 +96,63 @@ const ACP_ANY = DataFactory.namedNode("http://www.w3.org/ns/solid/acp#anyOf");
 const ACP_ALL = DataFactory.namedNode("http://www.w3.org/ns/solid/acp#allOf");
 const ACP_NONE = DataFactory.namedNode("http://www.w3.org/ns/solid/acp#noneOf");
 const RDF_TYPE = DataFactory.namedNode(
-  "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+  "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
 );
 const ACP_RULE = DataFactory.namedNode("http://www.w3.org/ns/solid/acp#Rule");
 const ACP_AGENT = DataFactory.namedNode("http://www.w3.org/ns/solid/acp#agent");
 const ACP_GROUP = DataFactory.namedNode("http://www.w3.org/ns/solid/acp#group");
 const ACP_CLIENT = DataFactory.namedNode(
-  "http://www.w3.org/ns/solid/acp#client"
+  "http://www.w3.org/ns/solid/acp#client",
 );
 const ACP_PUBLIC = DataFactory.namedNode(
-  "http://www.w3.org/ns/solid/acp#PublicAgent"
+  "http://www.w3.org/ns/solid/acp#PublicAgent",
 );
 const ACP_AUTHENTICATED = DataFactory.namedNode(
-  "http://www.w3.org/ns/solid/acp#AuthenticatedAgent"
+  "http://www.w3.org/ns/solid/acp#AuthenticatedAgent",
 );
 const ACP_CREATOR = DataFactory.namedNode(
-  "http://www.w3.org/ns/solid/acp#CreatorAgent"
+  "http://www.w3.org/ns/solid/acp#CreatorAgent",
 );
 const SOLID_PUBLIC_CLIENT = DataFactory.namedNode(
-  "http://www.w3.org/ns/solid/terms#PublicOidcClient"
+  "http://www.w3.org/ns/solid/terms#PublicOidcClient",
 );
 
 // Test data
 const MOCKED_POLICY_IRI = DataFactory.namedNode(
-  "https://some.pod/policy-resource#policy"
+  "https://some.pod/policy-resource#policy",
 );
 const MOCKED_RULE_IRI = DataFactory.namedNode(
-  "https://some.pod/rule-resource#a-rule"
+  "https://some.pod/rule-resource#a-rule",
 );
 const OTHER_MOCKED_RULE_IRI = DataFactory.namedNode(
-  "https://some.pod/rule-resource#another-rule"
+  "https://some.pod/rule-resource#another-rule",
 );
 const ALLOF_RULE_IRI = DataFactory.namedNode(
-  "https://some.pod/rule-resource#allOf-rule"
+  "https://some.pod/rule-resource#allOf-rule",
 );
 const ANYOF_RULE_IRI = DataFactory.namedNode(
-  "https://some.pod/rule-resource#anyOf-rule"
+  "https://some.pod/rule-resource#anyOf-rule",
 );
 const NONEOF_RULE_IRI = DataFactory.namedNode(
-  "https://some.pod/rule-resource#noneOf-rule"
+  "https://some.pod/rule-resource#noneOf-rule",
 );
 const MOCK_WEBID_ME = DataFactory.namedNode("https://my.pod/profile#me");
 const MOCK_WEBID_YOU = DataFactory.namedNode("https://your.pod/profile#you");
 const MOCK_GROUP_IRI = DataFactory.namedNode("https://my.pod/group#a-group");
 const MOCK_GROUP_OTHER_IRI = DataFactory.namedNode(
-  "https://my.pod/group#another-group"
+  "https://my.pod/group#another-group",
 );
 const MOCK_CLIENT_WEBID_1 = DataFactory.namedNode(
-  "https://my.app/registration#it"
+  "https://my.app/registration#it",
 );
 const MOCK_CLIENT_WEBID_2 = DataFactory.namedNode(
-  "https://your.app/registration#it"
+  "https://your.app/registration#it",
 );
 
 const addAllObjects = (
   thing: ThingPersisted,
   predicate: NamedNode,
-  objects: Url[]
+  objects: Url[],
 ): ThingPersisted => {
   return objects.reduce((thingAcc, object) => {
     return addUrl(thingAcc, predicate, object);
@@ -162,7 +162,7 @@ const addAllObjects = (
 const addAllThingObjects = (
   thing: ThingPersisted,
   predicate: NamedNode,
-  objects: Thing[]
+  objects: Thing[],
 ): ThingPersisted => {
   return objects.reduce((thingAcc, object) => {
     return addUrl(thingAcc, predicate, object);
@@ -179,7 +179,7 @@ const mockRule = (
     creator?: boolean;
     clients?: Url[];
     publicClient?: boolean;
-  }
+  },
 ): Rule => {
   let mockedRule = createThing({
     url: url.value,
@@ -211,7 +211,7 @@ const mockRule = (
 
 const mockPolicy = (
   url: NamedNode,
-  rules?: { allOf?: Rule[]; anyOf?: Rule[]; noneOf?: Rule[] }
+  rules?: { allOf?: Rule[]; anyOf?: Rule[]; noneOf?: Rule[] },
 ): Policy => {
   let mockPolicy = createThing({ url: url.value });
   if (rules?.noneOf) {
@@ -230,7 +230,7 @@ describe("addNoneOfRuleUrl", () => {
   it("adds the rule in the noneOf rules of the policy", () => {
     const myPolicy = addNoneOfRuleUrl(
       mockPolicy(MOCKED_POLICY_IRI),
-      mockRule(MOCKED_RULE_IRI)
+      mockRule(MOCKED_RULE_IRI),
     );
     expect(getUrlAll(myPolicy, ACP_NONE)).toContain(MOCKED_RULE_IRI.value);
   });
@@ -241,7 +241,7 @@ describe("addNoneOfRuleUrl", () => {
     });
     const myPolicy = addNoneOfRuleUrl(mockedPolicy, mockRule(MOCKED_RULE_IRI));
     expect(getUrlAll(myPolicy, ACP_NONE)).toContain(
-      OTHER_MOCKED_RULE_IRI.value
+      OTHER_MOCKED_RULE_IRI.value,
     );
   });
 
@@ -266,7 +266,7 @@ describe("addAnyOfRuleUrl", () => {
   it("adds the rule in the anyOf rules of the policy", () => {
     const myPolicy = addAnyOfRuleUrl(
       mockPolicy(MOCKED_POLICY_IRI),
-      mockRule(MOCKED_RULE_IRI)
+      mockRule(MOCKED_RULE_IRI),
     );
     expect(getUrlAll(myPolicy, ACP_ANY)).toContain(MOCKED_RULE_IRI.value);
   });
@@ -300,7 +300,7 @@ describe("addAllOfRule", () => {
   it("adds the rule in the allOf rules of the policy", () => {
     const myPolicy = addAllOfRuleUrl(
       mockPolicy(MOCKED_POLICY_IRI),
-      mockRule(MOCKED_RULE_IRI)
+      mockRule(MOCKED_RULE_IRI),
     );
     expect(getUrlAll(myPolicy, ACP_ALL)).toContain(MOCKED_RULE_IRI.value);
   });
@@ -334,7 +334,7 @@ describe("setNoneOfRuleUrl", () => {
   it("sets the provided rules as the noneOf rules for the policy", () => {
     const myPolicy = setNoneOfRuleUrl(
       mockPolicy(MOCKED_POLICY_IRI),
-      mockRule(MOCKED_RULE_IRI)
+      mockRule(MOCKED_RULE_IRI),
     );
     expect(getUrlAll(myPolicy, ACP_NONE)).toContain(MOCKED_RULE_IRI.value);
   });
@@ -345,7 +345,7 @@ describe("setNoneOfRuleUrl", () => {
     });
     const myPolicy = setNoneOfRuleUrl(mockedPolicy, mockRule(MOCKED_RULE_IRI));
     expect(getUrlAll(myPolicy, ACP_NONE)).not.toContain(
-      OTHER_MOCKED_RULE_IRI.value
+      OTHER_MOCKED_RULE_IRI.value,
     );
   });
 
@@ -370,7 +370,7 @@ describe("setAnyOfRuleUrl", () => {
   it("sets the provided rules as the anyOf rules for the policy", () => {
     const myPolicy = setAnyOfRuleUrl(
       mockPolicy(MOCKED_POLICY_IRI),
-      mockRule(MOCKED_RULE_IRI)
+      mockRule(MOCKED_RULE_IRI),
     );
     expect(getUrlAll(myPolicy, ACP_ANY)).toContain(MOCKED_RULE_IRI.value);
   });
@@ -381,7 +381,7 @@ describe("setAnyOfRuleUrl", () => {
     });
     const myPolicy = setAnyOfRuleUrl(mockedPolicy, mockRule(MOCKED_RULE_IRI));
     expect(getUrlAll(myPolicy, ACP_ANY)).not.toContain(
-      OTHER_MOCKED_RULE_IRI.value
+      OTHER_MOCKED_RULE_IRI.value,
     );
   });
 
@@ -406,7 +406,7 @@ describe("setAllOfRuleUrl", () => {
   it("sets the provided rules as the allOf rules for the policy", () => {
     const myPolicy = setAllOfRuleUrl(
       mockPolicy(MOCKED_POLICY_IRI),
-      mockRule(MOCKED_RULE_IRI)
+      mockRule(MOCKED_RULE_IRI),
     );
     expect(getUrlAll(myPolicy, ACP_ALL)).toContain(MOCKED_RULE_IRI.value);
   });
@@ -417,7 +417,7 @@ describe("setAllOfRuleUrl", () => {
     });
     const myPolicy = setAllOfRuleUrl(mockedPolicy, mockRule(MOCKED_RULE_IRI));
     expect(getUrlAll(myPolicy, ACP_ALL)).not.toContain(
-      OTHER_MOCKED_RULE_IRI.value
+      OTHER_MOCKED_RULE_IRI.value,
     );
   });
 
@@ -593,7 +593,7 @@ describe("createResourceRuleFor", () => {
     const mockedAcr = mockAcrFor("https://some.pod/resource");
     const mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     const myRule = createResourceRuleFor(mockedResourceWithAcr, "myRule");
     expect(getIri(myRule, RDF_TYPE)).toBe(ACP_RULE.value);
@@ -602,7 +602,7 @@ describe("createResourceRuleFor", () => {
     const mockedAcr = mockAcrFor("https://some.pod/resource");
     const mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     const myRule = createResourceRuleFor(mockedResourceWithAcr, "myRule");
     // The rule should only contain a type triple.
@@ -624,7 +624,7 @@ describe("getRule", () => {
     });
     const dataset = setThing(
       createSolidDataset(),
-      setUrl(notARule, RDF_TYPE, "http://example.org/ns#NotRuleType")
+      setUrl(notARule, RDF_TYPE, "http://example.org/ns#NotRuleType"),
     );
     const result = getRule(dataset, "https://my.pod/rule-resource#not-a-rule");
     expect(result).toBeNull();
@@ -648,7 +648,7 @@ describe("getResourceRule", () => {
     mockedAcr = setThing(mockedAcr, mockedRule);
     const mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     const result = getResourceRule(mockedResourceWithAcr, "rule");
     expect(result).not.toBeNull();
@@ -662,12 +662,12 @@ describe("getResourceRule", () => {
     mockedRule = setUrl(
       mockedRule,
       rdf.type,
-      "http://example.org/ns#NotRuleType"
+      "http://example.org/ns#NotRuleType",
     );
     mockedAcr = setThing(mockedAcr, mockedRule);
     const mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     const result = getResourceRule(mockedResourceWithAcr, "rule");
     expect(result).toBeNull();
@@ -682,7 +682,7 @@ describe("getResourceRule", () => {
     mockedAcr = setThing(mockedAcr, mockedRule);
     const mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     const result = getResourceRule(mockedResourceWithAcr, "other-rule");
     expect(result).toBeNull();
@@ -712,7 +712,7 @@ describe("getResourceRuleAll", () => {
     const mockedAcr = mockAcrFor("https://some.pod/resource");
     const mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     expect(getResourceRuleAll(mockedResourceWithAcr)).toHaveLength(0);
   });
@@ -731,7 +731,7 @@ describe("getResourceRuleAll", () => {
     mockedAcr = setThing(mockedAcr, mockedRule2);
     const mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
 
     const result = getResourceRuleAll(mockedResourceWithAcr);
@@ -759,12 +759,12 @@ describe("removeResourceRule", () => {
     mockedAcr = setThing(mockedAcr, mockedRule);
     const mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
 
     const updatedDataset = removeResourceRule(
       mockedResourceWithAcr,
-      mockedRule
+      mockedRule,
     );
     expect(getResourceRuleAll(updatedDataset)).toHaveLength(0);
   });
@@ -778,7 +778,7 @@ describe("removeResourceRule", () => {
     mockedAcr = setThing(mockedAcr, mockedRule);
     const mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
 
     const updatedDataset = removeResourceRule(mockedResourceWithAcr, "rule");
@@ -794,12 +794,12 @@ describe("removeResourceRule", () => {
     mockedAcr = setThing(mockedAcr, mockedRule);
     const mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
 
     const updatedDataset = removeResourceRule(
       mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#rule`
+      `${getSourceUrl(mockedAcr)}#rule`,
     );
     expect(getResourceRuleAll(updatedDataset)).toHaveLength(0);
   });
@@ -813,12 +813,12 @@ describe("removeResourceRule", () => {
     mockedAcr = setThing(mockedAcr, mockedRule);
     const mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
 
     const updatedDataset = removeResourceRule(
       mockedResourceWithAcr,
-      DataFactory.namedNode(`${getSourceUrl(mockedAcr)}#rule`)
+      DataFactory.namedNode(`${getSourceUrl(mockedAcr)}#rule`),
     );
     expect(getResourceRuleAll(updatedDataset)).toHaveLength(0);
   });
@@ -831,18 +831,18 @@ describe("removeResourceRule", () => {
     mockedRule = setUrl(
       mockedRule,
       rdf.type,
-      "https://example.vocab/not-a-rule"
+      "https://example.vocab/not-a-rule",
     );
     mockedAcr = setThing(mockedAcr, mockedRule);
     const mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
 
     const updatedDataset = removeResourceRule(mockedResourceWithAcr, "rule");
     const updatedAcr = internal_getAcr(updatedDataset);
     expect(
-      getThing(updatedAcr, `${getSourceUrl(mockedAcr)}#rule`)
+      getThing(updatedAcr, `${getSourceUrl(mockedAcr)}#rule`),
     ).not.toBeNull();
   });
 });
@@ -863,7 +863,7 @@ describe("setResourceRule", () => {
     const mockedAcr = mockAcrFor("https://some.pod/resource");
     const mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      mockedAcr
+      mockedAcr,
     );
     let mockedRule = createThing({
       url: `${getSourceUrl(mockedAcr)}#rule`,
@@ -1035,7 +1035,7 @@ describe("setGroup", () => {
     const result = setGroup(rule, MOCK_GROUP_IRI.value);
     expect(getUrlAll(result, ACP_GROUP)).toContain(MOCK_GROUP_IRI.value);
     expect(getUrlAll(result, ACP_GROUP)).not.toContain(
-      MOCK_GROUP_OTHER_IRI.value
+      MOCK_GROUP_OTHER_IRI.value,
     );
   });
 
@@ -1054,7 +1054,7 @@ describe("addGroup", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
     const result = addGroup(rule, "https://your.pod/groups#a-group");
     expect(getUrlAll(result, ACP_GROUP)).toContain(
-      "https://your.pod/groups#a-group"
+      "https://your.pod/groups#a-group",
     );
   });
 
@@ -1145,9 +1145,9 @@ describe("setPublic", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
     expect(
       // @ts-expect-error The type signature should warn about passing a second argument:
-      () => setPublic(rule, true)
+      () => setPublic(rule, true),
     ).toThrow(
-      "The function `setPublic` no longer takes a second parameter. It is now used together with `removePublic` instead."
+      "The function `setPublic` no longer takes a second parameter. It is now used together with `removePublic` instead.",
     );
   });
 });
@@ -1223,9 +1223,9 @@ describe("setAuthenticated", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
     expect(
       // @ts-expect-error The type signature should warn about passing a second argument:
-      () => setAuthenticated(rule, true)
+      () => setAuthenticated(rule, true),
     ).toThrow(
-      "The function `setAuthenticated` no longer takes a second parameter. It is now used together with `removeAuthenticated` instead."
+      "The function `setAuthenticated` no longer takes a second parameter. It is now used together with `removeAuthenticated` instead.",
     );
   });
 });
@@ -1301,9 +1301,9 @@ describe("setCreator", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
     expect(
       // @ts-expect-error The type signature should warn about passing a second argument:
-      () => setCreator(rule, true)
+      () => setCreator(rule, true),
     ).toThrow(
-      "The function `setCreator` no longer takes a second parameter. It is now used together with `removeCreator` instead."
+      "The function `setCreator` no longer takes a second parameter. It is now used together with `removeCreator` instead.",
     );
   });
 });
@@ -1378,7 +1378,7 @@ describe("setClient", () => {
     const result = setClient(rule, MOCK_CLIENT_WEBID_2.value);
     expect(getUrlAll(result, ACP_CLIENT)).toContain(MOCK_CLIENT_WEBID_2.value);
     expect(getUrlAll(result, ACP_CLIENT)).not.toContain(
-      MOCK_CLIENT_WEBID_1.value
+      MOCK_CLIENT_WEBID_1.value,
     );
   });
 
@@ -1388,7 +1388,7 @@ describe("setClient", () => {
     });
     setClient(rule, MOCK_CLIENT_WEBID_2.value);
     expect(getUrlAll(rule, ACP_CLIENT)).not.toContain(
-      MOCK_CLIENT_WEBID_2.value
+      MOCK_CLIENT_WEBID_2.value,
     );
     expect(getUrlAll(rule, ACP_CLIENT)).toContain(MOCK_CLIENT_WEBID_1.value);
   });
@@ -1428,7 +1428,7 @@ describe("removeClient", () => {
     });
     const result = removeClient(rule, MOCK_CLIENT_WEBID_1.value);
     expect(getUrlAll(result, ACP_CLIENT)).not.toContain(
-      MOCK_CLIENT_WEBID_1.value
+      MOCK_CLIENT_WEBID_1.value,
     );
   });
 
@@ -1439,7 +1439,7 @@ describe("removeClient", () => {
     });
     const result = removeClient(rule, MOCK_CLIENT_WEBID_2.value);
     expect(getUrlAll(result, ACP_CLIENT)).not.toContain(
-      MOCK_CLIENT_WEBID_2.value
+      MOCK_CLIENT_WEBID_2.value,
     );
     expect(getUrlAll(result, ACP_CLIENT)).toContain(MOCK_CLIENT_WEBID_1.value);
     expect(getUrlAll(result, ACP_CLIENT)).toContain(SOLID_PUBLIC_CLIENT.value);
@@ -1488,7 +1488,7 @@ describe("setAnyClient", () => {
     const rule = mockRule(MOCKED_RULE_IRI);
     setAnyClient(rule);
     expect(getUrlAll(rule, ACP_CLIENT)).not.toContain(
-      SOLID_PUBLIC_CLIENT.value
+      SOLID_PUBLIC_CLIENT.value,
     );
   });
 
@@ -1508,7 +1508,7 @@ describe("removeAnyClient", () => {
     });
     const result = removeAnyClient(rule);
     expect(getUrlAll(result, ACP_CLIENT)).not.toContain(
-      SOLID_PUBLIC_CLIENT.value
+      SOLID_PUBLIC_CLIENT.value,
     );
   });
 
@@ -1533,7 +1533,7 @@ describe("ruleAsMarkdown", () => {
     const rule = createRule("https://some.pod/policyResource#rule");
 
     expect(ruleAsMarkdown(rule)).toBe(
-      `## Rule: https://some.pod/policyResource#rule\n\n<empty>\n`
+      `## Rule: https://some.pod/policyResource#rule\n\n<empty>\n`,
     );
   });
 
@@ -1563,7 +1563,7 @@ This rule applies to:
   - https://some.pod/groups#family
 - Users of the following client applications:
   - https://some.app/registration#it
-`
+`,
     );
   });
 });

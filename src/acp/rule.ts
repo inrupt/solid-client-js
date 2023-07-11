@@ -86,7 +86,7 @@ function isRule(thing: Thing): thing is Rule {
  */
 export function addAllOfRuleUrl<P extends Policy | ResourcePolicy>(
   policy: P,
-  rule: Rule | Url | UrlString
+  rule: Rule | Url | UrlString,
 ): P {
   return addIri(policy, acp.allOf, rule);
 }
@@ -106,7 +106,7 @@ export function addAllOfRuleUrl<P extends Policy | ResourcePolicy>(
  */
 export function removeAllOfRuleUrl<P extends Policy | ResourcePolicy>(
   policy: P,
-  rule: Rule | Url | UrlString
+  rule: Rule | Url | UrlString,
 ): P {
   return removeIri(policy, acp.allOf, rule);
 }
@@ -126,7 +126,7 @@ export function removeAllOfRuleUrl<P extends Policy | ResourcePolicy>(
  */
 export function setAllOfRuleUrl<P extends Policy | ResourcePolicy>(
   policy: P,
-  rule: Rule | Url | UrlString
+  rule: Rule | Url | UrlString,
 ): P {
   return setIri(policy, acp.allOf, rule);
 }
@@ -142,7 +142,7 @@ export function setAllOfRuleUrl<P extends Policy | ResourcePolicy>(
  * @since 1.6.0
  */
 export function getAllOfRuleUrlAll<P extends Policy | ResourcePolicy>(
-  policy: P
+  policy: P,
 ): UrlString[] {
   return getIriAll(policy, acp.allOf);
 }
@@ -165,7 +165,7 @@ export function getAllOfRuleUrlAll<P extends Policy | ResourcePolicy>(
  */
 export function addAnyOfRuleUrl<P extends Policy | ResourcePolicy>(
   policy: P,
-  rule: Rule | Url | UrlString
+  rule: Rule | Url | UrlString,
 ): P {
   return addIri(policy, acp.anyOf, rule);
 }
@@ -185,7 +185,7 @@ export function addAnyOfRuleUrl<P extends Policy | ResourcePolicy>(
  */
 export function removeAnyOfRuleUrl<P extends Policy | ResourcePolicy>(
   policy: P,
-  rule: Rule | Url | UrlString
+  rule: Rule | Url | UrlString,
 ): P {
   return removeIri(policy, acp.anyOf, rule);
 }
@@ -205,7 +205,7 @@ export function removeAnyOfRuleUrl<P extends Policy | ResourcePolicy>(
  */
 export function setAnyOfRuleUrl<P extends Policy | ResourcePolicy>(
   policy: P,
-  rule: Rule | Url | UrlString
+  rule: Rule | Url | UrlString,
 ): P {
   return setIri(policy, acp.anyOf, rule);
 }
@@ -221,7 +221,7 @@ export function setAnyOfRuleUrl<P extends Policy | ResourcePolicy>(
  * @since 1.6.0
  */
 export function getAnyOfRuleUrlAll<P extends Policy | ResourcePolicy>(
-  policy: P
+  policy: P,
 ): UrlString[] {
   return getIriAll(policy, acp.anyOf);
 }
@@ -244,7 +244,7 @@ export function getAnyOfRuleUrlAll<P extends Policy | ResourcePolicy>(
  */
 export function addNoneOfRuleUrl<P extends Policy | ResourcePolicy>(
   policy: P,
-  rule: Rule | Url | UrlString
+  rule: Rule | Url | UrlString,
 ): P {
   return addIri(policy, acp.noneOf, rule);
 }
@@ -264,7 +264,7 @@ export function addNoneOfRuleUrl<P extends Policy | ResourcePolicy>(
  */
 export function removeNoneOfRuleUrl<P extends Policy | ResourcePolicy>(
   policy: P,
-  rule: Rule | Url | UrlString
+  rule: Rule | Url | UrlString,
 ): P {
   return removeIri(policy, acp.noneOf, rule);
 }
@@ -284,7 +284,7 @@ export function removeNoneOfRuleUrl<P extends Policy | ResourcePolicy>(
  */
 export function setNoneOfRuleUrl<P extends Policy | ResourcePolicy>(
   policy: P,
-  rule: Rule | Url | UrlString
+  rule: Rule | Url | UrlString,
 ): P {
   return setIri(policy, acp.noneOf, rule);
 }
@@ -300,7 +300,7 @@ export function setNoneOfRuleUrl<P extends Policy | ResourcePolicy>(
  * @since 1.6.0
  */
 export function getNoneOfRuleUrlAll<P extends Policy | ResourcePolicy>(
-  policy: P
+  policy: P,
 ): UrlString[] {
   return getIriAll(policy, acp.noneOf);
 }
@@ -335,7 +335,7 @@ export function createRule(url: Url | UrlString): Rule {
  */
 export function createResourceRuleFor(
   resourceWithAcr: WithAccessibleAcr,
-  name: string
+  name: string,
 ): ResourceRule {
   const acr = internal_getAcr(resourceWithAcr);
   const url = new URL(getSourceUrl(acr));
@@ -359,7 +359,7 @@ export function createResourceRuleFor(
  */
 export function getRule(
   ruleResource: SolidDataset,
-  url: Url | UrlString
+  url: Url | UrlString,
 ): Rule | null {
   const foundThing = getThing(ruleResource, url);
   if (foundThing === null || getUrl(foundThing, rdf.type) !== acp.Rule) {
@@ -383,7 +383,7 @@ export function getRule(
  */
 export function getResourceRule(
   resourceWithAcr: WithAccessibleAcr,
-  name: string
+  name: string,
 ): ResourceRule | null {
   const acr = internal_getAcr(resourceWithAcr);
   const acrUrl = getSourceUrl(acr);
@@ -424,7 +424,7 @@ export function getRuleAll(ruleResource: SolidDataset): Rule[] {
  * @since 1.6.0
  */
 export function getResourceRuleAll(
-  resourceWithAcr: WithAccessibleAcr
+  resourceWithAcr: WithAccessibleAcr,
 ): ResourceRule[] {
   const acr = internal_getAcr(resourceWithAcr);
   const things = getThingAll(acr);
@@ -444,7 +444,7 @@ export function getResourceRuleAll(
  */
 export function removeRule<Dataset extends SolidDataset>(
   ruleResource: Dataset,
-  rule: Url | UrlString | Rule
+  rule: Url | UrlString | Rule,
 ): Dataset {
   return removeThing(ruleResource, rule);
 }
@@ -462,7 +462,7 @@ export function removeRule<Dataset extends SolidDataset>(
  */
 export function removeResourceRule<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
-  rule: string | Url | UrlString | ResourceRule
+  rule: string | Url | UrlString | ResourceRule,
 ): ResourceExt {
   const acr = internal_getAcr(resourceWithAcr);
   let ruleToRemove: UrlString;
@@ -487,7 +487,7 @@ export function removeResourceRule<ResourceExt extends WithAccessibleAcr>(
   // Check whether the actual Rule (i.e. with the Rule type) exists:
   const matchingRule = getResourceRule(
     resourceWithAcr,
-    new URL(ruleToRemove).hash.substring(1)
+    new URL(ruleToRemove).hash.substring(1),
   );
   if (matchingRule === null) {
     // No such Rule exists yet, so return the Resource+ACR unchanged:
@@ -513,7 +513,7 @@ export function removeResourceRule<ResourceExt extends WithAccessibleAcr>(
  */
 export function setRule<Dataset extends SolidDataset>(
   ruleResource: Dataset,
-  rule: Rule
+  rule: Rule,
 ): Dataset {
   return setThing(ruleResource, rule);
 }
@@ -532,7 +532,7 @@ export function setRule<Dataset extends SolidDataset>(
  */
 export function setResourceRule<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
-  rule: ResourceRule
+  rule: ResourceRule,
 ): ResourceExt {
   const acr = internal_getAcr(resourceWithAcr);
   const updatedAcr = setThing(acr, rule);
@@ -558,7 +558,7 @@ export function getAgentAll(rule: Rule): WebId[] {
     (agent: WebId) =>
       agent !== acp.PublicAgent &&
       agent !== acp.AuthenticatedAgent &&
-      agent !== acp.CreatorAgent
+      agent !== acp.CreatorAgent,
   );
 }
 
@@ -729,7 +729,7 @@ export function setPublic(rule: Rule): Rule {
   // eslint-disable-next-line prefer-rest-params
   if (typeof arguments === "object" && typeof arguments[1] === "boolean") {
     throw new Error(
-      "The function `setPublic` no longer takes a second parameter. It is now used together with `removePublic` instead."
+      "The function `setPublic` no longer takes a second parameter. It is now used together with `removePublic` instead.",
     );
   }
   return addIri(rule, acp.agent, acp.PublicAgent);
@@ -764,7 +764,7 @@ export function removePublic(rule: Rule): Rule {
 export function hasAuthenticated(rule: Rule): boolean {
   return (
     getIriAll(rule, acp.agent).filter(
-      (agent) => agent === acp.AuthenticatedAgent
+      (agent) => agent === acp.AuthenticatedAgent,
     ).length > 0
   );
 }
@@ -786,7 +786,7 @@ export function setAuthenticated(rule: Rule): Rule {
   // eslint-disable-next-line prefer-rest-params
   if (typeof arguments === "object" && typeof arguments[1] === "boolean") {
     throw new Error(
-      "The function `setAuthenticated` no longer takes a second parameter. It is now used together with `removeAuthenticated` instead."
+      "The function `setAuthenticated` no longer takes a second parameter. It is now used together with `removeAuthenticated` instead.",
     );
   }
   return addIri(rule, acp.agent, acp.AuthenticatedAgent);
@@ -842,7 +842,7 @@ export function setCreator(rule: Rule): Rule {
   // eslint-disable-next-line prefer-rest-params
   if (typeof arguments === "object" && typeof arguments[1] === "boolean") {
     throw new Error(
-      "The function `setCreator` no longer takes a second parameter. It is now used together with `removeCreator` instead."
+      "The function `setCreator` no longer takes a second parameter. It is now used together with `removeCreator` instead.",
     );
   }
   return addIri(rule, acp.agent, acp.CreatorAgent);
@@ -877,7 +877,7 @@ export function removeCreator(rule: Rule): Rule {
  */
 export function getClientAll(rule: Rule): WebId[] {
   return getIriAll(rule, acp.client).filter(
-    (client: WebId) => client !== solid.PublicOidcClient
+    (client: WebId) => client !== solid.PublicOidcClient,
   );
 }
 
@@ -952,7 +952,7 @@ export function removeClient(rule: Rule, client: WebId): Rule {
 export function hasAnyClient(rule: Rule): boolean {
   return (
     getIriAll(rule, acp.client).filter(
-      (client) => client === solid.PublicOidcClient
+      (client) => client === solid.PublicOidcClient,
     ).length > 0
   );
 }

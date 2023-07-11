@@ -85,15 +85,15 @@ import { createThing, isThing } from "./thing";
 
 type Adder<Type, T extends Thing> = (
   property: Parameters<AddOfType<Type>>[1],
-  value: Parameters<AddOfType<Type>>[2]
+  value: Parameters<AddOfType<Type>>[2],
 ) => ThingBuilder<T>;
 type Setter<Type, T extends Thing> = (
   property: Parameters<SetOfType<Type>>[1],
-  value: Parameters<SetOfType<Type>>[2]
+  value: Parameters<SetOfType<Type>>[2],
 ) => ThingBuilder<T>;
 type Remover<Type, T extends Thing> = (
   property: Parameters<RemoveOfType<Type>>[1],
-  value: Parameters<RemoveOfType<Type>>[2]
+  value: Parameters<RemoveOfType<Type>>[2],
 ) => ThingBuilder<T>;
 
 // Unfortunately this interface has too many properties for TypeScript to infer,
@@ -121,7 +121,7 @@ export type ThingBuilder<T extends Thing> = {
   addStringWithLocale: (
     property: Parameters<typeof addStringWithLocale>[1],
     value: Parameters<typeof addStringWithLocale>[2],
-    locale: Parameters<typeof addStringWithLocale>[3]
+    locale: Parameters<typeof addStringWithLocale>[3],
   ) => ThingBuilder<T>;
   addNamedNode: Adder<NamedNode, T>;
   addLiteral: Adder<Literal, T>;
@@ -139,7 +139,7 @@ export type ThingBuilder<T extends Thing> = {
   setStringWithLocale: (
     property: Parameters<typeof setStringWithLocale>[1],
     value: Parameters<typeof setStringWithLocale>[2],
-    locale: Parameters<typeof setStringWithLocale>[3]
+    locale: Parameters<typeof setStringWithLocale>[3],
   ) => ThingBuilder<T>;
   setNamedNode: Setter<NamedNode, T>;
   setLiteral: Setter<Literal, T>;
@@ -158,7 +158,7 @@ export type ThingBuilder<T extends Thing> = {
   removeStringWithLocale: (
     property: Parameters<typeof removeStringWithLocale>[1],
     value: Parameters<typeof removeStringWithLocale>[2],
-    locale: Parameters<typeof removeStringWithLocale>[3]
+    locale: Parameters<typeof removeStringWithLocale>[3],
   ) => ThingBuilder<T>;
   removeNamedNode: Remover<NamedNode, T>;
   removeLiteral: Remover<Literal, T>;
@@ -215,7 +215,7 @@ export function buildThing(init: ThingPersisted): ThingBuilder<ThingPersisted>;
  * @since 1.9.0
  */
 export function buildThing(
-  init: CreateThingLocalOptions
+  init: CreateThingLocalOptions,
 ): ThingBuilder<ThingLocal>;
 /**
  * Create a [[Thing]], setting multiple properties in a single expresssion.
@@ -234,7 +234,7 @@ export function buildThing(
  * @since 1.9.0
  */
 export function buildThing(
-  init: CreateThingPersistedOptions
+  init: CreateThingPersistedOptions,
 ): ThingBuilder<ThingPersisted>;
 /**
  * Create a [[Thing]], setting multiple properties in a single expresssion.
@@ -269,14 +269,14 @@ export function buildThing(): ThingBuilder<ThingLocal>;
  * @since 1.9.0
  */
 export function buildThing(
-  init: Thing | CreateThingOptions = createThing()
+  init: Thing | CreateThingOptions = createThing(),
 ): ThingBuilder<Thing> {
   let thing = isThing(init) ? init : createThing(init);
 
   function getAdder<Type>(adder: AddOfType<Type>) {
     return (
       property: Parameters<typeof adder>[1],
-      value: Parameters<typeof adder>[2]
+      value: Parameters<typeof adder>[2],
     ) => {
       thing = adder(thing, property, value);
       return builder;
@@ -286,7 +286,7 @@ export function buildThing(
   function getSetter<Type>(setter: SetOfType<Type>) {
     return (
       property: Parameters<typeof setter>[1],
-      value: Parameters<typeof setter>[2]
+      value: Parameters<typeof setter>[2],
     ) => {
       thing = setter(thing, property, value);
       return builder;
@@ -296,7 +296,7 @@ export function buildThing(
   function getRemover<Type>(remover: RemoveOfType<Type>) {
     return (
       property: Parameters<typeof remover>[1],
-      value: Parameters<typeof remover>[2]
+      value: Parameters<typeof remover>[2],
     ) => {
       thing = remover(thing, property, value);
       return builder;
@@ -316,7 +316,7 @@ export function buildThing(
     addStringNoLocale: getAdder(addStringNoLocale),
     addStringEnglish: (
       property: Parameters<typeof addStringWithLocale>[1],
-      value: Parameters<typeof addStringWithLocale>[2]
+      value: Parameters<typeof addStringWithLocale>[2],
     ) => {
       thing = addStringWithLocale(thing, property, value, "en");
       return builder;
@@ -324,7 +324,7 @@ export function buildThing(
     addStringWithLocale: (
       property: Parameters<typeof addStringWithLocale>[1],
       value: Parameters<typeof addStringWithLocale>[2],
-      locale: Parameters<typeof addStringWithLocale>[3]
+      locale: Parameters<typeof addStringWithLocale>[3],
     ) => {
       thing = addStringWithLocale(thing, property, value, locale);
       return builder;
@@ -343,7 +343,7 @@ export function buildThing(
     setStringNoLocale: getSetter(setStringNoLocale),
     setStringEnglish: (
       property: Parameters<typeof setStringWithLocale>[1],
-      value: Parameters<typeof setStringWithLocale>[2]
+      value: Parameters<typeof setStringWithLocale>[2],
     ) => {
       thing = setStringWithLocale(thing, property, value, "en");
       return builder;
@@ -351,7 +351,7 @@ export function buildThing(
     setStringWithLocale: (
       property: Parameters<typeof setStringWithLocale>[1],
       value: Parameters<typeof setStringWithLocale>[2],
-      locale: Parameters<typeof setStringWithLocale>[3]
+      locale: Parameters<typeof setStringWithLocale>[3],
     ) => {
       thing = setStringWithLocale(thing, property, value, locale);
       return builder;
@@ -374,12 +374,12 @@ export function buildThing(
     removeStringNoLocale: getRemover(removeStringNoLocale),
     removeStringEnglish: (
       property: Parameters<typeof removeStringWithLocale>[1],
-      value: Parameters<typeof removeStringWithLocale>[2]
+      value: Parameters<typeof removeStringWithLocale>[2],
     ) => buildThing(removeStringWithLocale(thing, property, value, "en")),
     removeStringWithLocale: (
       property: Parameters<typeof removeStringWithLocale>[1],
       value: Parameters<typeof removeStringWithLocale>[2],
-      locale: Parameters<typeof removeStringWithLocale>[3]
+      locale: Parameters<typeof removeStringWithLocale>[3],
     ) => buildThing(removeStringWithLocale(thing, property, value, locale)),
     removeNamedNode: getRemover(removeNamedNode),
     removeLiteral: getRemover(removeLiteral),

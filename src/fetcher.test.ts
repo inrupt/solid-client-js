@@ -26,7 +26,7 @@ import { fetch } from "./fetcher";
 
 jest.mock("@inrupt/universal-fetch", () => {
   const uniFetchModule = jest.requireActual(
-    "@inrupt/universal-fetch"
+    "@inrupt/universal-fetch",
   ) as typeof UniversalFetch;
   return {
     ...uniFetchModule,

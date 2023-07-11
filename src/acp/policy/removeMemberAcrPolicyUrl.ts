@@ -44,15 +44,15 @@ import { removeIri } from "../../thing/remove";
  */
 export function removeMemberAcrPolicyUrl<T extends WithAccessibleAcr>(
   resourceWithAcr: T,
-  policyUrl: Url | UrlString
+  policyUrl: Url | UrlString,
 ): T {
   const defaultAccessControlThing = getDefaultAccessControlThing(
     resourceWithAcr,
-    DEFAULT_MEMBER_ACR_ACCESS_CONTROL
+    DEFAULT_MEMBER_ACR_ACCESS_CONTROL,
   );
 
   return setAccessControlResourceThing(
     resourceWithAcr,
-    removeIri(defaultAccessControlThing, ACP.access, policyUrl)
+    removeIri(defaultAccessControlThing, ACP.access, policyUrl),
   );
 }

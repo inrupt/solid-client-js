@@ -28,9 +28,9 @@ import { getDefaultAgentMatcherPolicyUrl } from "./getDefaultAgentMatcherPolicyU
 export function getDefaultAgentMatcherPolicyMatcherUrl(
   resource: WithAccessibleAcr,
   name: DefaultAccessControlName,
-  mode: keyof AccessModes
+  mode: keyof AccessModes,
 ): string {
   return getDefaultAgentMatcherPolicyUrl(resource, name, mode).concat(
-    "Matcher"
+    "Matcher",
   );
 }

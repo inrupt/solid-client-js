@@ -118,7 +118,7 @@ export function createPolicy(url: Url | UrlString): Policy {
  */
 export function getPolicy(
   policyResource: SolidDataset,
-  url: Url | UrlString
+  url: Url | UrlString,
 ): Policy | null {
   const foundThing = getThing(policyResource, url);
   if (foundThing === null || !isPolicy(foundThing)) {
@@ -141,7 +141,7 @@ export function getPolicy(
 export function getPolicyAll(policyResource: SolidDataset): Policy[] {
   const foundThings = getThingAll(policyResource);
   const foundPolicies = foundThings.filter(
-    (thing) => !isThingLocal(thing) && isPolicy(thing)
+    (thing) => !isThingLocal(thing) && isPolicy(thing),
   ) as Policy[];
   return foundPolicies;
 }
@@ -159,7 +159,7 @@ export function getPolicyAll(policyResource: SolidDataset): Policy[] {
  */
 export function removePolicy<Dataset extends SolidDataset>(
   policyResource: Dataset,
-  policy: Url | UrlString | Policy
+  policy: Url | UrlString | Policy,
 ): Dataset {
   return removeThing(policyResource, policy);
 }
@@ -178,7 +178,7 @@ export function removePolicy<Dataset extends SolidDataset>(
  */
 export function setPolicy<Dataset extends SolidDataset>(
   policyResource: Dataset,
-  policy: Policy
+  policy: Policy,
 ): Dataset {
   return setThing(policyResource, policy);
 }
@@ -197,7 +197,7 @@ export function setPolicy<Dataset extends SolidDataset>(
  */
 export function setAllowModesV2<P extends Policy | ResourcePolicy>(
   policy: P,
-  modes: AccessModes
+  modes: AccessModes,
 ): P {
   let newPolicy = removeAll(policy, acp.allow);
 
@@ -205,21 +205,21 @@ export function setAllowModesV2<P extends Policy | ResourcePolicy>(
     newPolicy = addIri(
       newPolicy,
       acp.allow,
-      internal_accessModeIriStrings.read
+      internal_accessModeIriStrings.read,
     );
   }
   if (modes.append === true) {
     newPolicy = addIri(
       newPolicy,
       acp.allow,
-      internal_accessModeIriStrings.append
+      internal_accessModeIriStrings.append,
     );
   }
   if (modes.write === true) {
     newPolicy = addIri(
       newPolicy,
       acp.allow,
-      internal_accessModeIriStrings.write
+      internal_accessModeIriStrings.write,
     );
   }
 
@@ -240,7 +240,7 @@ export function setAllowModesV2<P extends Policy | ResourcePolicy>(
  */
 export function setAllowModesV1<P extends Policy | ResourcePolicy>(
   policy: P,
-  modes: AccessModes
+  modes: AccessModes,
 ): P {
   let newPolicy = removeAll(policy, acp.allow);
 
@@ -271,7 +271,7 @@ export const setAllowModes = setAllowModesV1;
  * @since Not released yet.
  */
 export function getAllowModesV2<P extends Policy | ResourcePolicy>(
-  policy: P
+  policy: P,
 ): AccessModes {
   const allowedModes = getIriAll(policy, acp.allow);
   return {
@@ -292,7 +292,7 @@ export function getAllowModesV2<P extends Policy | ResourcePolicy>(
  * @deprecated The Access Control Policies proposal will be updated to use a different vocabulary for allow- and deny-modes. To be compatible with servers that implement that, use [[getAllowModesV2]].
  */
 export function getAllowModesV1<P extends Policy | ResourcePolicy>(
-  policy: P
+  policy: P,
 ): AccessModes {
   const allowedModes = getIriAll(policy, acp.allow);
   return {
@@ -319,7 +319,7 @@ export const getAllowModes = getAllowModesV1;
  */
 export function setDenyModesV2<P extends Policy | ResourcePolicy>(
   policy: P,
-  modes: AccessModes
+  modes: AccessModes,
 ): P {
   let newPolicy = removeAll(policy, acp.deny);
 
@@ -330,14 +330,14 @@ export function setDenyModesV2<P extends Policy | ResourcePolicy>(
     newPolicy = addIri(
       newPolicy,
       acp.deny,
-      internal_accessModeIriStrings.append
+      internal_accessModeIriStrings.append,
     );
   }
   if (modes.write === true) {
     newPolicy = addIri(
       newPolicy,
       acp.deny,
-      internal_accessModeIriStrings.write
+      internal_accessModeIriStrings.write,
     );
   }
 
@@ -358,7 +358,7 @@ export function setDenyModesV2<P extends Policy | ResourcePolicy>(
  */
 export function setDenyModesV1<P extends Policy | ResourcePolicy>(
   policy: P,
-  modes: AccessModes
+  modes: AccessModes,
 ): P {
   let newPolicy = removeAll(policy, acp.deny);
 
@@ -389,7 +389,7 @@ export const setDenyModes = setDenyModesV1;
  * @since Not released yet.
  */
 export function getDenyModesV2<P extends Policy | ResourcePolicy>(
-  policy: P
+  policy: P,
 ): AccessModes {
   const deniedModes = getIriAll(policy, acp.deny);
   return {
@@ -410,7 +410,7 @@ export function getDenyModesV2<P extends Policy | ResourcePolicy>(
  * @deprecated The Access Control Policies proposal will be updated to use a different vocabulary for allow- and deny-modes. To be compatible with servers that implement that, use [[getDenyModesV2]].
  */
 export function getDenyModesV1<P extends Policy | ResourcePolicy>(
-  policy: P
+  policy: P,
 ): AccessModes {
   const deniedModes = getIriAll(policy, acp.deny);
   return {
@@ -437,7 +437,7 @@ export const getDenyModes = getDenyModesV1;
  */
 export function createResourcePolicyFor(
   resourceWithAcr: WithAccessibleAcr,
-  name: string
+  name: string,
 ): ResourcePolicy {
   const acr = internal_getAcr(resourceWithAcr);
   const url = new URL(getSourceUrl(acr));
@@ -463,7 +463,7 @@ export function createResourcePolicyFor(
  */
 export function getResourcePolicy(
   resourceWithAcr: WithAccessibleAcr,
-  name: string
+  name: string,
 ): ResourcePolicy | null {
   const acr = internal_getAcr(resourceWithAcr);
   const acrUrl = getSourceUrl(acr);
@@ -496,7 +496,7 @@ export function getResourcePolicy(
  */
 export function getResourceAcrPolicy(
   resourceWithAcr: WithAccessibleAcr,
-  name: string
+  name: string,
 ): ResourcePolicy | null {
   const acr = internal_getAcr(resourceWithAcr);
   const acrUrl = getSourceUrl(acr);
@@ -526,13 +526,13 @@ export function getResourceAcrPolicy(
  * @since 1.6.0
  */
 export function getResourcePolicyAll(
-  resourceWithAcr: WithAccessibleAcr
+  resourceWithAcr: WithAccessibleAcr,
 ): ResourcePolicy[] {
   const acr = internal_getAcr(resourceWithAcr);
   const policyUrls = getPolicyUrlAll(resourceWithAcr);
   const foundThings = policyUrls.map((policyUrl) => getThing(acr, policyUrl));
   const foundPolicies = foundThings.filter(
-    (thing) => thing !== null && isPolicy(thing)
+    (thing) => thing !== null && isPolicy(thing),
   ) as ResourcePolicy[];
   return foundPolicies;
 }
@@ -549,13 +549,13 @@ export function getResourcePolicyAll(
  * @since 1.6.0
  */
 export function getResourceAcrPolicyAll(
-  resourceWithAcr: WithAccessibleAcr
+  resourceWithAcr: WithAccessibleAcr,
 ): ResourcePolicy[] {
   const acr = internal_getAcr(resourceWithAcr);
   const policyUrls = getAcrPolicyUrlAll(resourceWithAcr);
   const foundThings = policyUrls.map((policyUrl) => getThing(acr, policyUrl));
   const foundPolicies = foundThings.filter(
-    (thing) => thing !== null && isPolicy(thing)
+    (thing) => thing !== null && isPolicy(thing),
   ) as ResourcePolicy[];
   return foundPolicies;
 }
@@ -574,7 +574,7 @@ export function getResourceAcrPolicyAll(
  */
 export function removeResourcePolicy<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
-  policy: string | Url | UrlString | ResourcePolicy
+  policy: string | Url | UrlString | ResourcePolicy,
 ): ResourceExt {
   const acr = internal_getAcr(resourceWithAcr);
   let policyToRemove = policy;
@@ -601,7 +601,7 @@ export function removeResourcePolicy<ResourceExt extends WithAccessibleAcr>(
   // Check whether the actual Policy (i.e. with the Policy type) exists:
   const matchingRule = getResourcePolicy(
     resourceWithAcr,
-    new URL(policyUrlString).hash.substring(1)
+    new URL(policyUrlString).hash.substring(1),
   );
   if (matchingRule === null) {
     // No such Policy exists yet, so return the Resource+ACR unchanged:
@@ -627,7 +627,7 @@ export function removeResourcePolicy<ResourceExt extends WithAccessibleAcr>(
  */
 export function removeResourceAcrPolicy<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
-  policy: string | Url | UrlString | ResourcePolicy
+  policy: string | Url | UrlString | ResourcePolicy,
 ): ResourceExt {
   const acr = internal_getAcr(resourceWithAcr);
   let policyToRemove = policy;
@@ -655,7 +655,7 @@ export function removeResourceAcrPolicy<ResourceExt extends WithAccessibleAcr>(
   // Check whether the actual Policy (i.e. with the Policy type) exists:
   const matchingRule = getResourceAcrPolicy(
     resourceWithAcr,
-    new URL(policyUrlString).hash.substring(1)
+    new URL(policyUrlString).hash.substring(1),
   );
   if (matchingRule === null) {
     // No such Policy exists yet, so return the Resource+ACR unchanged:
@@ -682,7 +682,7 @@ export function removeResourceAcrPolicy<ResourceExt extends WithAccessibleAcr>(
  */
 export function setResourcePolicy<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
-  policy: ResourcePolicy
+  policy: ResourcePolicy,
 ): ResourceExt {
   const acr = internal_getAcr(resourceWithAcr);
   const updatedAcr = setThing(acr, policy);
@@ -707,7 +707,7 @@ export function setResourcePolicy<ResourceExt extends WithAccessibleAcr>(
  */
 export function setResourceAcrPolicy<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
-  policy: ResourcePolicy
+  policy: ResourcePolicy,
 ): ResourceExt {
   const acr = internal_getAcr(resourceWithAcr);
   const updatedAcr = setThing(acr, policy);

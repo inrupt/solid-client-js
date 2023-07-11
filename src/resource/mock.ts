@@ -50,7 +50,7 @@ type Unpromisify<T> = T extends Promise<infer R> ? R : T;
  * @since 0.2.0
  */
 export function mockSolidDatasetFrom(
-  url: Url | UrlString
+  url: Url | UrlString,
 ): Unpromisify<ReturnType<typeof getSolidDataset>> {
   const solidDataset = createSolidDataset();
   const solidDatasetWithResourceInfo: SolidDataset & WithServerResourceInfo = {
@@ -80,12 +80,12 @@ export function mockSolidDatasetFrom(
  * @since 0.2.0
  */
 export function mockContainerFrom(
-  url: Url | UrlString
+  url: Url | UrlString,
 ): Unpromisify<ReturnType<typeof getSolidDataset>> {
   const sourceIri = internal_toIriString(url);
   if (!sourceIri.endsWith("/")) {
     throw new Error(
-      "A Container's URL should end in a slash. Please update your tests."
+      "A Container's URL should end in a slash. Please update your tests.",
     );
   }
 
@@ -109,7 +109,7 @@ export function mockFileFrom(
   url: Url | UrlString,
   options?: Partial<{
     contentType: WithServerResourceInfo["internal_resourceInfo"]["contentType"];
-  }>
+  }>,
 ): Unpromisify<ReturnType<typeof getFile>> {
   const file = new Blob();
   const fileWithResourceInfo: File & WithServerResourceInfo = Object.assign(
@@ -121,7 +121,7 @@ export function mockFileFrom(
         contentType: options?.contentType,
         linkedResources: {},
       },
-    }
+    },
   );
 
   return fileWithResourceInfo;
@@ -145,7 +145,7 @@ export function mockFileFrom(
 export function mockFetchError(
   fetchedUrl: UrlString,
   statusCode = 404,
-  statusText = "Not Found"
+  statusText = "Not Found",
 ): FetchError {
   // The Response constructor in Node 14 makes an empty status text undefined.
   const failedResponse = new Response(undefined, {
@@ -154,6 +154,6 @@ export function mockFetchError(
   }) as Response & { ok: false };
   return new FetchError(
     `Fetching the Resource at [${fetchedUrl}] failed: [${failedResponse.status}] [${failedResponse.statusText}].`,
-    failedResponse
+    failedResponse,
   );
 }

@@ -31,7 +31,7 @@ test("creating and removing empty Containers", async ({ page, auth }) => {
 
   // A root container should have been found.
   await expect(page.getByTestId("parentContainerUrl")).toContainText(
-    /https:\/\//
+    /https:\/\//,
   );
   // No child container should be available yet.
   await expect(page.getByTestId("childContainerUrl")).toContainText("None");
@@ -47,9 +47,9 @@ test("creating and removing empty Containers", async ({ page, auth }) => {
 
   // The child container should have been created under the parent
   await expect(
-    page.locator("span[data-testid=childContainerUrl]")
+    page.locator("span[data-testid=childContainerUrl]"),
   ).toContainText(
-    await page.locator("span[data-testid=childContainerUrl]").allInnerTexts()
+    await page.locator("span[data-testid=childContainerUrl]").allInnerTexts(),
   );
 
   await Promise.all([
@@ -62,6 +62,6 @@ test("creating and removing empty Containers", async ({ page, auth }) => {
 
   // The child container should have been deleted.
   await expect(
-    page.locator("span[data-testid=childContainerUrl]")
+    page.locator("span[data-testid=childContainerUrl]"),
   ).toContainText("None");
 });

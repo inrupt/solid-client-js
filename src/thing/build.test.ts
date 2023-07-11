@@ -38,25 +38,25 @@ describe("Thing Builder API", () => {
       .addStringWithLocale(
         "https://some.vocab/predicate",
         "Some string",
-        "nl-nl"
+        "nl-nl",
       )
       .build();
 
     let nonBuilderThing = adders.addInteger(
       startingThing,
       "https://some.vocab/predicate",
-      42
+      42,
     );
     nonBuilderThing = adders.addStringEnglish(
       nonBuilderThing,
       "https://some.vocab/predicate",
-      "Some English string"
+      "Some English string",
     );
     nonBuilderThing = adders.addStringWithLocale(
       nonBuilderThing,
       "https://some.vocab/predicate",
       "Some string",
-      "nl-nl"
+      "nl-nl",
     );
 
     expect(builtThing).toStrictEqual(nonBuilderThing);
@@ -66,43 +66,43 @@ describe("Thing Builder API", () => {
     let startingThing = adders.addDecimal(
       createThing(),
       "https://some.vocab/predicate",
-      4.2
+      4.2,
     );
     startingThing = adders.addStringWithLocale(
       startingThing,
       "https://some-other.vocab/predicate",
       "Some string",
-      "nl-nl"
+      "nl-nl",
     );
 
     const builtThing = buildThing(startingThing)
       .setDecimal("https://some.vocab/predicate", 13.37)
       .setStringEnglish(
         "https://some-other.vocab/predicate",
-        "Some English string"
+        "Some English string",
       )
       .setStringWithLocale(
         "https://some-other.vocab/predicate",
         "Some other string",
-        "nl-nl"
+        "nl-nl",
       )
       .build();
 
     let nonBuilderThing = setters.setDecimal(
       startingThing,
       "https://some.vocab/predicate",
-      13.37
+      13.37,
     );
     nonBuilderThing = setters.setStringEnglish(
       nonBuilderThing,
       "https://some-other.vocab/predicate",
-      "Some English string"
+      "Some English string",
     );
     nonBuilderThing = setters.setStringWithLocale(
       nonBuilderThing,
       "https://some-other.vocab/predicate",
       "Some other string",
-      "nl-nl"
+      "nl-nl",
     );
 
     expect(builtThing).toStrictEqual(nonBuilderThing);
@@ -112,39 +112,39 @@ describe("Thing Builder API", () => {
     let startingThing = adders.addDecimal(
       createThing(),
       "https://some.vocab/predicate",
-      4.2
+      4.2,
     );
     startingThing = adders.addStringEnglish(
       startingThing,
       "https://some.vocab/predicate-english",
-      "Some English string"
+      "Some English string",
     );
     startingThing = adders.addStringWithLocale(
       startingThing,
       "https://some.vocab/predicate",
       "Some string",
-      "en-gb"
+      "en-gb",
     );
     startingThing = adders.addBoolean(
       startingThing,
       "https://some-other.vocab/predicate",
-      true
+      true,
     );
     startingThing = adders.addStringNoLocale(
       startingThing,
       "https://yet-another.vocab/predicate",
-      "Some unlocalised string"
+      "Some unlocalised string",
     );
 
     const builtThing = buildThing(startingThing)
       .removeStringEnglish(
         "https://some.vocab/predicate-english",
-        "Some English string"
+        "Some English string",
       )
       .removeStringWithLocale(
         "https://some.vocab/predicate",
         "Some string",
-        "en-gb"
+        "en-gb",
       )
       .removeBoolean("https://some-other.vocab/predicate", true)
       .removeAll("https://yet-another.vocab/predicate")
@@ -153,22 +153,22 @@ describe("Thing Builder API", () => {
     let nonBuilderThing = removers.removeStringEnglish(
       startingThing,
       "https://some.vocab/predicate-english",
-      "Some English string"
+      "Some English string",
     );
     nonBuilderThing = removers.removeStringWithLocale(
       nonBuilderThing,
       "https://some.vocab/predicate",
       "Some string",
-      "en-gb"
+      "en-gb",
     );
     nonBuilderThing = removers.removeBoolean(
       nonBuilderThing,
       "https://some-other.vocab/predicate",
-      true
+      true,
     );
     nonBuilderThing = removers.removeAll(
       nonBuilderThing,
-      "https://yet-another.vocab/predicate"
+      "https://yet-another.vocab/predicate",
     );
 
     expect(builtThing).toStrictEqual(nonBuilderThing);
@@ -202,7 +202,7 @@ describe("Thing Builder API", () => {
     // Thing, `buildThing` should also return a ThingPersisted, which should
     // cause an error when assigning to a ThingLocal variable:
     const _thingPersisted: ThingLocal = buildThing(
-      createThing({ url: "https://some.pod/resource#thing" })
+      createThing({ url: "https://some.pod/resource#thing" }),
     ).build();
 
     // Since we're passing the `name` option, `buildThing` should return a ThingLocal,
@@ -213,13 +213,13 @@ describe("Thing Builder API", () => {
     // `buildThing` should also return a ThingLocal,
     // which should not cause an error when assigning to a ThingLocal variable:
     const _thingLocal: ThingLocal = buildThing(
-      createThing({ name: "thing" })
+      createThing({ name: "thing" }),
     ).build();
   });
 
   it("has equivalents for every adder", () => {
     const adderNames = Object.keys(adders).filter(
-      (adderName) => adderName.substring(0, 3) === "add"
+      (adderName) => adderName.substring(0, 3) === "add",
     );
     expect.assertions(adderNames.length * 2);
 
@@ -228,14 +228,14 @@ describe("Thing Builder API", () => {
     adderNames.forEach((adderName) => {
       expect((builder as Record<string, unknown>)[adderName]).toBeDefined();
       expect(typeof (builder as Record<string, unknown>)[adderName]).toBe(
-        "function"
+        "function",
       );
     });
   });
 
   it("has equivalents for every setter", () => {
     const setterNames = Object.keys(setters).filter(
-      (setterName) => setterName.substring(0, 3) === "set"
+      (setterName) => setterName.substring(0, 3) === "set",
     );
     expect.assertions(setterNames.length * 2);
 
@@ -244,14 +244,14 @@ describe("Thing Builder API", () => {
     setterNames.forEach((setterName) => {
       expect((builder as Record<string, unknown>)[setterName]).toBeDefined();
       expect(typeof (builder as Record<string, unknown>)[setterName]).toBe(
-        "function"
+        "function",
       );
     });
   });
 
   it("has equivalents for every remover", () => {
     const removerNames = Object.keys(removers).filter(
-      (removerName) => removerName.substring(0, 6) === "remove"
+      (removerName) => removerName.substring(0, 6) === "remove",
     );
     expect.assertions(removerNames.length * 2);
 
@@ -260,7 +260,7 @@ describe("Thing Builder API", () => {
     removerNames.forEach((removerName) => {
       expect((builder as Record<string, unknown>)[removerName]).toBeDefined();
       expect(typeof (builder as Record<string, unknown>)[removerName]).toBe(
-        "function"
+        "function",
       );
     });
   });
@@ -270,14 +270,14 @@ describe("Thing Builder API", () => {
     builder.addStringWithLocale(
       "https://some.vocab/predicate",
       "Some string",
-      "nl-nl"
+      "nl-nl",
     );
 
     const thing = builder.build();
 
     expect(getInteger(thing, "https://some.vocab/predicate")).toBe(42);
     expect(
-      getStringWithLocale(thing, "https://some.vocab/predicate", "nl-nl")
+      getStringWithLocale(thing, "https://some.vocab/predicate", "nl-nl"),
     ).toBe("Some string");
   });
 });

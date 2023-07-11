@@ -264,8 +264,8 @@ export function deserializeDatetime(literalString: string): Date | null {
       utcHours,
       utcMinutes,
       utcSeconds,
-      utcMilliseconds
-    )
+      utcMilliseconds,
+    ),
   );
 
   // For the year, values from 0 to 99 map to the years 1900 to 1999. Since the serialisation
@@ -295,7 +295,7 @@ export function serializeDate(value: Date): string {
 
   return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(
     2,
-    "0"
+    "0",
   )}${timezone}`;
 }
 
@@ -482,7 +482,7 @@ export function isTerm<T>(value: T | Term): value is Term {
  * @returns Whether `value` is a Node with no known IRI yet.
  */
 export function isLocalNode<T>(
-  value: T | Quad_Subject | LocalNode
+  value: T | Quad_Subject | LocalNode,
 ): value is LocalNode {
   return isNamedNode(value) && isLocalNodeIri(value.value);
 }
@@ -539,10 +539,10 @@ export function asNamedNode(iri: Iri | IriString): NamedNode {
  */
 export function resolveIriForLocalNode(
   localNode: LocalNode,
-  resourceIri: IriString
+  resourceIri: IriString,
 ): NamedNode {
   return DataFactory.namedNode(
-    resolveLocalIri(getLocalNodeName(localNode.value), resourceIri)
+    resolveLocalIri(getLocalNodeName(localNode.value), resourceIri),
   );
 }
 
@@ -553,12 +553,12 @@ export function resolveIriForLocalNode(
  */
 export function resolveLocalIri(
   name: string,
-  resourceIri: IriString
+  resourceIri: IriString,
 ): IriString {
   /* istanbul ignore if [The URL interface is available in the testing environment, so we cannot test this] */
   if (typeof URL !== "function") {
     throw new Error(
-      "The URL interface is not available, so an IRI cannot be determined."
+      "The URL interface is not available, so an IRI cannot be determined.",
     );
   }
   const thingIri = new URL(resourceIri);

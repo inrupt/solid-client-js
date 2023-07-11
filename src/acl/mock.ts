@@ -46,7 +46,7 @@ import { setMockAclUrl } from "./mock.internal";
  * @since 0.2.0
  */
 export function addMockResourceAclTo<T extends WithServerResourceInfo>(
-  resource: T
+  resource: T,
 ): T & WithResourceAcl {
   const aclUrl =
     resource.internal_resourceInfo.aclUrl ?? "https://your.pod/mock-acl.ttl";
@@ -57,7 +57,7 @@ export function addMockResourceAclTo<T extends WithServerResourceInfo>(
         ...resource.internal_resourceInfo,
         aclUrl,
       },
-    }
+    },
   );
   const aclDataset = createAcl(resourceWithAclUrl);
 
@@ -84,7 +84,7 @@ export function addMockResourceAclTo<T extends WithServerResourceInfo>(
  * @since 0.2.0
  */
 export function addMockFallbackAclTo<T extends WithServerResourceInfo>(
-  resource: T
+  resource: T,
 ): T & WithFallbackAcl {
   const containerUrl = internal_getContainerPath(getSourceIri(resource));
   const aclUrl = `${containerUrl}.acl`;
@@ -96,7 +96,7 @@ export function addMockFallbackAclTo<T extends WithServerResourceInfo>(
     {
       resourceAcl: null,
       fallbackAcl: aclDataset,
-    }
+    },
   );
 
   return resourceWithFallbackAcl;

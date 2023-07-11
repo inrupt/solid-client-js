@@ -34,7 +34,7 @@ export type SubjectPredicateObjectTuple = [string, [string, string[]][]];
 /** @hidden */
 export function addSubject(
   dataset: SolidDataset,
-  subject: SubjectPredicateObjectTuple
+  subject: SubjectPredicateObjectTuple,
 ): SolidDataset {
   let thing = getThing(dataset, subject[0]);
   // istanbul ignore next
@@ -54,14 +54,14 @@ export function addSubject(
 /** @hidden */
 export function addSubjects(
   dataset: SolidDataset,
-  subjects: SubjectPredicateObjectTuple[]
+  subjects: SubjectPredicateObjectTuple[],
 ): SolidDataset {
   return subjects.reduce(addSubject, dataset);
 }
 
 /** @hidden */
 export function createDatasetFromSubjects(
-  data: SubjectPredicateObjectTuple[]
+  data: SubjectPredicateObjectTuple[],
 ): SolidDataset {
   return addSubjects(createSolidDataset(), data);
 }

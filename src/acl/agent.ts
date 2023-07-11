@@ -67,7 +67,7 @@ export type AgentAccess = Record<WebId, Access>;
  */
 export function getAgentAccess(
   resourceInfo: WithAcl & WithServerResourceInfo,
-  agent: WebId
+  agent: WebId,
 ): Access | null {
   if (hasResourceAcl(resourceInfo)) {
     return getAgentResourceAccess(resourceInfo.internal_acl.resourceAcl, agent);
@@ -91,7 +91,7 @@ export function getAgentAccess(
  * @returns Access Modes per Agent that have been explicitly granted for the given Resource, or `null` if it could not be determined (e.g. because the current user does not have Control access to a given Resource or its Container).
  */
 export function getAgentAccessAll(
-  resourceInfo: WithAcl & WithServerResourceInfo
+  resourceInfo: WithAcl & WithServerResourceInfo,
 ): AgentAccess | null {
   if (hasResourceAcl(resourceInfo)) {
     const resourceAcl = getResourceAcl(resourceInfo);
@@ -123,12 +123,12 @@ export function getAgentAccessAll(
  */
 export function getAgentResourceAccess(
   aclDataset: AclDataset,
-  agent: WebId
+  agent: WebId,
 ): Access {
   const allRules = internal_getAclRules(aclDataset);
   const resourceRules = internal_getResourceAclRulesForResource(
     allRules,
-    aclDataset.internal_accessTo
+    aclDataset.internal_accessTo,
   );
   const agentResourceRules = getAgentAclRulesForAgent(resourceRules, agent);
   const agentAccessModes = agentResourceRules.map(internal_getAccess);
@@ -155,7 +155,7 @@ export function getAgentResourceAccessAll(aclDataset: AclDataset): AgentAccess {
   const allRules = internal_getAclRules(aclDataset);
   const resourceRules = internal_getResourceAclRulesForResource(
     allRules,
-    aclDataset.internal_accessTo
+    aclDataset.internal_accessTo,
   );
   const agentResourceRules = getAgentAclRules(resourceRules);
   return getAccessByAgent(agentResourceRules);
@@ -186,14 +186,14 @@ export function getAgentResourceAccessAll(aclDataset: AclDataset): AgentAccess {
 export function setAgentResourceAccess(
   aclDataset: AclDataset,
   agent: WebId,
-  access: Access
+  access: Access,
 ): AclDataset & WithChangeLog {
   return internal_setActorAccess(
     aclDataset,
     access,
     acl.agent,
     "resource",
-    agent
+    agent,
   );
 }
 
@@ -215,12 +215,12 @@ export function setAgentResourceAccess(
  */
 export function getAgentDefaultAccess(
   aclDataset: AclDataset,
-  agent: WebId
+  agent: WebId,
 ): Access {
   const allRules = internal_getAclRules(aclDataset);
   const resourceRules = internal_getDefaultAclRulesForResource(
     allRules,
-    aclDataset.internal_accessTo
+    aclDataset.internal_accessTo,
   );
   const agentResourceRules = getAgentAclRulesForAgent(resourceRules, agent);
   const agentAccessModes = agentResourceRules.map(internal_getAccess);
@@ -247,7 +247,7 @@ export function getAgentDefaultAccessAll(aclDataset: AclDataset): AgentAccess {
   const allRules = internal_getAclRules(aclDataset);
   const resourceRules = internal_getDefaultAclRulesForResource(
     allRules,
-    aclDataset.internal_accessTo
+    aclDataset.internal_accessTo,
   );
   const agentResourceRules = getAgentAclRules(resourceRules);
 
@@ -278,20 +278,20 @@ export function getAgentDefaultAccessAll(aclDataset: AclDataset): AgentAccess {
 export function setAgentDefaultAccess(
   aclDataset: AclDataset,
   agent: WebId,
-  access: Access
+  access: Access,
 ): AclDataset & WithChangeLog {
   return internal_setActorAccess(
     aclDataset,
     access,
     acl.agent,
     "default",
-    agent
+    agent,
   );
 }
 
 function getAgentAclRulesForAgent(
   aclRules: AclRule[],
-  agent: WebId
+  agent: WebId,
 ): AclRule[] {
   return internal_getAclRulesForIri(aclRules, agent, acl.agent);
 }

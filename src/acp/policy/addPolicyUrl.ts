@@ -45,21 +45,21 @@ import { setDefaultAccessControlThingIfNotExist } from "../internal/setDefaultAc
  */
 export function addPolicyUrl<T extends WithAccessibleAcr>(
   resourceWithAcr: T,
-  policyUrl: Url | UrlString
+  policyUrl: Url | UrlString,
 ): T {
   const resourceWithAcrContainingDefaultAccessControl =
     setDefaultAccessControlThingIfNotExist(
       resourceWithAcr,
-      DEFAULT_ACCESS_CONTROL
+      DEFAULT_ACCESS_CONTROL,
     );
 
   const defaultAccessControlThing = getDefaultAccessControlThing(
     resourceWithAcrContainingDefaultAccessControl,
-    DEFAULT_ACCESS_CONTROL
+    DEFAULT_ACCESS_CONTROL,
   );
 
   return setAccessControlResourceThing(
     resourceWithAcrContainingDefaultAccessControl,
-    buildThing(defaultAccessControlThing).addUrl(ACP.apply, policyUrl).build()
+    buildThing(defaultAccessControlThing).addUrl(ACP.apply, policyUrl).build(),
   );
 }

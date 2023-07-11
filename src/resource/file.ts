@@ -84,7 +84,7 @@ function containsReserved(header: Record<string, string>): boolean {
  */
 export async function getFile(
   fileUrl: Url | UrlString,
-  options: Partial<GetFileOptions> = defaultGetFileOptions
+  options: Partial<GetFileOptions> = defaultGetFileOptions,
 ): Promise<File & WithServerResourceInfo> {
   const config = {
     ...defaultGetFileOptions,
@@ -97,7 +97,7 @@ export async function getFile(
       `Fetching the File failed: [${response.status}] [${
         response.statusText
       }] ${await response.text()}.`,
-      response
+      response,
     );
   }
   const resourceInfo = internal_parseResourceInfo(response);
@@ -106,7 +106,7 @@ export async function getFile(
     data,
     {
       internal_resourceInfo: resourceInfo,
-    }
+    },
   );
 
   return fileWithResourceInfo;
@@ -128,7 +128,7 @@ export async function getFile(
  */
 export async function deleteFile(
   file: Url | UrlString | WithResourceInfo,
-  options: Partial<GetFileOptions> = defaultGetFileOptions
+  options: Partial<GetFileOptions> = defaultGetFileOptions,
 ): Promise<void> {
   const config = {
     ...defaultGetFileOptions,
@@ -147,7 +147,7 @@ export async function deleteFile(
       `Deleting the file at [${url}] failed: [${response.status}] [${
         response.statusText
       }] ${await response.text()}.`,
-      response
+      response,
     );
   }
 }
@@ -216,24 +216,24 @@ type SaveFileOptions = WriteFileOptions & {
 export async function saveFileInContainer<FileExt extends File | NodeFile>(
   folderUrl: Url | UrlString,
   file: FileExt,
-  options?: Partial<SaveFileOptions>
+  options?: Partial<SaveFileOptions>,
 ): Promise<FileExt & WithResourceInfo>;
 /**
  * @deprecated `saveFileInContainer` should only have `File` input
  */
 export async function saveFileInContainer<
-  FileExt extends File | NodeFile | Buffer
+  FileExt extends File | NodeFile | Buffer,
 >(
   folderUrl: Url | UrlString,
   file: FileExt,
-  options?: Partial<SaveFileOptions>
+  options?: Partial<SaveFileOptions>,
 ): Promise<FileExt & WithResourceInfo>;
 export async function saveFileInContainer<
-  FileExt extends File | NodeFile | Buffer
+  FileExt extends File | NodeFile | Buffer,
 >(
   folderUrl: Url | UrlString,
   file: FileExt,
-  options: Partial<SaveFileOptions> = defaultGetFileOptions
+  options: Partial<SaveFileOptions> = defaultGetFileOptions,
 ): Promise<FileExt & WithResourceInfo> {
   const folderUrlString = internal_toIriString(folderUrl);
   const response = await writeFile(folderUrlString, file, "POST", options);
@@ -243,14 +243,14 @@ export async function saveFileInContainer<
       `Saving the file in [${folderUrl}] failed: [${response.status}] [${
         response.statusText
       }] ${await response.text()}.`,
-      response
+      response,
     );
   }
 
   const locationHeader = response.headers.get("Location");
   if (locationHeader === null) {
     throw new Error(
-      "Could not determine the location of the newly saved file."
+      "Could not determine the location of the newly saved file.",
     );
   }
 
@@ -320,7 +320,7 @@ export type WriteFileOptions = GetFileOptions & {
 export async function overwriteFile<FileExt extends File | NodeFile>(
   fileUrl: Url | UrlString,
   file: FileExt,
-  options?: Partial<WriteFileOptions>
+  options?: Partial<WriteFileOptions>,
 ): Promise<FileExt & WithResourceInfo>;
 /**
  * @deprecated `overwriteFile` should only have `File` input
@@ -328,12 +328,12 @@ export async function overwriteFile<FileExt extends File | NodeFile>(
 export async function overwriteFile<FileExt extends File | NodeFile | Buffer>(
   fileUrl: Url | UrlString,
   file: FileExt,
-  options?: Partial<WriteFileOptions>
+  options?: Partial<WriteFileOptions>,
 ): Promise<FileExt & WithResourceInfo>;
 export async function overwriteFile<FileExt extends File | NodeFile | Buffer>(
   fileUrl: Url | UrlString,
   file: FileExt,
-  options: Partial<WriteFileOptions> = defaultGetFileOptions
+  options: Partial<WriteFileOptions> = defaultGetFileOptions,
 ): Promise<FileExt & WithResourceInfo> {
   const fileUrlString = internal_toIriString(fileUrl);
   const response = await writeFile(fileUrlString, file, "PUT", options);
@@ -343,7 +343,7 @@ export async function overwriteFile<FileExt extends File | NodeFile | Buffer>(
       `Overwriting the file at [${fileUrlString}] failed: [${
         response.status
       }] [${response.statusText}] ${await response.text()}.`,
-      response
+      response,
     );
   }
 
@@ -356,7 +356,7 @@ export async function overwriteFile<FileExt extends File | NodeFile | Buffer>(
 }
 
 function isHeadersArray(
-  headers: Headers | Record<string, string> | string[][]
+  headers: Headers | Record<string, string> | string[][],
 ): headers is string[][] {
   return Array.isArray(headers);
 }
@@ -368,7 +368,7 @@ function isHeadersArray(
  * @param headers A headers object that might have a forEach
  */
 function hasHeadersObjectForEach(
-  headers: Headers | Record<string, string> | string[][]
+  headers: Headers | Record<string, string> | string[][],
 ): headers is Headers {
   return typeof (headers as Headers).forEach === "function";
 }
@@ -382,7 +382,7 @@ function hasHeadersObjectForEach(
  * @param headersToFlatten A structure containing headers potentially in several formats
  */
 export function flattenHeaders(
-  headersToFlatten: Headers | Record<string, string> | string[][] | undefined
+  headersToFlatten: Headers | Record<string, string> | string[][] | undefined,
 ): Record<string, string> {
   if (typeof headersToFlatten === "undefined") {
     return {};
@@ -422,7 +422,7 @@ async function writeFile<T extends File | NodeFile>(
   targetUrl: UrlString,
   file: T,
   method: "PUT" | "POST",
-  options: Partial<SaveFileOptions>
+  options: Partial<SaveFileOptions>,
 ): Promise<Response>;
 /**
  * @deprecated `writeFile` should only have `File` input
@@ -431,13 +431,13 @@ async function writeFile<T extends File | NodeFile | Buffer>(
   targetUrl: UrlString,
   file: T,
   method: "PUT" | "POST",
-  options: Partial<SaveFileOptions>
+  options: Partial<SaveFileOptions>,
 ): Promise<Response>;
 async function writeFile<T extends File | NodeFile | Buffer>(
   targetUrl: UrlString,
   file: T,
   method: "PUT" | "POST",
-  options: Partial<SaveFileOptions>
+  options: Partial<SaveFileOptions>,
 ): Promise<Response> {
   const config = {
     ...defaultGetFileOptions,
@@ -447,8 +447,8 @@ async function writeFile<T extends File | NodeFile | Buffer>(
   if (containsReserved(headers)) {
     throw new Error(
       `No reserved header (${RESERVED_HEADERS.join(
-        ", "
-      )}) should be set in the optional RequestInit.`
+        ", ",
+      )}) should be set in the optional RequestInit.`,
     );
   }
 
@@ -470,7 +470,7 @@ async function writeFile<T extends File | NodeFile | Buffer>(
 
 function getContentType(
   file: File | NodeFile | Buffer,
-  contentTypeOverride?: string
+  contentTypeOverride?: string,
 ): string {
   if (typeof contentTypeOverride === "string") {
     return contentTypeOverride;

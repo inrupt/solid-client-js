@@ -37,8 +37,8 @@ jest.mock("../fetcher", () => ({
     .fn()
     .mockImplementation(() =>
       Promise.resolve(
-        new Response("Some data", { status: 200, statusText: "OK" })
-      )
+        new Response("Some data", { status: 200, statusText: "OK" }),
+      ),
     ),
 }));
 
@@ -69,7 +69,7 @@ describe("flattenHeaders", () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const myHeaders: any = {};
     myHeaders.forEach = (
-      callback: (value: string, key: string) => void
+      callback: (value: string, key: string) => void,
     ): void => {
       callback("application/json", "accept");
       callback("text/turtle", "Content-Type");
@@ -102,8 +102,8 @@ describe("getFile", () => {
 
     fetcher.fetch.mockReturnValue(
       Promise.resolve(
-        new Response("Some data", { status: 200, statusText: "OK" })
-      )
+        new Response("Some data", { status: 200, statusText: "OK" }),
+      ),
     );
 
     await getFile("https://some.url");
@@ -115,8 +115,8 @@ describe("getFile", () => {
       .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
-          new Response("Some data", { status: 200, statusText: "OK" })
-        )
+          new Response("Some data", { status: 200, statusText: "OK" }),
+        ),
       );
 
     await getFile("https://some.url", {
@@ -156,8 +156,8 @@ describe("getFile", () => {
       .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
-          new Response("Some data", { status: 200, statusText: "OK" })
-        )
+          new Response("Some data", { status: 200, statusText: "OK" }),
+        ),
       );
 
     const response = await getFile("https://some.url", {
@@ -182,15 +182,15 @@ describe("getFile", () => {
       .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
-          new Response(undefined, { status: 400, statusText: "Bad request" })
-        )
+          new Response(undefined, { status: 400, statusText: "Bad request" }),
+        ),
       );
 
     const response = getFile("https://some.url", {
       fetch: mockFetch,
     });
     await expect(response).rejects.toThrow(
-      "Fetching the File failed: [400] [Bad request]"
+      "Fetching the File failed: [400] [Bad request]",
     );
   });
 
@@ -200,8 +200,8 @@ describe("getFile", () => {
         new Response("Teapots don't make coffee.", {
           status: 418,
           statusText: "I'm a teapot!",
-        })
-      )
+        }),
+      ),
     );
 
     const response = getFile("https://arbitrary.url", {
@@ -223,8 +223,8 @@ describe("Non-RDF data deletion", () => {
 
     fetcher.fetch.mockReturnValueOnce(
       Promise.resolve(
-        new Response(undefined, { status: 200, statusText: "Deleted" })
-      )
+        new Response(undefined, { status: 200, statusText: "Deleted" }),
+      ),
     );
 
     const response = await deleteFile("https://some.url");
@@ -245,8 +245,8 @@ describe("Non-RDF data deletion", () => {
       .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
-          new Response(undefined, { status: 200, statusText: "Deleted" })
-        )
+          new Response(undefined, { status: 200, statusText: "Deleted" }),
+        ),
       );
 
     const response = await deleteFile("https://some.url", {
@@ -269,8 +269,8 @@ describe("Non-RDF data deletion", () => {
       .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
-          new Response(undefined, { status: 200, statusText: "Deleted" })
-        )
+          new Response(undefined, { status: 200, statusText: "Deleted" }),
+        ),
       );
 
     const mockFile: WithResourceInfo = {
@@ -300,8 +300,8 @@ describe("Non-RDF data deletion", () => {
       .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
-          new Response(undefined, { status: 200, statusText: "Deleted" })
-        )
+          new Response(undefined, { status: 200, statusText: "Deleted" }),
+        ),
       );
 
     await deleteFile("https://some.url", {
@@ -327,8 +327,8 @@ describe("Non-RDF data deletion", () => {
         new Response(undefined, {
           status: 400,
           statusText: "Bad request",
-        })
-      )
+        }),
+      ),
     );
 
     const deletionPromise = deleteFile("https://some.url", {
@@ -336,7 +336,7 @@ describe("Non-RDF data deletion", () => {
     });
 
     await expect(deletionPromise).rejects.toThrow(
-      "Deleting the file at [https://some.url] failed: [400] [Bad request]"
+      "Deleting the file at [https://some.url] failed: [400] [Bad request]",
     );
   });
   it("includes the status code, status message and response body when a request failed", async () => {
@@ -345,8 +345,8 @@ describe("Non-RDF data deletion", () => {
         new Response("Teapots don't make coffee", {
           status: 418,
           statusText: "I'm a teapot!",
-        })
-      )
+        }),
+      ),
     );
 
     const deletionPromise = deleteFile("https://arbitrary.url", {
@@ -371,7 +371,7 @@ describe("Write non-RDF data into a folder", () => {
       status: 201,
       statusText: "Created",
       headers: { Location: "someFileName" },
-    })
+    }),
   ): jest.Mocked<typeof window.fetch> {
     fetch.mockResolvedValueOnce(saveResponse);
     return fetch;
@@ -477,37 +477,37 @@ describe("Write non-RDF data into a folder", () => {
               Slug: "someFileName",
             },
           },
-        })
+        }),
       ).rejects.toThrow(/reserved header/);
     });
 
     it("throws when saving failed", async () => {
       const mockFetch = setMockOnFetch(
         jest.fn<typeof fetch>(),
-        new Response(undefined, { status: 403, statusText: "Forbidden" })
+        new Response(undefined, { status: 403, statusText: "Forbidden" }),
       );
 
       await expect(
         saveFileInContainer("https://some.url", data, {
           fetch: mockFetch,
-        })
+        }),
       ).rejects.toThrow(
-        "Saving the file in [https://some.url] failed: [403] [Forbidden]"
+        "Saving the file in [https://some.url] failed: [403] [Forbidden]",
       );
     });
 
     it("throws when the server did not return the location of the newly-saved file", async () => {
       const mockFetch = setMockOnFetch(
         jest.fn<typeof fetch>(),
-        new Response(undefined, { status: 201, statusText: "Created" })
+        new Response(undefined, { status: 201, statusText: "Created" }),
       );
 
       await expect(
         saveFileInContainer("https://some.url", data, {
           fetch: mockFetch,
-        })
+        }),
       ).rejects.toThrow(
-        "Could not determine the location of the newly saved file."
+        "Could not determine the location of the newly saved file.",
       );
     });
 
@@ -517,13 +517,13 @@ describe("Write non-RDF data into a folder", () => {
         new Response("Teapots don't make coffee", {
           status: 418,
           statusText: "I'm a teapot!",
-        })
+        }),
       );
 
       await expect(
         saveFileInContainer("https://arbitrary.url", data, {
           fetch: mockFetch,
-        })
+        }),
       ).rejects.toMatchObject({
         statusCode: 418,
         statusText: "I'm a teapot!",
@@ -544,7 +544,7 @@ describe("Write non-RDF data into a folder", () => {
     });
     const savedFile = await saveFileInContainer(
       "https://some.url",
-      mockTextBlob
+      mockTextBlob,
     );
 
     expect(savedFile).toBeInstanceOf(Blob);
@@ -566,7 +566,7 @@ describe("Write non-RDF data into a folder", () => {
       mockTextBlob,
       {
         contentType: "text/csv",
-      }
+      },
     );
 
     expect(savedFile).toBeInstanceOf(Blob);
@@ -583,12 +583,12 @@ describe("Write non-RDF data into a folder", () => {
     const mockTextBlob = new Blob(["mock blob data"]);
     const savedFile = await saveFileInContainer(
       "https://some.url",
-      mockTextBlob
+      mockTextBlob,
     );
 
     expect(savedFile).toBeInstanceOf(Blob);
     expect(savedFile!.internal_resourceInfo.contentType).toBe(
-      "application/octet-stream"
+      "application/octet-stream",
     );
   });
 });
@@ -610,8 +610,8 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
 
       fetcher.fetch.mockReturnValue(
         Promise.resolve(
-          new Response(undefined, { status: 201, statusText: "Created" })
-        )
+          new Response(undefined, { status: 201, statusText: "Created" }),
+        ),
       );
 
       await overwriteFile("https://some.url", data);
@@ -630,8 +630,8 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
             status: 201,
             statusText: "Created",
             url: "https://some.url",
-          } as ResponseInit)
-        )
+          } as ResponseInit),
+        ),
       );
 
       const savedFile = await overwriteFile("https://some.url", data);
@@ -661,8 +661,8 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
         .fn<typeof fetch>()
         .mockReturnValue(
           Promise.resolve(
-            new Response(undefined, { status: 201, statusText: "Created" })
-          )
+            new Response(undefined, { status: 201, statusText: "Created" }),
+          ),
         );
 
       await overwriteFile("https://some.url", data, {
@@ -679,8 +679,8 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
             status: 201,
             statusText: "Created",
             url: "https://some.url",
-          } as ResponseInit)
-        )
+          } as ResponseInit),
+        ),
       );
 
       const savedFile = await overwriteFile("https://some.url", data, {
@@ -712,16 +712,16 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
         .fn<typeof fetch>()
         .mockReturnValue(
           Promise.resolve(
-            new Response(undefined, { status: 403, statusText: "Forbidden" })
-          )
+            new Response(undefined, { status: 403, statusText: "Forbidden" }),
+          ),
         );
 
       await expect(
         overwriteFile("https://some.url", data, {
           fetch: mockFetch,
-        })
+        }),
       ).rejects.toThrow(
-        "Overwriting the file at [https://some.url] failed: [403] [Forbidden]"
+        "Overwriting the file at [https://some.url] failed: [403] [Forbidden]",
       );
     });
 
@@ -731,14 +731,14 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
           new Response("Teapots don't make coffee", {
             status: 418,
             statusText: "I'm a teapot!",
-          })
-        )
+          }),
+        ),
       );
 
       await expect(
         overwriteFile("https://arbitrary.url", data, {
           fetch: mockFetch,
-        })
+        }),
       ).rejects.toMatchObject({
         statusCode: 418,
         statusText: "I'm a teapot!",

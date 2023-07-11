@@ -64,9 +64,9 @@ describe("getVcAccess", () => {
               ],
             ],
             // Note that the VC matcher does not exist
-          ])
-        )
-      )
+          ]),
+        ),
+      ),
     ).toStrictEqual({
       read: false,
       append: false,
@@ -105,9 +105,9 @@ describe("getVcAccess", () => {
                 [ACP.vc, [VC_ACCESS_GRANT]],
               ],
             ],
-          ])
-        )
-      )
+          ]),
+        ),
+      ),
     ).toStrictEqual({
       read: false,
       append: false,
@@ -143,7 +143,7 @@ describe("getVcAccess", () => {
             [ACP.vc, [VC_ACCESS_GRANT]],
           ],
         ],
-      ])
+      ]),
     );
 
     expect(getVcAccess(resource)).toStrictEqual({

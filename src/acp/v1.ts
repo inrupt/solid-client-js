@@ -235,13 +235,13 @@ export const acp_v1 = {
  */
 export function removeControl<ResourceExt extends WithAccessibleAcr>(
   withAccessControlResource: ResourceExt,
-  control: Control
+  control: Control,
 ): ResourceExt {
   const acr = internal_getAcr(withAccessControlResource);
   const updatedAcr = removeThing(acr, control);
   const updatedResource = internal_setAcr(
     withAccessControlResource,
-    updatedAcr
+    updatedAcr,
   );
   return updatedResource;
 }

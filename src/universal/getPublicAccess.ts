@@ -51,7 +51,7 @@ import { getResourceAcr } from "../acp/util/getResourceAcr";
  */
 export async function getPublicAccess(
   resourceUrl: UrlString,
-  options?: DefaultOptions
+  options?: DefaultOptions,
 ): Promise<AccessModes | null> {
   const resourceInfo = await getResourceInfo(resourceUrl, options);
   const acr = await getResourceAcr(resourceInfo, options);

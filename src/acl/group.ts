@@ -59,7 +59,7 @@ import { acl } from "../constants";
  */
 export function getGroupAccess(
   resourceInfo: WithAcl & WithServerResourceInfo,
-  group: UrlString
+  group: UrlString,
 ): Access | null {
   if (hasResourceAcl(resourceInfo)) {
     return getGroupResourceAccess(resourceInfo.internal_acl.resourceAcl, group);
@@ -83,7 +83,7 @@ export function getGroupAccess(
  * @returns Access Modes per Group that have been explicitly granted for the given Resource, or `null` if it could not be determined (e.g. because the current user does not have Control Access to a given Resource or its Container).
  */
 export function getGroupAccessAll(
-  resourceInfo: WithAcl & WithServerResourceInfo
+  resourceInfo: WithAcl & WithServerResourceInfo,
 ): Record<IriString, Access> | null {
   if (hasResourceAcl(resourceInfo)) {
     const resourceAcl = getResourceAcl(resourceInfo);
@@ -114,12 +114,12 @@ export function getGroupAccessAll(
  */
 export function getGroupResourceAccess(
   aclDataset: AclDataset,
-  group: UrlString
+  group: UrlString,
 ): Access {
   const allRules = internal_getAclRules(aclDataset);
   const resourceRules = internal_getResourceAclRulesForResource(
     allRules,
-    aclDataset.internal_accessTo
+    aclDataset.internal_accessTo,
   );
   const groupResourceRules = getGroupAclRuleForGroup(resourceRules, group);
   const groupAccessModes = groupResourceRules.map(internal_getAccess);
@@ -141,12 +141,12 @@ export function getGroupResourceAccess(
  * @returns Access Modes per Group that have been explicitly granted for the Resource associated with an ACL.
  */
 export function getGroupResourceAccessAll(
-  aclDataset: AclDataset
+  aclDataset: AclDataset,
 ): Record<UrlString, Access> {
   const allRules = internal_getAclRules(aclDataset);
   const resourceRules = internal_getResourceAclRulesForResource(
     allRules,
-    aclDataset.internal_accessTo
+    aclDataset.internal_accessTo,
   );
   return getAccessByGroup(resourceRules);
 }
@@ -168,12 +168,12 @@ export function getGroupResourceAccessAll(
  */
 export function getGroupDefaultAccess(
   aclDataset: AclDataset,
-  group: UrlString
+  group: UrlString,
 ): Access {
   const allRules = internal_getAclRules(aclDataset);
   const defaultRules = internal_getDefaultAclRulesForResource(
     allRules,
-    aclDataset.internal_accessTo
+    aclDataset.internal_accessTo,
   );
   const groupDefaultRules = getGroupAclRuleForGroup(defaultRules, group);
   const groupAccessModes = groupDefaultRules.map(internal_getAccess);
@@ -195,19 +195,19 @@ export function getGroupDefaultAccess(
  * @returns Access Modes per Group that have been explicitly granted for the children of the Container associated with the given ACL SolidDataset.
  */
 export function getGroupDefaultAccessAll(
-  aclDataset: AclDataset
+  aclDataset: AclDataset,
 ): Record<UrlString, Access> {
   const allRules = internal_getAclRules(aclDataset);
   const defaultRules = internal_getDefaultAclRulesForResource(
     allRules,
-    aclDataset.internal_accessTo
+    aclDataset.internal_accessTo,
   );
   return getAccessByGroup(defaultRules);
 }
 
 function getGroupAclRuleForGroup(
   rules: AclRule[],
-  group: UrlString
+  group: UrlString,
 ): AclRule[] {
   return internal_getAclRulesForIri(rules, group, acl.agentGroup);
 }
@@ -242,14 +242,14 @@ function getAccessByGroup(aclRules: AclRule[]): Record<IriString, Access> {
 export function setGroupResourceAccess(
   aclDataset: AclDataset,
   group: UrlString,
-  access: Access
+  access: Access,
 ): AclDataset & WithChangeLog {
   return internal_setActorAccess(
     aclDataset,
     access,
     acl.agentGroup,
     "resource",
-    group
+    group,
   );
 }
 
@@ -278,13 +278,13 @@ export function setGroupResourceAccess(
 export function setGroupDefaultAccess(
   aclDataset: AclDataset,
   group: UrlString,
-  access: Access
+  access: Access,
 ): AclDataset & WithChangeLog {
   return internal_setActorAccess(
     aclDataset,
     access,
     acl.agentGroup,
     "default",
-    group
+    group,
   );
 }

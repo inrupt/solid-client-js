@@ -73,12 +73,12 @@ import {
  * @since 1.6.0
  */
 export function hasLinkedAcr<Resource extends WithServerResourceInfo>(
-  resource: Resource
+  resource: Resource,
 ): resource is WithLinkedAcr<Resource> {
   return (
     hasServerResourceInfo(resource) &&
     Array.isArray(
-      resource.internal_resourceInfo.linkedResources[acp.accessControl]
+      resource.internal_resourceInfo.linkedResources[acp.accessControl],
     ) &&
     resource.internal_resourceInfo.linkedResources[acp.accessControl].length ===
       1
@@ -120,7 +120,7 @@ export type Control = Thing;
  * @since 1.6.0
  */
 export type WithLinkedAcr<
-  Resource extends WithServerResourceInfo = WithServerResourceInfo
+  Resource extends WithServerResourceInfo = WithServerResourceInfo,
 > = Resource & {
   internal_resourceInfo: {
     linkedResources: {
@@ -144,7 +144,7 @@ export type WithLinkedAcr<
  */
 export function addAcrPolicyUrl<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
-  policyUrl: Url | UrlString | ThingPersisted
+  policyUrl: Url | UrlString | ThingPersisted,
 ): ResourceExt {
   const acr = internal_getAcr(resourceWithAcr);
   const acrUrl = getSourceUrl(acr);
@@ -172,7 +172,7 @@ export function addAcrPolicyUrl<ResourceExt extends WithAccessibleAcr>(
  */
 export function addMemberAcrPolicyUrl<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
-  policyUrl: Url | UrlString | ThingPersisted
+  policyUrl: Url | UrlString | ThingPersisted,
 ): ResourceExt {
   const acr = internal_getAcr(resourceWithAcr);
   const acrUrl = getSourceUrl(acr);
@@ -198,7 +198,7 @@ export function addMemberAcrPolicyUrl<ResourceExt extends WithAccessibleAcr>(
  * @since 1.6.0
  */
 export function getAcrPolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
-  resourceWithAcr: ResourceExt
+  resourceWithAcr: ResourceExt,
 ): UrlString[] {
   const acr = internal_getAcr(resourceWithAcr);
   const acrUrl = getSourceUrl(acr);
@@ -223,7 +223,7 @@ export function getAcrPolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
  * @since 1.6.0
  */
 export function getMemberAcrPolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
-  resourceWithAcr: ResourceExt
+  resourceWithAcr: ResourceExt,
 ): UrlString[] {
   const acr = internal_getAcr(resourceWithAcr);
   const acrUrl = getSourceUrl(acr);
@@ -249,7 +249,7 @@ export function getMemberAcrPolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
  */
 export function removeAcrPolicyUrl<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
-  policyUrl: Url | UrlString | ThingPersisted
+  policyUrl: Url | UrlString | ThingPersisted,
 ): ResourceExt {
   const acr = internal_getAcr(resourceWithAcr);
   const acrUrl = getSourceUrl(acr);
@@ -279,7 +279,7 @@ export function removeAcrPolicyUrl<ResourceExt extends WithAccessibleAcr>(
  */
 export function removeMemberAcrPolicyUrl<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
-  policyUrl: Url | UrlString | ThingPersisted
+  policyUrl: Url | UrlString | ThingPersisted,
 ): ResourceExt {
   const acr = internal_getAcr(resourceWithAcr);
   const acrUrl = getSourceUrl(acr);
@@ -306,7 +306,7 @@ export function removeMemberAcrPolicyUrl<ResourceExt extends WithAccessibleAcr>(
  * @since 1.6.0
  */
 export function removeAcrPolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
-  resourceWithAcr: ResourceExt
+  resourceWithAcr: ResourceExt,
 ): ResourceExt {
   const acr = internal_getAcr(resourceWithAcr);
   const acrUrl = getSourceUrl(acr);
@@ -334,7 +334,7 @@ export function removeAcrPolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
  * @since 1.6.0
  */
 export function removeMemberAcrPolicyUrlAll<
-  ResourceExt extends WithAccessibleAcr
+  ResourceExt extends WithAccessibleAcr,
 >(resourceWithAcr: ResourceExt): ResourceExt {
   const acr = internal_getAcr(resourceWithAcr);
   const acrUrl = getSourceUrl(acr);
@@ -363,7 +363,7 @@ export function removeMemberAcrPolicyUrlAll<
  */
 export function addPolicyUrl<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
-  policyUrl: Url | UrlString
+  policyUrl: Url | UrlString,
 ): ResourceExt {
   const control = internal_getInitialisedControl(resourceWithAcr);
   const updatedControl = internal_addPolicyUrl(control, policyUrl);
@@ -386,7 +386,7 @@ export function addPolicyUrl<ResourceExt extends WithAccessibleAcr>(
  */
 export function addMemberPolicyUrl<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
-  policyUrl: Url | UrlString
+  policyUrl: Url | UrlString,
 ): ResourceExt {
   const control = internal_getInitialisedControl(resourceWithAcr);
   const updatedControl = internal_addMemberPolicyUrl(control, policyUrl);
@@ -406,11 +406,11 @@ export function addMemberPolicyUrl<ResourceExt extends WithAccessibleAcr>(
  * @since 1.6.0
  */
 export function getPolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
-  resourceWithAcr: ResourceExt
+  resourceWithAcr: ResourceExt,
 ): UrlString[] {
   const controls = internal_getControlAll(resourceWithAcr);
   const policyUrlsByControl = controls.map((control) =>
-    internal_getPolicyUrlAll(control)
+    internal_getPolicyUrlAll(control),
   );
   const uniquePolicyUrls = new Set<UrlString>();
   policyUrlsByControl.forEach((policyUrls) => {
@@ -431,11 +431,11 @@ export function getPolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
  * @since 1.6.0
  */
 export function getMemberPolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
-  resourceWithAcr: ResourceExt
+  resourceWithAcr: ResourceExt,
 ): UrlString[] {
   const controls = internal_getControlAll(resourceWithAcr);
   const memberPolicyUrlsByControl = controls.map((control) =>
-    internal_getMemberPolicyUrlAll(control)
+    internal_getMemberPolicyUrlAll(control),
   );
   const uniquePolicyUrls = new Set<UrlString>();
   memberPolicyUrlsByControl.forEach((policyUrls) => {
@@ -458,15 +458,15 @@ export function getMemberPolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
  */
 export function removePolicyUrl<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
-  policyUrl: Url | UrlString | ThingPersisted
+  policyUrl: Url | UrlString | ThingPersisted,
 ): ResourceExt {
   const controls = internal_getControlAll(resourceWithAcr);
   const updatedControls = controls.map((control) =>
-    internal_removePolicyUrl(control, policyUrl)
+    internal_removePolicyUrl(control, policyUrl),
   );
   const updatedResource = updatedControls.reduce(
     internal_setControl,
-    resourceWithAcr
+    resourceWithAcr,
   );
   return updatedResource;
 }
@@ -485,15 +485,15 @@ export function removePolicyUrl<ResourceExt extends WithAccessibleAcr>(
  */
 export function removeMemberPolicyUrl<ResourceExt extends WithAccessibleAcr>(
   resourceWithAcr: ResourceExt,
-  policyUrl: Url | UrlString | ThingPersisted
+  policyUrl: Url | UrlString | ThingPersisted,
 ): ResourceExt {
   const controls = internal_getControlAll(resourceWithAcr);
   const updatedControls = controls.map((control) =>
-    internal_removeMemberPolicyUrl(control, policyUrl)
+    internal_removeMemberPolicyUrl(control, policyUrl),
   );
   const updatedResource = updatedControls.reduce(
     internal_setControl,
-    resourceWithAcr
+    resourceWithAcr,
   );
   return updatedResource;
 }
@@ -510,15 +510,15 @@ export function removeMemberPolicyUrl<ResourceExt extends WithAccessibleAcr>(
  * @since 1.6.0
  */
 export function removePolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
-  resourceWithAcr: ResourceExt
+  resourceWithAcr: ResourceExt,
 ): ResourceExt {
   const controls = internal_getControlAll(resourceWithAcr);
   const updatedControls = controls.map((control) =>
-    internal_removePolicyUrlAll(control)
+    internal_removePolicyUrlAll(control),
   );
   const updatedResource = updatedControls.reduce(
     internal_setControl,
-    resourceWithAcr
+    resourceWithAcr,
   );
   return updatedResource;
 }
@@ -535,15 +535,15 @@ export function removePolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
  * @since 1.6.0
  */
 export function removeMemberPolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
-  resourceWithAcr: ResourceExt
+  resourceWithAcr: ResourceExt,
 ): ResourceExt {
   const controls = internal_getControlAll(resourceWithAcr);
   const updatedControls = controls.map((control) =>
-    internal_removeMemberPolicyUrlAll(control)
+    internal_removeMemberPolicyUrlAll(control),
   );
   const updatedResource = updatedControls.reduce(
     internal_setControl,
-    resourceWithAcr
+    resourceWithAcr,
   );
   return updatedResource;
 }
@@ -559,7 +559,7 @@ export function removeMemberPolicyUrlAll<ResourceExt extends WithAccessibleAcr>(
  * @deprecated
  */
 export function acrAsMarkdown(
-  resourceWithAcr: WithResourceInfo & WithAccessibleAcr
+  resourceWithAcr: WithResourceInfo & WithAccessibleAcr,
 ): string {
   let markdown = `# Access controls for ${getSourceUrl(resourceWithAcr)}\n`;
 

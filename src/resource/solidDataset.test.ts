@@ -70,8 +70,8 @@ jest.mock("../fetcher.ts", () => ({
     Promise.resolve(
       new Response(undefined, {
         headers: { Location: "https://arbitrary.pod/resource" },
-      })
-    )
+      }),
+    ),
   ),
 }));
 
@@ -81,24 +81,24 @@ const data: RDF.Quad[] = [
   DataFactory.quad(
     bnode,
     DataFactory.namedNode("http://inrupt.com/ns/ess#consentIssuer"),
-    DataFactory.namedNode("https://consent.pod.inrupt.com")
+    DataFactory.namedNode("https://consent.pod.inrupt.com"),
   ),
   DataFactory.quad(
     bnode,
     DataFactory.namedNode(
-      "http://inrupt.com/ns/ess#notificationGatewayEndpoint"
+      "http://inrupt.com/ns/ess#notificationGatewayEndpoint",
     ),
-    DataFactory.namedNode("https://notification.pod.inrupt.com")
+    DataFactory.namedNode("https://notification.pod.inrupt.com"),
   ),
   DataFactory.quad(
     bnode,
     DataFactory.namedNode("http://inrupt.com/ns/ess#powerSwitchEndpoint"),
-    DataFactory.namedNode("https://pod.inrupt.com/powerswitch/username")
+    DataFactory.namedNode("https://pod.inrupt.com/powerswitch/username"),
   ),
   DataFactory.quad(
     bnode,
     DataFactory.namedNode("http://www.w3.org/ns/pim/space#storage"),
-    DataFactory.namedNode("https://pod.inrupt.com/username/")
+    DataFactory.namedNode("https://pod.inrupt.com/username/"),
   ),
 ];
 
@@ -157,7 +157,7 @@ describe("responseToSolidDataset", () => {
           "Content-Type": "text/turtle",
         },
       },
-      "https://some.pod/resource"
+      "https://some.pod/resource",
     );
     const solidDataset = await responseToSolidDataset(response);
 
@@ -212,7 +212,7 @@ describe("responseToSolidDataset", () => {
           sourceIri: "https://some.pod/resource",
         },
         type: "Dataset",
-      })
+      }),
     );
   });
 
@@ -323,7 +323,7 @@ describe("responseToSolidDataset", () => {
           sourceIri: "https://some.pod/resource",
         },
         type: "Dataset",
-      })
+      }),
     );
   });
 
@@ -333,7 +333,7 @@ describe("responseToSolidDataset", () => {
         return `<https://some.predicate/${iteration}> "Base case"`;
       }
       return `<https://some.predicate/${iteration}> [${getChainedBlankNode(
-        iteration + 1
+        iteration + 1,
       )}]`;
     }
     const turtle = `
@@ -351,7 +351,7 @@ describe("responseToSolidDataset", () => {
           headers: {
             "Content-Type": "text/turtle",
           },
-        })
+        }),
       );
       const t1 = performance.now();
 
@@ -367,7 +367,7 @@ describe("responseToSolidDataset", () => {
         headers: {
           "Content-Type": "text/turtle",
         },
-      })
+      }),
     );
     // Blank Nodes should be listed explicitly, rather than as properties on
     // https://some.pod/resource#me:
@@ -388,7 +388,7 @@ describe("responseToSolidDataset", () => {
     const parsePromise = responseToSolidDataset(response);
 
     await expect(parsePromise).rejects.toThrow(
-      /Fetching the SolidDataset at \[https:\/\/some.pod\/resource\] failed: \[403\] \[Forbidden\]/
+      /Fetching the SolidDataset at \[https:\/\/some.pod\/resource\] failed: \[403\] \[Forbidden\]/,
     );
   });
 
@@ -421,8 +421,8 @@ describe("responseToSolidDataset", () => {
 
     await expect(parsePromise).rejects.toThrow(
       new Error(
-        "The Resource at [https://some.pod/resource] has a MIME type of [some unsupported content type], but the only parsers available are for the following MIME types: [text/turtle]."
-      )
+        "The Resource at [https://some.pod/resource] has a MIME type of [some unsupported content type], but the only parsers available are for the following MIME types: [text/turtle].",
+      ),
     );
   });
 
@@ -456,8 +456,8 @@ describe("responseToSolidDataset", () => {
 
     await expect(parsePromise).rejects.toThrow(
       new Error(
-        "Encountered an error parsing the Resource at [https://some.pod/resource] with content type [text/turtle]: Error: Some error"
-      )
+        "Encountered an error parsing the Resource at [https://some.pod/resource] with content type [text/turtle]: Error: Some error",
+      ),
     );
   });
 });
@@ -468,13 +468,13 @@ describe("getSolidDataset", () => {
       fetch: jest.Mocked<typeof fetch>;
     };
     mockedFetcher.fetch.mockResolvedValueOnce(
-      new Response(undefined, { headers: { "Content-Type": "text/turtle" } })
+      new Response(undefined, { headers: { "Content-Type": "text/turtle" } }),
     );
 
     await getSolidDataset("https://some.pod/resource");
 
     expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
-      "https://some.pod/resource"
+      "https://some.pod/resource",
     );
   });
 
@@ -483,8 +483,8 @@ describe("getSolidDataset", () => {
       Promise.resolve(
         new Response(undefined, {
           headers: { "Content-Type": "text/turtle" },
-        })
-      )
+        }),
+      ),
     );
 
     await getSolidDataset("https://some.pod/resource", { fetch: mockFetch });
@@ -497,8 +497,8 @@ describe("getSolidDataset", () => {
       Promise.resolve(
         new Response(undefined, {
           headers: { "Content-Type": "text/turtle" },
-        })
-      )
+        }),
+      ),
     );
 
     await getSolidDataset("https://some.pod/resource", { fetch: mockFetch });
@@ -515,15 +515,15 @@ describe("getSolidDataset", () => {
       Promise.resolve(
         new Response(undefined, {
           headers: { "Content-Type": "text/turtle" },
-        })
-      )
+        }),
+      ),
     );
 
     const mockParser: Parser = {
       onComplete: jest
         .fn()
         .mockImplementationOnce((completionCallback: any) =>
-          completionCallback()
+          completionCallback(),
         ),
       onQuad: jest.fn(),
       parse: jest.fn(),
@@ -549,7 +549,7 @@ describe("getSolidDataset", () => {
     const mockFetch = jest.fn<typeof fetch>().mockResolvedValueOnce(
       new Response(undefined, {
         headers: { "Content-Type": "text/turtle" },
-      })
+      }),
     );
 
     await getSolidDataset(DataFactory.namedNode("https://some.pod/resource"), {
@@ -566,8 +566,8 @@ describe("getSolidDataset", () => {
         mockResponse(
           undefined,
           { headers: { "Content-Type": "text/turtle" } },
-          "https://some.pod/resource"
-        )
+          "https://some.pod/resource",
+        ),
       );
 
     const solidDataset = await getSolidDataset("https://some.pod/resource", {
@@ -575,7 +575,7 @@ describe("getSolidDataset", () => {
     });
 
     expect(solidDataset.internal_resourceInfo.sourceIri).toBe(
-      "https://some.pod/resource"
+      "https://some.pod/resource",
     );
   });
 
@@ -591,8 +591,8 @@ describe("getSolidDataset", () => {
               "Content-Type": "text/turtle",
             },
           },
-          "https://some.pod/container/"
-        )
+          "https://some.pod/container/",
+        ),
       )
       .mockResolvedValueOnce(
         mockResponse(
@@ -600,17 +600,17 @@ describe("getSolidDataset", () => {
           {
             headers: { "Content-Type": "text/turtle" },
           },
-          "https://some.pod/container/aclresource.acl"
-        )
+          "https://some.pod/container/aclresource.acl",
+        ),
       );
 
     const solidDataset = await getSolidDataset(
       "https://some.pod/container/resource",
-      { fetch: mockFetch }
+      { fetch: mockFetch },
     );
 
     expect(solidDataset.internal_resourceInfo.aclUrl).toBe(
-      "https://some.pod/container/aclresource.acl"
+      "https://some.pod/container/aclresource.acl",
     );
   });
 
@@ -624,13 +624,13 @@ describe("getSolidDataset", () => {
             "Content-Type": "text/turtle",
           },
         },
-        "https://arbitrary.pod"
-      )
+        "https://arbitrary.pod",
+      ),
     );
 
     const solidDataset = await getSolidDataset(
       "https://some.pod/container/resource",
-      { fetch: mockFetch }
+      { fetch: mockFetch },
     );
 
     expect(solidDataset.internal_resourceInfo.aclUrl).toBeUndefined();
@@ -644,13 +644,13 @@ describe("getSolidDataset", () => {
             "wac-aLLOW": 'public="read",user="read write append control"',
             "Content-Type": "text/turtle",
           },
-        })
-      )
+        }),
+      ),
     );
 
     const solidDataset = await getSolidDataset(
       "https://arbitrary.pod/container/resource",
-      { fetch: mockFetch }
+      { fetch: mockFetch },
     );
 
     expect(solidDataset.internal_resourceInfo.permissions).toEqual({
@@ -678,13 +678,13 @@ describe("getSolidDataset", () => {
             "WAC-Allow": "public=read",
             "Content-Type": "text/turtle",
           },
-        })
-      )
+        }),
+      ),
     );
 
     const solidDataset = await getSolidDataset(
       "https://arbitrary.pod/container/resource",
-      { fetch: mockFetch }
+      { fetch: mockFetch },
     );
 
     expect(solidDataset.internal_resourceInfo.permissions).toEqual({
@@ -710,13 +710,13 @@ describe("getSolidDataset", () => {
           headers: {
             "Content-Type": "text/turtle",
           },
-        })
-      )
+        }),
+      ),
     );
 
     const solidDataset = await getSolidDataset(
       "https://arbitrary.pod/container/resource",
-      { fetch: mockFetch }
+      { fetch: mockFetch },
     );
 
     expect(solidDataset.internal_resourceInfo.permissions).toBeUndefined();
@@ -742,16 +742,16 @@ describe("getSolidDataset", () => {
           mockResponse(
             turtle,
             { headers: { "Content-Type": "text/turtle" } },
-            "https://arbitrary.pod/resource"
-          )
-        )
+            "https://arbitrary.pod/resource",
+          ),
+        ),
       );
 
     const solidDataset = await getSolidDataset(
       "https://arbitrary.pod/resource",
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     expect(solidDataset).toMatchSnapshot();
@@ -762,8 +762,8 @@ describe("getSolidDataset", () => {
       .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
-          new Response("Not allowed", { status: 403, statusText: "Forbidden" })
-        )
+          new Response("Not allowed", { status: 403, statusText: "Forbidden" }),
+        ),
       );
 
     const fetchPromise = getSolidDataset("https://some.pod/resource", {
@@ -771,7 +771,7 @@ describe("getSolidDataset", () => {
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      /Fetching the Resource at \[https:\/\/some.pod\/resource\] failed: \[403\] \[Forbidden\]/
+      /Fetching the Resource at \[https:\/\/some.pod\/resource\] failed: \[403\] \[Forbidden\]/,
     );
   });
 
@@ -780,8 +780,8 @@ describe("getSolidDataset", () => {
       .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
-          new Response("Not found", { status: 404, statusText: "Not Found" })
-        )
+          new Response("Not found", { status: 404, statusText: "Not Found" }),
+        ),
       );
 
     const fetchPromise = getSolidDataset("https://some.pod/resource", {
@@ -789,7 +789,7 @@ describe("getSolidDataset", () => {
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      /Fetching the Resource at \[https:\/\/some.pod\/resource\] failed: \[404\] \[Not Found\]/
+      /Fetching the Resource at \[https:\/\/some.pod\/resource\] failed: \[404\] \[Not Found\]/,
     );
   });
 
@@ -799,8 +799,8 @@ describe("getSolidDataset", () => {
         new Response("Teapots don't make coffee", {
           status: 418,
           statusText: "I'm a teapot!",
-        })
-      )
+        }),
+      ),
     );
 
     const fetchPromise = getSolidDataset("https://arbitrary.pod/resource", {
@@ -827,8 +827,8 @@ describe("saveSolidDatasetAt", () => {
         {
           headers: { Location: "/resource" },
         },
-        "https://some.pod/resource"
-      )
+        "https://some.pod/resource",
+      ),
     );
 
     await saveSolidDatasetAt("https://some.pod/resource", createSolidDataset());
@@ -846,7 +846,7 @@ describe("saveSolidDatasetAt", () => {
       createSolidDataset(),
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     expect(mockFetch.mock.calls).toHaveLength(1);
@@ -860,7 +860,7 @@ describe("saveSolidDatasetAt", () => {
       const mockThing = addUrl(
         createThing({ url: "https://arbitrary.vocab/subject" }),
         "https://arbitrary.vocab/predicate",
-        "https://arbitrary.vocab/object"
+        "https://arbitrary.vocab/object",
       );
       const mockDataset = setThing(createSolidDataset(), mockThing);
 
@@ -874,13 +874,13 @@ describe("saveSolidDatasetAt", () => {
       expect(
         (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)[
           "Content-Type"
-        ]
+        ],
       ).toBe("text/turtle");
       expect(
-        (mockFetch.mock.calls[0][1]?.headers as Record<string, string>).Link
+        (mockFetch.mock.calls[0][1]?.headers as Record<string, string>).Link,
       ).toBe('<http://www.w3.org/ns/ldp#Resource>; rel="type"');
       expect((mockFetch.mock.calls[0][1]?.body as string).trim()).toBe(
-        "<https://arbitrary.vocab/subject> <https://arbitrary.vocab/predicate> <https://arbitrary.vocab/object>."
+        "<https://arbitrary.vocab/subject> <https://arbitrary.vocab/predicate> <https://arbitrary.vocab/object>.",
       );
     });
 
@@ -891,7 +891,7 @@ describe("saveSolidDatasetAt", () => {
       const mockThing = addUrl(
         createThing({ url: "https://arbitrary.vocab/subject" }),
         "https://arbitrary.vocab/predicate",
-        "https://arbitrary.vocab/object"
+        "https://arbitrary.vocab/object",
       );
       const mockDataset = setThing(createSolidDataset(), mockThing);
 
@@ -900,11 +900,11 @@ describe("saveSolidDatasetAt", () => {
         mockDataset,
         {
           fetch: mockFetch,
-        }
+        },
       );
 
       expect(savedDataset.internal_resourceInfo.sourceIri).toBe(
-        "https://saved.at/url"
+        "https://saved.at/url",
       );
     });
 
@@ -912,13 +912,13 @@ describe("saveSolidDatasetAt", () => {
       const mockFetch = jest
         .fn<typeof fetch>()
         .mockResolvedValue(
-          mockResponse(null, {}, "https://some.irrelevant/url")
+          mockResponse(null, {}, "https://some.irrelevant/url"),
         );
       const mockObjectThing = createThing({ name: "some-object-name" });
       const mockThing = addUrl(
         createThing({ name: "some-subject-name" }),
         "https://arbitrary.vocab/predicate",
-        mockObjectThing
+        mockObjectThing,
       );
       const mockDataset = setThing(createSolidDataset(), mockThing);
 
@@ -940,17 +940,17 @@ describe("saveSolidDatasetAt", () => {
       let mockThing = addUrl(
         createThing({ name: "some-subject-name" }),
         "https://arbitrary.vocab/predicate",
-        mockObjectThing
+        mockObjectThing,
       );
       mockThing = addUrl(
         mockThing,
         "https://arbitrary.vocab/predicate",
-        "https://regular.url"
+        "https://regular.url",
       );
       mockThing = addUrl(
         mockThing,
         "https://arbitrary-other.vocab/predicate",
-        "https://regular.url"
+        "https://regular.url",
       );
       mockThing = addInteger(mockThing, "https://another.vocab/predicate", 42);
       const mockDataset = setThing(createSolidDataset(), mockThing);
@@ -960,17 +960,17 @@ describe("saveSolidDatasetAt", () => {
         mockDataset,
         {
           fetch: mockFetch,
-        }
+        },
       );
 
       const storedThing = getThing(
         storedSolidDataset,
-        "https://saved.at/url#some-subject-name"
+        "https://saved.at/url#some-subject-name",
       );
 
       expect(storedThing).not.toBeNull();
       expect(getUrl(storedThing!, "https://arbitrary.vocab/predicate")).toBe(
-        "https://saved.at/url#some-object-name"
+        "https://saved.at/url#some-object-name",
       );
     });
 
@@ -983,17 +983,17 @@ describe("saveSolidDatasetAt", () => {
       let mockThing = addUrl(
         createThing({ url: "https://some.pod/resource#thing" }),
         "https://arbitrary.vocab/predicate",
-        mockObjectThing
+        mockObjectThing,
       );
       mockThing = addUrl(
         mockThing,
         "https://arbitrary.vocab/predicate",
-        "https://regular.url"
+        "https://regular.url",
       );
       mockThing = addUrl(
         mockThing,
         "https://arbitrary-other.vocab/predicate",
-        "https://regular.url"
+        "https://regular.url",
       );
       mockThing = addInteger(mockThing, "https://another.vocab/predicate", 42);
       const mockDataset = setThing(createSolidDataset(), mockThing);
@@ -1003,17 +1003,17 @@ describe("saveSolidDatasetAt", () => {
         mockDataset,
         {
           fetch: mockFetch,
-        }
+        },
       );
 
       const storedThing = getThing(
         storedSolidDataset,
-        "https://some.pod/resource#thing"
+        "https://some.pod/resource#thing",
       );
 
       expect(storedThing).not.toBeNull();
       expect(getUrl(storedThing!, "https://arbitrary.vocab/predicate")).toBe(
-        "https://saved.at/url#some-object-name"
+        "https://saved.at/url#some-object-name",
       );
     });
 
@@ -1022,7 +1022,7 @@ describe("saveSolidDatasetAt", () => {
 
       const storedSolidDataset = await saveSolidDatasetAt(
         "https://arbitrary.pod/resource",
-        mockDataset
+        mockDataset,
       );
 
       expect(storedSolidDataset.internal_changeLog).toEqual({
@@ -1041,7 +1041,7 @@ describe("saveSolidDatasetAt", () => {
         createSolidDataset(),
         {
           fetch: mockFetch,
-        }
+        },
       );
 
       expect(mockFetch.mock.calls[0][1]?.headers).toMatchObject({
@@ -1056,7 +1056,7 @@ describe("saveSolidDatasetAt", () => {
       const mockThing = addUrl(
         createThing({ url: "https://arbitrary.vocab/subject" }),
         "https://arbitrary.vocab/predicate",
-        "https://arbitrary.vocab/object"
+        "https://arbitrary.vocab/object",
       );
       const mockDataset = setThing(createSolidDataset(), mockThing);
 
@@ -1067,7 +1067,7 @@ describe("saveSolidDatasetAt", () => {
 
       expect(mockFetch.mock.calls).toHaveLength(1);
       expect((mockFetch.mock.calls[0][1]?.body as string).trim()).toContain(
-        "ex:subject ex:predicate ex:object."
+        "ex:subject ex:predicate ex:object.",
       );
     });
 
@@ -1077,8 +1077,8 @@ describe("saveSolidDatasetAt", () => {
           new Response("Not allowed", {
             status: 403,
             statusText: "Forbidden",
-          })
-        )
+          }),
+        ),
       );
 
       const fetchPromise = saveSolidDatasetAt(
@@ -1086,11 +1086,11 @@ describe("saveSolidDatasetAt", () => {
         createSolidDataset(),
         {
           fetch: mockFetch,
-        }
+        },
       );
 
       await expect(fetchPromise).rejects.toThrow(
-        /Storing the Resource at \[https:\/\/some.pod\/resource\] failed: \[403\] \[Forbidden\].*[\s\S]*The SolidDataset that was sent to the Pod is listed below/m
+        /Storing the Resource at \[https:\/\/some.pod\/resource\] failed: \[403\] \[Forbidden\].*[\s\S]*The SolidDataset that was sent to the Pod is listed below/m,
       );
     });
 
@@ -1099,8 +1099,8 @@ describe("saveSolidDatasetAt", () => {
         .fn<typeof fetch>()
         .mockReturnValue(
           Promise.resolve(
-            new Response("Not found", { status: 404, statusText: "Not Found" })
-          )
+            new Response("Not found", { status: 404, statusText: "Not Found" }),
+          ),
         );
 
       const fetchPromise = saveSolidDatasetAt(
@@ -1108,11 +1108,11 @@ describe("saveSolidDatasetAt", () => {
         createSolidDataset(),
         {
           fetch: mockFetch,
-        }
+        },
       );
 
       await expect(fetchPromise).rejects.toThrow(
-        /Storing the Resource at \[https:\/\/some.pod\/resource\] failed: \[404\] \[Not Found\].*[\s\S]*The SolidDataset that was sent to the Pod is listed below/m
+        /Storing the Resource at \[https:\/\/some.pod\/resource\] failed: \[404\] \[Not Found\].*[\s\S]*The SolidDataset that was sent to the Pod is listed below/m,
       );
     });
 
@@ -1122,8 +1122,8 @@ describe("saveSolidDatasetAt", () => {
           new Response("Teapots don't make coffee.", {
             status: 418,
             statusText: "I'm a teapot!",
-          })
-        )
+          }),
+        ),
       );
 
       const fetchPromise = saveSolidDatasetAt(
@@ -1131,7 +1131,7 @@ describe("saveSolidDatasetAt", () => {
         createSolidDataset(),
         {
           fetch: mockFetch,
-        }
+        },
       );
 
       await expect(fetchPromise).rejects.toMatchObject({
@@ -1163,12 +1163,12 @@ describe("saveSolidDatasetAt", () => {
   describe("when updating an existing resource", () => {
     function getMockUpdatedDataset(
       changeLog: WithChangeLog["internal_changeLog"],
-      fromUrl: IriString
+      fromUrl: IriString,
     ): SolidDataset & WithChangeLog & WithResourceInfo {
       const mockThing = addUrl(
         createThing({ url: "https://arbitrary.vocab/subject" }),
         "https://arbitrary.vocab/predicate",
-        "https://arbitrary.vocab/object"
+        "https://arbitrary.vocab/object",
       );
       let mockDataset = setThing(createSolidDataset(), mockThing);
 
@@ -1179,7 +1179,7 @@ describe("saveSolidDatasetAt", () => {
         additionThing = addUrl(
           additionThing,
           tripleToAdd.predicate.value,
-          tripleToAdd.object.value
+          tripleToAdd.object.value,
         );
         mockDataset = setThing(mockDataset, additionThing);
       });
@@ -1208,7 +1208,7 @@ describe("saveSolidDatasetAt", () => {
               DataFactory.namedNode("https://some.vocab/subject"),
               DataFactory.namedNode("https://some.vocab/predicate"),
               DataFactory.namedNode("https://some.vocab/object"),
-              undefined
+              undefined,
             ),
           ],
           deletions: [
@@ -1216,11 +1216,11 @@ describe("saveSolidDatasetAt", () => {
               DataFactory.namedNode("https://some-other.vocab/subject"),
               DataFactory.namedNode("https://some-other.vocab/predicate"),
               DataFactory.namedNode("https://some-other.vocab/object"),
-              undefined
+              undefined,
             ),
           ],
         },
-        "https://some.pod/resource"
+        "https://some.pod/resource",
       );
 
       await saveSolidDatasetAt("https://some.pod/resource", mockDataset, {
@@ -1233,11 +1233,11 @@ describe("saveSolidDatasetAt", () => {
       expect(
         (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)[
           "Content-Type"
-        ]
+        ],
       ).toBe("application/sparql-update");
       expect((mockFetch.mock.calls[0][1]?.body as string).trim()).toBe(
         "DELETE DATA {<https://some-other.vocab/subject> <https://some-other.vocab/predicate> <https://some-other.vocab/object>.}; " +
-          "INSERT DATA {<https://some.vocab/subject> <https://some.vocab/predicate> <https://some.vocab/object>.};"
+          "INSERT DATA {<https://some.vocab/subject> <https://some.vocab/predicate> <https://some.vocab/object>.};",
       );
     });
 
@@ -1253,12 +1253,12 @@ describe("saveSolidDatasetAt", () => {
               DataFactory.namedNode("https://some.vocab/subject"),
               DataFactory.namedNode("https://some.vocab/predicate"),
               DataFactory.namedNode("https://some.vocab/object"),
-              undefined
+              undefined,
             ),
           ],
           deletions: [],
         },
-        "https://some.pod/resource"
+        "https://some.pod/resource",
       );
 
       const savedDataset = await saveSolidDatasetAt(
@@ -1266,11 +1266,11 @@ describe("saveSolidDatasetAt", () => {
         mockDataset,
         {
           fetch: mockFetch,
-        }
+        },
       );
 
       expect(savedDataset.internal_resourceInfo.sourceIri).toBe(
-        "https://saved.at/url"
+        "https://saved.at/url",
       );
     });
 
@@ -1278,14 +1278,14 @@ describe("saveSolidDatasetAt", () => {
       const mockFetch = jest
         .fn<typeof fetch>()
         .mockResolvedValue(
-          mockResponse(null, {}, "https://some.irrelevant/url")
+          mockResponse(null, {}, "https://some.irrelevant/url"),
         );
 
       const subjectLocal: LocalNode = DataFactory.namedNode(
-        getLocalNodeIri("some-subject-name")
+        getLocalNodeIri("some-subject-name"),
       );
       const objectLocal: LocalNode = DataFactory.namedNode(
-        getLocalNodeIri("some-object-name")
+        getLocalNodeIri("some-object-name"),
       );
       const mockDataset = getMockUpdatedDataset(
         {
@@ -1294,7 +1294,7 @@ describe("saveSolidDatasetAt", () => {
               subjectLocal,
               DataFactory.namedNode("https://some.vocab/predicate"),
               objectLocal,
-              undefined
+              undefined,
             ),
           ],
           deletions: [
@@ -1302,11 +1302,11 @@ describe("saveSolidDatasetAt", () => {
               subjectLocal,
               DataFactory.namedNode("https://some-other.vocab/predicate"),
               objectLocal,
-              undefined
+              undefined,
             ),
           ],
         },
-        "https://some.pod/resource"
+        "https://some.pod/resource",
       );
 
       await saveSolidDatasetAt("https://some.pod/resource", mockDataset, {
@@ -1328,10 +1328,10 @@ describe("saveSolidDatasetAt", () => {
         .mockResolvedValue(mockResponse(null, {}, "https://saved.at/url"));
 
       const subjectLocal: LocalNode = DataFactory.namedNode(
-        getLocalNodeIri("some-subject-name")
+        getLocalNodeIri("some-subject-name"),
       );
       const objectLocal: LocalNode = DataFactory.namedNode(
-        getLocalNodeIri("some-object-name")
+        getLocalNodeIri("some-object-name"),
       );
       const mockDataset = getMockUpdatedDataset(
         {
@@ -1340,12 +1340,12 @@ describe("saveSolidDatasetAt", () => {
               subjectLocal,
               DataFactory.namedNode("https://some.vocab/predicate"),
               objectLocal,
-              undefined
+              undefined,
             ),
           ],
           deletions: [],
         },
-        "https://some.pod/resource"
+        "https://some.pod/resource",
       );
 
       const storedSolidDataset = await saveSolidDatasetAt(
@@ -1353,16 +1353,16 @@ describe("saveSolidDatasetAt", () => {
         mockDataset,
         {
           fetch: mockFetch,
-        }
+        },
       );
 
       const storedThing = getThing(
         storedSolidDataset,
-        "https://saved.at/url#some-subject-name"
+        "https://saved.at/url#some-subject-name",
       );
       expect(storedThing).not.toBeNull();
       expect(getUrl(storedThing!, "https://some.vocab/predicate")).toBe(
-        "https://saved.at/url#some-object-name"
+        "https://saved.at/url#some-object-name",
       );
     });
 
@@ -1373,7 +1373,7 @@ describe("saveSolidDatasetAt", () => {
 
       const mockDataset = getMockUpdatedDataset(
         { additions: [], deletions: [] },
-        "https://some.pod/resource"
+        "https://some.pod/resource",
       );
 
       await saveSolidDatasetAt("https://some-other.pod/resource", mockDataset, {
@@ -1382,13 +1382,13 @@ describe("saveSolidDatasetAt", () => {
 
       expect(mockFetch.mock.calls).toHaveLength(1);
       expect(mockFetch.mock.calls[0][0]).toBe(
-        "https://some-other.pod/resource"
+        "https://some-other.pod/resource",
       );
       expect(mockFetch.mock.calls[0][1]?.method).toBe("PUT");
       // Even though the change log is empty there should still be a body,
       // since the Dataset itself is not empty:
       expect(
-        (mockFetch.mock.calls[0][1]?.body as string).trim().length
+        (mockFetch.mock.calls[0][1]?.body as string).trim().length,
       ).toBeGreaterThan(0);
     });
 
@@ -1408,7 +1408,7 @@ describe("saveSolidDatasetAt", () => {
               DataFactory.namedNode("https://some.vocab/subject"),
               DataFactory.namedNode("https://some.vocab/predicate"),
               DataFactory.namedNode("https://some.vocab/object"),
-              undefined
+              undefined,
             ),
           ],
           deletions: [
@@ -1416,11 +1416,11 @@ describe("saveSolidDatasetAt", () => {
               DataFactory.namedNode("https://some-other.vocab/subject"),
               DataFactory.namedNode("https://some-other.vocab/predicate"),
               DataFactory.namedNode("https://some-other.vocab/object"),
-              undefined
+              undefined,
             ),
           ],
         },
-        "https://some.pod/resource"
+        "https://some.pod/resource",
       );
 
       await saveSolidDatasetAt(
@@ -1428,13 +1428,13 @@ describe("saveSolidDatasetAt", () => {
         mockDataset,
         {
           fetch: mockFetch,
-        }
+        },
       );
 
       expect(mockFetch.mock.calls).toHaveLength(1);
       expect(mockFetch.mock.calls[0][0]).toBe(
         // Note that the hash fragment is still present in the target URL
-        "https://some.pod/resource#something"
+        "https://some.pod/resource#something",
       );
       // The library detects that the desired operation is a PATCH, and not a PUT
       expect(mockFetch.mock.calls[0][1]?.method).toBe("PATCH");
@@ -1444,7 +1444,7 @@ describe("saveSolidDatasetAt", () => {
       const mockFetch = jest
         .fn<typeof fetch>()
         .mockResolvedValue(
-          mockResponse(null, {}, "https://some.irrelevant/url")
+          mockResponse(null, {}, "https://some.irrelevant/url"),
         );
 
       const mockDataset = getMockUpdatedDataset(
@@ -1454,12 +1454,12 @@ describe("saveSolidDatasetAt", () => {
               DataFactory.namedNode("https://arbitrary.vocab/subject"),
               DataFactory.namedNode("https://arbitrary.vocab/predicate"),
               DataFactory.namedNode("https://arbitrary.vocab/object"),
-              undefined
+              undefined,
             ),
           ],
           deletions: [],
         },
-        "https://arbitrary.pod/resource"
+        "https://arbitrary.pod/resource",
       );
 
       await saveSolidDatasetAt("https://arbitrary.pod/resource", mockDataset, {
@@ -1483,11 +1483,11 @@ describe("saveSolidDatasetAt", () => {
               DataFactory.namedNode("https://arbitrary.vocab/subject"),
               DataFactory.namedNode("https://arbitrary.vocab/predicate"),
               DataFactory.namedNode("https://arbitrary.vocab/object"),
-              undefined
+              undefined,
             ),
           ],
         },
-        "https://arbitrary.pod/resource"
+        "https://arbitrary.pod/resource",
       );
 
       await saveSolidDatasetAt("https://arbitrary.pod/resource", mockDataset, {
@@ -1506,7 +1506,7 @@ describe("saveSolidDatasetAt", () => {
               DataFactory.namedNode("https://arbitrary.vocab/subject"),
               DataFactory.namedNode("https://arbitrary.vocab/predicate"),
               DataFactory.namedNode("https://arbitrary.vocab/object"),
-              undefined
+              undefined,
             ),
           ],
           deletions: [
@@ -1514,16 +1514,16 @@ describe("saveSolidDatasetAt", () => {
               DataFactory.namedNode("https://arbitrary-other.vocab/subject"),
               DataFactory.namedNode("https://arbitrary-other.vocab/predicate"),
               DataFactory.namedNode("https://arbitrary-other.vocab/object"),
-              undefined
+              undefined,
             ),
           ],
         },
-        "https://arbitrary.pod/resource"
+        "https://arbitrary.pod/resource",
       );
 
       const storedSolidDataset = await saveSolidDatasetAt(
         "https://arbitrary.pod/resource",
-        mockDataset
+        mockDataset,
       );
 
       expect(storedSolidDataset.internal_changeLog).toEqual({
@@ -1561,8 +1561,8 @@ describe("saveSolidDatasetAt", () => {
           new Response("Not allowed", {
             status: 403,
             statusText: "Forbidden",
-          })
-        )
+          }),
+        ),
       );
 
       const mockDataset = getMockUpdatedDataset(
@@ -1572,7 +1572,7 @@ describe("saveSolidDatasetAt", () => {
               DataFactory.namedNode("https://some.vocab/subject"),
               DataFactory.namedNode("https://some.vocab/predicate"),
               DataFactory.namedNode("https://some.vocab/object"),
-              undefined
+              undefined,
             ),
           ],
           deletions: [
@@ -1580,11 +1580,11 @@ describe("saveSolidDatasetAt", () => {
               DataFactory.namedNode("https://some-other.vocab/subject"),
               DataFactory.namedNode("https://some-other.vocab/predicate"),
               DataFactory.namedNode("https://some-other.vocab/object"),
-              undefined
+              undefined,
             ),
           ],
         },
-        "https://some.pod/resource"
+        "https://some.pod/resource",
       );
 
       const fetchPromise = saveSolidDatasetAt(
@@ -1592,11 +1592,11 @@ describe("saveSolidDatasetAt", () => {
         mockDataset,
         {
           fetch: mockFetch,
-        }
+        },
       );
 
       await expect(fetchPromise).rejects.toThrow(
-        /Storing the Resource at \[https:\/\/some.pod\/resource\] failed: \[403\] \[Forbidden\].*[\s\S]*The changes that were sent to the Pod are listed below/m
+        /Storing the Resource at \[https:\/\/some.pod\/resource\] failed: \[403\] \[Forbidden\].*[\s\S]*The changes that were sent to the Pod are listed below/m,
       );
     });
 
@@ -1605,8 +1605,8 @@ describe("saveSolidDatasetAt", () => {
         .fn<typeof fetch>()
         .mockReturnValue(
           Promise.resolve(
-            new Response("Not found", { status: 404, statusText: "Not Found" })
-          )
+            new Response("Not found", { status: 404, statusText: "Not Found" }),
+          ),
         );
 
       const mockDataset = getMockUpdatedDataset(
@@ -1616,7 +1616,7 @@ describe("saveSolidDatasetAt", () => {
               DataFactory.namedNode("https://some.vocab/subject"),
               DataFactory.namedNode("https://some.vocab/predicate"),
               DataFactory.namedNode("https://some.vocab/object"),
-              undefined
+              undefined,
             ),
           ],
           deletions: [
@@ -1624,11 +1624,11 @@ describe("saveSolidDatasetAt", () => {
               DataFactory.namedNode("https://some-other.vocab/subject"),
               DataFactory.namedNode("https://some-other.vocab/predicate"),
               DataFactory.namedNode("https://some-other.vocab/object"),
-              undefined
+              undefined,
             ),
           ],
         },
-        "https://some.pod/resource"
+        "https://some.pod/resource",
       );
 
       const fetchPromise = saveSolidDatasetAt(
@@ -1636,11 +1636,11 @@ describe("saveSolidDatasetAt", () => {
         mockDataset,
         {
           fetch: mockFetch,
-        }
+        },
       );
 
       await expect(fetchPromise).rejects.toThrow(
-        /Storing the Resource at \[https:\/\/some.pod\/resource\] failed: \[404\] \[Not Found\].*[\s\S]*The changes that were sent to the Pod are listed below/m
+        /Storing the Resource at \[https:\/\/some.pod\/resource\] failed: \[404\] \[Not Found\].*[\s\S]*The changes that were sent to the Pod are listed below/m,
       );
     });
     it("includes the status code and status message when a request failed", async () => {
@@ -1649,8 +1649,8 @@ describe("saveSolidDatasetAt", () => {
           new Response("I'm a teapot!", {
             status: 418,
             statusText: "I'm a teapot!",
-          })
-        )
+          }),
+        ),
       );
 
       const mockDataset = getMockUpdatedDataset(
@@ -1658,7 +1658,7 @@ describe("saveSolidDatasetAt", () => {
           additions: [],
           deletions: [],
         },
-        "https://arbitrary.pod/resource"
+        "https://arbitrary.pod/resource",
       );
 
       const fetchPromise = saveSolidDatasetAt(
@@ -1666,7 +1666,7 @@ describe("saveSolidDatasetAt", () => {
         mockDataset,
         {
           fetch: mockFetch,
-        }
+        },
       );
 
       await expect(fetchPromise).rejects.toMatchObject({
@@ -1684,7 +1684,7 @@ describe("deleteSolidDataset", () => {
     };
 
     fetcher.fetch.mockResolvedValueOnce(
-      new Response(undefined, { status: 200, statusText: "Deleted" })
+      new Response(undefined, { status: 200, statusText: "Deleted" }),
     );
 
     const response = await deleteSolidDataset("https://some.url");
@@ -1704,7 +1704,7 @@ describe("deleteSolidDataset", () => {
     const mockFetch = jest
       .fn<typeof fetch>()
       .mockResolvedValue(
-        new Response(undefined, { status: 200, statusText: "Deleted" })
+        new Response(undefined, { status: 200, statusText: "Deleted" }),
       );
 
     const response = await deleteSolidDataset("https://some.url", {
@@ -1726,7 +1726,7 @@ describe("deleteSolidDataset", () => {
     const mockFetch = jest
       .fn<typeof fetch>()
       .mockResolvedValue(
-        new Response(undefined, { status: 200, statusText: "Deleted" })
+        new Response(undefined, { status: 200, statusText: "Deleted" }),
       );
 
     const mockSolidDataset = mockSolidDatasetFrom("https://some.url");
@@ -1751,7 +1751,7 @@ describe("deleteSolidDataset", () => {
       new Response(undefined, {
         status: 400,
         statusText: "Bad request",
-      })
+      }),
     );
 
     const deletionPromise = deleteSolidDataset("https://some.url", {
@@ -1759,7 +1759,7 @@ describe("deleteSolidDataset", () => {
     });
 
     await expect(deletionPromise).rejects.toThrow(
-      "Deleting the SolidDataset at [https://some.url] failed: [400] [Bad request]"
+      "Deleting the SolidDataset at [https://some.url] failed: [400] [Bad request]",
     );
   });
 
@@ -1768,7 +1768,7 @@ describe("deleteSolidDataset", () => {
       new Response("Teapots don't make coffee", {
         status: 418,
         statusText: "I'm a teapot!",
-      })
+      }),
     );
 
     const deletionPromise = deleteSolidDataset("https://arbitrary.url", {
@@ -1792,7 +1792,7 @@ describe("createContainerAt", () => {
     await createContainerAt("https://some.pod/container/");
 
     expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
-      "https://some.pod/container/"
+      "https://some.pod/container/",
     );
   });
 
@@ -1817,7 +1817,7 @@ describe("createContainerAt", () => {
       DataFactory.namedNode("https://some.pod/container/"),
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/container/");
@@ -1848,15 +1848,15 @@ describe("createContainerAt", () => {
     expect(mockFetch.mock.calls[0][1]?.method).toBe("PUT");
     expect(mockFetch.mock.calls[0][1]?.headers).toHaveProperty(
       "Link",
-      '<http://www.w3.org/ns/ldp#BasicContainer>; rel="type"'
+      '<http://www.w3.org/ns/ldp#BasicContainer>; rel="type"',
     );
     expect(mockFetch.mock.calls[0][1]?.headers).toHaveProperty(
       "Content-Type",
-      "text/turtle"
+      "text/turtle",
     );
     expect(mockFetch.mock.calls[0][1]?.headers).toHaveProperty(
       "If-None-Match",
-      "*"
+      "*",
     );
   });
 
@@ -1865,19 +1865,19 @@ describe("createContainerAt", () => {
       .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
-          mockResponse(undefined, {}, "https://some.pod/container/")
-        )
+          mockResponse(undefined, {}, "https://some.pod/container/"),
+        ),
       );
 
     const solidDataset = await createContainerAt(
       "https://some.pod/container/",
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     expect(solidDataset.internal_resourceInfo.sourceIri).toBe(
-      "https://some.pod/container/"
+      "https://some.pod/container/",
     );
   });
 
@@ -1892,18 +1892,18 @@ describe("createContainerAt", () => {
               "Content-Type": "text/turtle",
             },
           },
-          "https://some.pod/container/"
-        )
-      )
+          "https://some.pod/container/",
+        ),
+      ),
     );
 
     const solidDataset = await createContainerAt(
       "https://some.pod/container/",
-      { fetch: mockFetch }
+      { fetch: mockFetch },
     );
 
     expect(solidDataset.internal_resourceInfo.aclUrl).toBe(
-      "https://some.pod/container/aclresource.acl"
+      "https://some.pod/container/aclresource.acl",
     );
   });
 
@@ -1916,13 +1916,13 @@ describe("createContainerAt", () => {
             Link: '<arbitrary-resource>; rel="not-acl"',
           },
         },
-        "https://arbitrary.pod"
-      )
+        "https://arbitrary.pod",
+      ),
     );
 
     const solidDataset = await createContainerAt(
       "https://some.pod/container/",
-      { fetch: mockFetch }
+      { fetch: mockFetch },
     );
 
     expect(solidDataset.internal_resourceInfo.aclUrl).toBeUndefined();
@@ -1935,13 +1935,13 @@ describe("createContainerAt", () => {
           headers: {
             "Wac-Allow": 'public="read",user="read write append control"',
           },
-        })
-      )
+        }),
+      ),
     );
 
     const solidDataset = await createContainerAt(
       "https://arbitrary.pod/container/",
-      { fetch: mockFetch }
+      { fetch: mockFetch },
     );
 
     expect(solidDataset.internal_resourceInfo.permissions).toEqual({
@@ -1968,13 +1968,13 @@ describe("createContainerAt", () => {
             // Public permissions are missing double quotes, user permissions are absent:
             "WAC-Allow": "public=read",
           },
-        })
-      )
+        }),
+      ),
     );
 
     const solidDataset = await createContainerAt(
       "https://arbitrary.pod/container/",
-      { fetch: mockFetch }
+      { fetch: mockFetch },
     );
 
     expect(solidDataset.internal_resourceInfo.permissions).toEqual({
@@ -1998,13 +1998,13 @@ describe("createContainerAt", () => {
       Promise.resolve(
         new Response(undefined, {
           headers: {},
-        })
-      )
+        }),
+      ),
     );
 
     const solidDataset = await createContainerAt(
       "https://arbitrary.pod/container/",
-      { fetch: mockFetch }
+      { fetch: mockFetch },
     );
 
     expect(solidDataset.internal_resourceInfo.permissions).toBeUndefined();
@@ -2015,15 +2015,15 @@ describe("createContainerAt", () => {
       .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
-          mockResponse(undefined, {}, "https://arbitrary.pod/container/")
-        )
+          mockResponse(undefined, {}, "https://arbitrary.pod/container/"),
+        ),
       );
 
     const solidDataset = await createContainerAt(
       "https://arbitrary.pod/container/",
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     expect(solidDataset.graphs.default).toStrictEqual({});
@@ -2034,8 +2034,8 @@ describe("createContainerAt", () => {
       .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
-          new Response("Not allowed", { status: 403, statusText: "Forbidden" })
-        )
+          new Response("Not allowed", { status: 403, statusText: "Forbidden" }),
+        ),
       );
 
     const fetchPromise = createContainerAt("https://some.pod/container/", {
@@ -2043,7 +2043,7 @@ describe("createContainerAt", () => {
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      /Creating the empty Container at \[https:\/\/some.pod\/container\/\] failed: \[403\] \[Forbidden\]/
+      /Creating the empty Container at \[https:\/\/some.pod\/container\/\] failed: \[403\] \[Forbidden\]/,
     );
   });
 
@@ -2053,8 +2053,8 @@ describe("createContainerAt", () => {
         new Response("Teapots don't make coffee", {
           status: 418,
           statusText: "I'm a teapot!",
-        })
-      )
+        }),
+      ),
     );
 
     const fetchPromise = createContainerAt("https://arbitrary.pod/container/", {
@@ -2074,14 +2074,14 @@ describe("createContainerAt", () => {
         .fn<typeof fetch>()
         .mockReturnValue(
           Promise.resolve(
-            mockResponse(undefined, {}, "https://arbitrary.pod/container/")
-          )
+            mockResponse(undefined, {}, "https://arbitrary.pod/container/"),
+          ),
         );
 
       const mockThing = addUrl(
         createThing({ url: "https://arbitrary.vocab/subject" }),
         "https://arbitrary.vocab/predicate",
-        "https://arbitrary.vocab/object"
+        "https://arbitrary.vocab/object",
       );
       const mockDataset = setThing(createSolidDataset(), mockThing);
 
@@ -2090,17 +2090,17 @@ describe("createContainerAt", () => {
         {
           fetch: mockFetch,
           initialContent: mockDataset,
-        }
+        },
       );
       // All the things in the initial content should be in the returned dataset.
       expect(
         getThingAll(mockDataset).every(
-          (thing) => getThing(returnedContainer, asIri(thing)) !== null
-        )
+          (thing) => getThing(returnedContainer, asIri(thing)) !== null,
+        ),
       ).toBe(true);
       // The initial content should be sent when creating the container
       expect((mockFetch.mock.calls[0][1]?.body as string).trim()).toBe(
-        "<https://arbitrary.vocab/subject> <https://arbitrary.vocab/predicate> <https://arbitrary.vocab/object>."
+        "<https://arbitrary.vocab/subject> <https://arbitrary.vocab/predicate> <https://arbitrary.vocab/object>.",
       );
     });
 
@@ -2109,13 +2109,13 @@ describe("createContainerAt", () => {
         .fn<typeof fetch>()
         // Mock an error response to the request.
         .mockReturnValueOnce(
-          Promise.resolve(new Response("Forbidden", { status: 403 }))
+          Promise.resolve(new Response("Forbidden", { status: 403 })),
         );
 
       const mockThing = addUrl(
         createThing({ url: "https://arbitrary.vocab/subject" }),
         "https://arbitrary.vocab/predicate",
-        "https://arbitrary.vocab/object"
+        "https://arbitrary.vocab/object",
       );
       const mockDataset = setThing(createSolidDataset(), mockThing);
 
@@ -2123,7 +2123,7 @@ describe("createContainerAt", () => {
         createContainerAt("https://arbitrary.pod/container/", {
           fetch: mockFetch,
           initialContent: mockDataset,
-        })
+        }),
       ).rejects.toThrow("Creating the non-empty Container");
     });
   });
@@ -2139,8 +2139,8 @@ describe("saveSolidDatasetInContainer", () => {
         statusText: "Created",
         headers: { Location: "resource" },
       },
-      "https://some.pod/container/"
-    )
+      "https://some.pod/container/",
+    ),
   ): jest.Mocked<typeof window.fetch> {
     fetch.mockResolvedValueOnce(saveResponse);
     return fetch;
@@ -2153,7 +2153,7 @@ describe("saveSolidDatasetInContainer", () => {
 
     await saveSolidDatasetInContainer(
       "https://some.pod/container/",
-      createSolidDataset()
+      createSolidDataset(),
     );
 
     // Two calls expected: one to store the dataset, one to retrieve its details
@@ -2169,7 +2169,7 @@ describe("saveSolidDatasetInContainer", () => {
       createSolidDataset(),
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     // Two calls expected: one to store the dataset, one to retrieve its details
@@ -2186,8 +2186,8 @@ describe("saveSolidDatasetInContainer", () => {
           status: 403,
           statusText: "Forbidden",
         },
-        "https://some.pod/container/"
-      )
+        "https://some.pod/container/",
+      ),
     );
 
     const fetchPromise = saveSolidDatasetInContainer(
@@ -2195,11 +2195,11 @@ describe("saveSolidDatasetInContainer", () => {
       createSolidDataset(),
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     await expect(fetchPromise).rejects.toThrow(
-      /Storing the Resource in the Container at \[https:\/\/some.pod\/container\/\] failed: \[403\] \[Forbidden\]/
+      /Storing the Resource in the Container at \[https:\/\/some.pod\/container\/\] failed: \[403\] \[Forbidden\]/,
     );
   });
 
@@ -2212,26 +2212,26 @@ describe("saveSolidDatasetInContainer", () => {
           status: 404,
           statusText: "Not Found",
         },
-        "https://some.pod/container/"
-      )
+        "https://some.pod/container/",
+      ),
     );
     const fetchPromise = saveSolidDatasetInContainer(
       "https://some.pod/container/",
       createSolidDataset(),
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     await expect(fetchPromise).rejects.toThrow(
-      /Storing the Resource in the Container at \[https:\/\/some.pod\/container\/\] failed: \[404\] \[Not Found\]/
+      /Storing the Resource in the Container at \[https:\/\/some.pod\/container\/\] failed: \[404\] \[Not Found\]/,
     );
   });
 
   it("returns a meaningful error when the server does not return the new Resource's location", async () => {
     const mockFetch = setMockOnFetch(
       jest.fn<typeof fetch>(),
-      mockResponse(null, {}, "https://arbitrary.pod/container/")
+      mockResponse(null, {}, "https://arbitrary.pod/container/"),
     );
 
     const fetchPromise = saveSolidDatasetInContainer(
@@ -2239,13 +2239,13 @@ describe("saveSolidDatasetInContainer", () => {
       createSolidDataset(),
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Could not determine the location of the newly saved SolidDataset."
-      )
+        "Could not determine the location of the newly saved SolidDataset.",
+      ),
     );
   });
 
@@ -2258,15 +2258,15 @@ describe("saveSolidDatasetInContainer", () => {
           status: 418,
           statusText: "I'm a teapot!",
         },
-        "https://arbitrary.pod/container/"
-      )
+        "https://arbitrary.pod/container/",
+      ),
     );
     const fetchPromise = saveSolidDatasetInContainer(
       "https://arbitrary.pod/container/",
       createSolidDataset(),
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     await expect(fetchPromise).rejects.toMatchObject({
@@ -2281,7 +2281,7 @@ describe("saveSolidDatasetInContainer", () => {
     const mockThing = addUrl(
       createThing({ url: "https://arbitrary.vocab/subject" }),
       "https://arbitrary.vocab/predicate",
-      "https://arbitrary.vocab/object"
+      "https://arbitrary.vocab/object",
     );
     const mockDataset = setThing(createSolidDataset(), mockThing);
 
@@ -2290,7 +2290,7 @@ describe("saveSolidDatasetInContainer", () => {
       mockDataset,
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/container/");
@@ -2298,13 +2298,13 @@ describe("saveSolidDatasetInContainer", () => {
     expect(
       (mockFetch.mock.calls[0][1]?.headers as Record<string, string>)[
         "Content-Type"
-      ]
+      ],
     ).toBe("text/turtle");
     expect(
-      (mockFetch.mock.calls[0][1]?.headers as Record<string, string>).Link
+      (mockFetch.mock.calls[0][1]?.headers as Record<string, string>).Link,
     ).toBe('<http://www.w3.org/ns/ldp#Resource>; rel="type"');
     expect((mockFetch.mock.calls[0][1]?.body as string).trim()).toBe(
-      "<https://arbitrary.vocab/subject> <https://arbitrary.vocab/predicate> <https://arbitrary.vocab/object>."
+      "<https://arbitrary.vocab/subject> <https://arbitrary.vocab/predicate> <https://arbitrary.vocab/object>.",
     );
   });
 
@@ -2314,7 +2314,7 @@ describe("saveSolidDatasetInContainer", () => {
     const mockThing = addUrl(
       createThing({ name: "some-subject-name" }),
       "https://arbitrary.vocab/predicate",
-      mockObjectThing
+      mockObjectThing,
     );
     const mockDataset = setThing(createSolidDataset(), mockThing);
 
@@ -2323,11 +2323,11 @@ describe("saveSolidDatasetInContainer", () => {
       mockDataset,
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     expect((mockFetch.mock.calls[0][1]?.body as string).trim()).toBe(
-      "<#some-subject-name> <https://arbitrary.vocab/predicate> <#some-object-name>."
+      "<#some-subject-name> <https://arbitrary.vocab/predicate> <#some-object-name>.",
     );
   });
 
@@ -2340,7 +2340,7 @@ describe("saveSolidDatasetInContainer", () => {
       {
         fetch: mockFetch,
         slugSuggestion: "some-slug",
-      }
+      },
     );
 
     expect(mockFetch.mock.calls[0][1]?.headers).toMatchObject({
@@ -2356,11 +2356,11 @@ describe("saveSolidDatasetInContainer", () => {
       createSolidDataset(),
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     expect(
-      (mockFetch.mock.calls[0][1]?.headers as Record<string, string>).slug
+      (mockFetch.mock.calls[0][1]?.headers as Record<string, string>).slug,
     ).toBeUndefined();
   });
 
@@ -2372,8 +2372,8 @@ describe("saveSolidDatasetInContainer", () => {
         {
           headers: { Location: "https://some.pod/container/resource" },
         },
-        "https://some.pod/container/"
-      )
+        "https://some.pod/container/",
+      ),
     );
 
     const savedSolidDataset = await saveSolidDatasetInContainer(
@@ -2381,11 +2381,11 @@ describe("saveSolidDatasetInContainer", () => {
       createSolidDataset(),
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     expect(savedSolidDataset!.internal_resourceInfo.sourceIri).toBe(
-      "https://some.pod/container/resource"
+      "https://some.pod/container/resource",
     );
   });
 
@@ -2399,15 +2399,15 @@ describe("saveSolidDatasetInContainer", () => {
           statusText: "Created",
           headers: { Location: "/url" },
         },
-        "https://saved.at/url"
-      )
+        "https://saved.at/url",
+      ),
     );
 
     const mockObjectThing = createThing({ name: "some-object-name" });
     const mockThing = addUrl(
       createThing({ name: "some-subject-name" }),
       "https://arbitrary.vocab/predicate",
-      mockObjectThing
+      mockObjectThing,
     );
     const mockDataset = setThing(createSolidDataset(), mockThing);
 
@@ -2416,17 +2416,17 @@ describe("saveSolidDatasetInContainer", () => {
       mockDataset,
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     const storedThing = getThing(
       storedSolidDataset,
-      "https://saved.at/url#some-subject-name"
+      "https://saved.at/url#some-subject-name",
     );
 
     expect(storedThing).not.toBeNull();
     expect(getUrl(storedThing!, "https://arbitrary.vocab/predicate")).toBe(
-      "https://saved.at/url#some-object-name"
+      "https://saved.at/url#some-object-name",
     );
   });
 
@@ -2438,8 +2438,8 @@ describe("saveSolidDatasetInContainer", () => {
         {
           headers: { Location: "/container/resource" },
         },
-        "https://some.pod/container/"
-      )
+        "https://some.pod/container/",
+      ),
     );
 
     const savedSolidDataset = await saveSolidDatasetInContainer(
@@ -2447,11 +2447,11 @@ describe("saveSolidDatasetInContainer", () => {
       createSolidDataset(),
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     expect(savedSolidDataset!.internal_resourceInfo.sourceIri).toBe(
-      "https://some.pod/container/resource"
+      "https://some.pod/container/resource",
     );
   });
 });
@@ -2466,8 +2466,8 @@ describe("createContainerInContainer", () => {
         statusText: "Created",
         headers: { Location: "child" },
       },
-      "https://some.pod/"
-    )
+      "https://some.pod/",
+    ),
   ): jest.Mocked<typeof window.fetch> {
     fetch.mockResolvedValueOnce(saveResponse);
     return fetch;
@@ -2507,19 +2507,19 @@ describe("createContainerInContainer", () => {
           status: 403,
           statusText: "Forbidden",
         },
-        "https://some.pod/parent-container/"
-      )
+        "https://some.pod/parent-container/",
+      ),
     );
 
     const fetchPromise = createContainerInContainer(
       "https://some.pod/parent-container/",
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     await expect(fetchPromise).rejects.toThrow(
-      /Creating an empty Container in the Container at \[https:\/\/some.pod\/parent-container\/\] failed: \[403\] \[Forbidden\]/
+      /Creating an empty Container in the Container at \[https:\/\/some.pod\/parent-container\/\] failed: \[403\] \[Forbidden\]/,
     );
   });
 
@@ -2532,39 +2532,39 @@ describe("createContainerInContainer", () => {
           status: 404,
           statusText: "Not Found",
         },
-        "https://some.pod/parent-container/"
-      )
+        "https://some.pod/parent-container/",
+      ),
     );
 
     const fetchPromise = createContainerInContainer(
       "https://some.pod/parent-container/",
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     await expect(fetchPromise).rejects.toThrow(
-      /Creating an empty Container in the Container at \[https:\/\/some.pod\/parent-container\/] failed: \[404\] \[Not Found\]./
+      /Creating an empty Container in the Container at \[https:\/\/some.pod\/parent-container\/] failed: \[404\] \[Not Found\]./,
     );
   });
 
   it("returns a meaningful error when the server does not return the new Container's location", async () => {
     const mockFetch = setMockOnFetch(
       jest.fn<typeof fetch>(),
-      mockResponse(null, {}, "https://arbitrary.pod/parent-container/")
+      mockResponse(null, {}, "https://arbitrary.pod/parent-container/"),
     );
 
     const fetchPromise = createContainerInContainer(
       "https://arbitrary.pod/parent-container/",
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     await expect(fetchPromise).rejects.toThrow(
       new Error(
-        "Could not determine the location of the newly created Container."
-      )
+        "Could not determine the location of the newly created Container.",
+      ),
     );
   });
 
@@ -2577,15 +2577,15 @@ describe("createContainerInContainer", () => {
           status: 418,
           statusText: "I'm a teapot!",
         },
-        "https://arbitrary.pod/parent-container/"
-      )
+        "https://arbitrary.pod/parent-container/",
+      ),
     );
 
     const fetchPromise = createContainerInContainer(
       "https://arbitrary.pod/parent-container/",
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     await expect(fetchPromise).rejects.toMatchObject({
@@ -2603,16 +2603,16 @@ describe("createContainerInContainer", () => {
     });
 
     expect(mockFetch.mock.calls[0][0]).toBe(
-      "https://some.pod/parent-container/"
+      "https://some.pod/parent-container/",
     );
     expect(mockFetch.mock.calls[0][1]?.method).toBe("POST");
     expect(mockFetch.mock.calls[0][1]?.headers).toHaveProperty(
       "Content-Type",
-      "text/turtle"
+      "text/turtle",
     );
     expect(mockFetch.mock.calls[0][1]?.headers).toHaveProperty(
       "Link",
-      '<http://www.w3.org/ns/ldp#BasicContainer>; rel="type"'
+      '<http://www.w3.org/ns/ldp#BasicContainer>; rel="type"',
     );
   });
 
@@ -2637,7 +2637,7 @@ describe("createContainerInContainer", () => {
     });
 
     expect(
-      (mockFetch.mock.calls[0][1]?.headers as Record<string, string>).slug
+      (mockFetch.mock.calls[0][1]?.headers as Record<string, string>).slug,
     ).toBeUndefined();
   });
 
@@ -2651,19 +2651,19 @@ describe("createContainerInContainer", () => {
             Location: "https://some.pod/parent-container/child-container/",
           },
         },
-        "https://some.pod/parent-container/"
-      )
+        "https://some.pod/parent-container/",
+      ),
     );
 
     const savedSolidDataset = await createContainerInContainer(
       "https://some.pod/parent-container/",
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     expect(savedSolidDataset!.internal_resourceInfo.sourceIri).toBe(
-      "https://some.pod/parent-container/child-container/"
+      "https://some.pod/parent-container/child-container/",
     );
   });
 
@@ -2677,19 +2677,19 @@ describe("createContainerInContainer", () => {
             Location: "https://some.pod/parent-container/child-container/",
           },
         },
-        "https://some.pod/parent-container//"
-      )
+        "https://some.pod/parent-container//",
+      ),
     );
 
     const savedSolidDataset = await createContainerInContainer(
       "https://some.pod/parent-container//",
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     expect(savedSolidDataset!.internal_resourceInfo.sourceIri).toBe(
-      "https://some.pod/parent-container/child-container/"
+      "https://some.pod/parent-container/child-container/",
     );
   });
 
@@ -2703,19 +2703,19 @@ describe("createContainerInContainer", () => {
             Location: "./x/y/",
           },
         },
-        "https://some.pod/parent-container//a/b"
-      )
+        "https://some.pod/parent-container//a/b",
+      ),
     );
 
     const savedSolidDataset = await createContainerInContainer(
       "https://some.pod/parent-container//a/b",
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     expect(savedSolidDataset!.internal_resourceInfo.sourceIri).toBe(
-      "https://some.pod/parent-container//a/x/y/"
+      "https://some.pod/parent-container//a/x/y/",
     );
   });
 
@@ -2729,19 +2729,19 @@ describe("createContainerInContainer", () => {
             Location: "/parent-container/child-container/",
           },
         },
-        "https://some.pod/parent-container/"
-      )
+        "https://some.pod/parent-container/",
+      ),
     );
 
     const savedSolidDataset = await createContainerInContainer(
       "https://some.pod/parent-container/",
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     expect(savedSolidDataset!.internal_resourceInfo.sourceIri).toBe(
-      "https://some.pod/parent-container/child-container/"
+      "https://some.pod/parent-container/child-container/",
     );
   });
 
@@ -2757,19 +2757,19 @@ describe("createContainerInContainer", () => {
               "https://some.pod/parent-container/child-container/",
           },
         },
-        "https://some.pod/parent-container/"
-      )
+        "https://some.pod/parent-container/",
+      ),
     );
 
     const savedSolidDataset = await createContainerInContainer(
       "https://some.pod/parent-container/",
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     expect(savedSolidDataset!.internal_resourceInfo.sourceIri).toBe(
-      "https://some.pod/parent-container/child-container/"
+      "https://some.pod/parent-container/child-container/",
     );
   });
 });
@@ -2781,7 +2781,7 @@ describe("deleteContainer", () => {
     };
 
     fetcher.fetch.mockResolvedValueOnce(
-      new Response(undefined, { status: 200, statusText: "Deleted" })
+      new Response(undefined, { status: 200, statusText: "Deleted" }),
     );
 
     const response = await deleteContainer("https://some.pod/container/");
@@ -2801,7 +2801,7 @@ describe("deleteContainer", () => {
     const mockFetch = jest
       .fn<typeof fetch>()
       .mockResolvedValue(
-        new Response(undefined, { status: 200, statusText: "Deleted" })
+        new Response(undefined, { status: 200, statusText: "Deleted" }),
       );
 
     const response = await deleteContainer("https://some.pod/container/", {
@@ -2823,7 +2823,7 @@ describe("deleteContainer", () => {
     const mockFetch = jest
       .fn<typeof fetch>()
       .mockResolvedValue(
-        new Response(undefined, { status: 200, statusText: "Deleted" })
+        new Response(undefined, { status: 200, statusText: "Deleted" }),
       );
 
     const mockContainer = mockSolidDatasetFrom("https://some.pod/container/");
@@ -2848,7 +2848,7 @@ describe("deleteContainer", () => {
     const deletionPromise = deleteContainer(mockSolidDataset);
 
     await expect(deletionPromise).rejects.toThrow(
-      "You're trying to delete the Container at [https://some.pod/resource], but Container URLs should end in a `/`. Are you sure this is a Container?"
+      "You're trying to delete the Container at [https://some.pod/resource], but Container URLs should end in a `/`. Are you sure this is a Container?",
     );
   });
 
@@ -2857,7 +2857,7 @@ describe("deleteContainer", () => {
       new Response(undefined, {
         status: 400,
         statusText: "Bad request",
-      })
+      }),
     );
 
     const deletionPromise = deleteContainer("https://some.pod/container/", {
@@ -2865,7 +2865,7 @@ describe("deleteContainer", () => {
     });
 
     await expect(deletionPromise).rejects.toThrow(
-      "Deleting the Container at [https://some.pod/container/] failed: [400] [Bad request]"
+      "Deleting the Container at [https://some.pod/container/] failed: [400] [Bad request]",
     );
   });
 
@@ -2874,14 +2874,14 @@ describe("deleteContainer", () => {
       new Response("Teapots don't make coffee", {
         status: 418,
         statusText: "I'm a teapot!",
-      })
+      }),
     );
 
     const deletionPromise = deleteContainer(
       "https://arbitrary.pod/container/",
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     await expect(deletionPromise).rejects.toMatchObject({
@@ -2895,7 +2895,7 @@ describe("deleteContainer", () => {
 describe("getContainedResourceUrlAll", () => {
   const mockContainer = (
     containerUrl: string,
-    containedResourceUrls: UrlString[]
+    containedResourceUrls: UrlString[],
   ) => {
     let childrenIndex = createThing({ url: containerUrl });
     let mockedContainer = mockContainerFrom(containerUrl);
@@ -2925,7 +2925,7 @@ describe("getContainedResourceUrlAll", () => {
     const container = mockContainer(containerUrl, containedThings);
 
     expect(getContainedResourceUrlAll(container)).toStrictEqual(
-      containedThings
+      containedThings,
     );
     expect(validateContainedResourceAll(container)).toStrictEqual({
       isValid: true,
@@ -2942,12 +2942,12 @@ describe("getContainedResourceUrlAll", () => {
       "https://other.pod/container/resource4",
     ];
     expect(
-      getContainedResourceUrlAll(mockContainer(containerUrl, indirectChildren))
+      getContainedResourceUrlAll(mockContainer(containerUrl, indirectChildren)),
     ).toHaveLength(0);
     expect(
       validateContainedResourceAll(
-        mockContainer(containerUrl, indirectChildren)
-      )
+        mockContainer(containerUrl, indirectChildren),
+      ),
     ).toStrictEqual({
       isValid: false,
       invalidContainedResources: [...indirectChildren],
@@ -2957,13 +2957,13 @@ describe("getContainedResourceUrlAll", () => {
   it("does not include children having a similar URL path as the parent", () => {
     expect(
       getContainedResourceUrlAll(
-        mockContainer("http://example.org/a/", ["http://example.org/a/"])
-      )
+        mockContainer("http://example.org/a/", ["http://example.org/a/"]),
+      ),
     ).toHaveLength(0);
     expect(
       validateContainedResourceAll(
-        mockContainer("http://example.org/a/", ["http://example.org/a/"])
-      )
+        mockContainer("http://example.org/a/", ["http://example.org/a/"]),
+      ),
     ).toStrictEqual({
       isValid: false,
       invalidContainedResources: ["http://example.org/a/"],
@@ -2973,15 +2973,15 @@ describe("getContainedResourceUrlAll", () => {
       getContainedResourceUrlAll(
         mockContainer("http://example.org/a/?q1=a/", [
           "http://example.org/a/?q1=a/a",
-        ])
-      )
+        ]),
+      ),
     ).toHaveLength(0);
     expect(
       validateContainedResourceAll(
         mockContainer("http://example.org/a/?q1=a/", [
           "http://example.org/a/?q1=a/a",
-        ])
-      )
+        ]),
+      ),
     ).toStrictEqual({
       isValid: false,
       invalidContainedResources: ["http://example.org/a/?q1=a/a"],
@@ -2989,13 +2989,13 @@ describe("getContainedResourceUrlAll", () => {
 
     expect(
       getContainedResourceUrlAll(
-        mockContainer("http://example.org/a/", ["http://example.org/a//"])
-      )
+        mockContainer("http://example.org/a/", ["http://example.org/a//"]),
+      ),
     ).toHaveLength(0);
     expect(
       validateContainedResourceAll(
-        mockContainer("http://example.org/a/", ["http://example.org/a//"])
-      )
+        mockContainer("http://example.org/a/", ["http://example.org/a//"]),
+      ),
     ).toStrictEqual({
       isValid: false,
       invalidContainedResources: ["http://example.org/a//"],
@@ -3008,7 +3008,7 @@ describe("getContainedResourceUrlAll", () => {
     const container = mockContainer(containerUrl, containedThings);
 
     expect(getContainedResourceUrlAll(container)).toStrictEqual(
-      containedThings
+      containedThings,
     );
   });
 
@@ -3027,17 +3027,17 @@ describe("solidDatasetAsMarkdown", () => {
     const emptyDataset = createSolidDataset();
 
     expect(solidDatasetAsMarkdown(emptyDataset)).toBe(
-      "# SolidDataset (no URL yet)\n\n<empty>\n"
+      "# SolidDataset (no URL yet)\n\n<empty>\n",
     );
   });
 
   it("returns a readable version of an empty SolidDataset with a known URL", () => {
     const datasetWithSourceUrl = mockSolidDatasetFrom(
-      "https://some.pod/resource"
+      "https://some.pod/resource",
     );
 
     expect(solidDatasetAsMarkdown(datasetWithSourceUrl)).toBe(
-      "# SolidDataset: https://some.pod/resource\n\n<empty>\n"
+      "# SolidDataset: https://some.pod/resource\n\n<empty>\n",
     );
   });
 
@@ -3046,12 +3046,12 @@ describe("solidDatasetAsMarkdown", () => {
     thing = addStringNoLocale(
       thing,
       "https://some.vocab/predicate",
-      "Some string"
+      "Some string",
     );
     thing = addStringNoLocale(
       thing,
       "https://some.vocab/predicate",
-      "Some other string"
+      "Some other string",
     );
     const datasetWithUnsavedThing = setThing(createSolidDataset(), thing);
 
@@ -3061,7 +3061,7 @@ describe("solidDatasetAsMarkdown", () => {
         "Property: https://some.vocab/predicate\n" +
         '- "Some string" (string)\n' +
         '- "Some other string" (string)\n\n' +
-        "(2 new values added / 0 values removed)\n"
+        "(2 new values added / 0 values removed)\n",
     );
   });
 
@@ -3070,16 +3070,16 @@ describe("solidDatasetAsMarkdown", () => {
     thing = addStringNoLocale(
       thing,
       "https://some.vocab/predicate",
-      "Some string"
+      "Some string",
     );
     thing = addStringNoLocale(
       thing,
       "https://some.vocab/predicate",
-      "Some other string"
+      "Some other string",
     );
     let datasetWithSavedThing = setThing(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      thing
+      thing,
     );
     // Pretend that datasetWithSavedThing was fetched from the Pod with its current contents:
     datasetWithSavedThing = {
@@ -3089,12 +3089,12 @@ describe("solidDatasetAsMarkdown", () => {
     let changedThing = addStringNoLocale(
       thing,
       "https://some.vocab/predicate",
-      "Yet another string"
+      "Yet another string",
     );
     changedThing = removeStringNoLocale(
       changedThing,
       "https://some.vocab/predicate",
-      "Some other string"
+      "Some other string",
     );
     const changedDataset = setThing(datasetWithSavedThing, changedThing);
 
@@ -3104,7 +3104,7 @@ describe("solidDatasetAsMarkdown", () => {
         "Property: https://some.vocab/predicate\n" +
         '- "Some string" (string)\n' +
         '- "Yet another string" (string)\n\n' +
-        "(1 new value added / 1 value removed)\n"
+        "(1 new value added / 1 value removed)\n",
     );
   });
 
@@ -3113,13 +3113,13 @@ describe("solidDatasetAsMarkdown", () => {
     thing1 = addStringNoLocale(
       thing1,
       "https://some.vocab/predicate",
-      "Some string"
+      "Some string",
     );
     let thing2 = createThing({ name: "thing2" });
     thing2 = addStringNoLocale(
       thing2,
       "https://some.vocab/predicate",
-      "Some other string"
+      "Some other string",
     );
     let datasetWithMultipleThings = setThing(createSolidDataset(), thing1);
     datasetWithMultipleThings = setThing(datasetWithMultipleThings, thing2);
@@ -3133,7 +3133,7 @@ describe("solidDatasetAsMarkdown", () => {
         "## Thing (no URL yet — identifier: `#thing2`)\n\n" +
         "Property: https://some.vocab/predicate\n" +
         '- "Some other string" (string)\n\n' +
-        "(1 new value added / 0 values removed)\n"
+        "(1 new value added / 0 values removed)\n",
     );
   });
 
@@ -3142,27 +3142,27 @@ describe("solidDatasetAsMarkdown", () => {
     thing1 = addStringNoLocale(
       thing1,
       "https://some.vocab/predicate",
-      "Some string"
+      "Some string",
     );
     thing1 = addStringNoLocale(
       thing1,
       "https://some.vocab/predicate",
-      "Some other string"
+      "Some other string",
     );
     let thing2 = mockThingFrom("https://some.pod/resource#thing2");
     thing2 = addStringNoLocale(
       thing2,
       "https://some.vocab/predicate",
-      "Some string"
+      "Some string",
     );
     thing2 = addStringNoLocale(
       thing2,
       "https://some.vocab/predicate",
-      "Some other string"
+      "Some other string",
     );
     let datasetWithSavedThings = setThing(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      thing1
+      thing1,
     );
     datasetWithSavedThings = setThing(datasetWithSavedThings, thing2);
 
@@ -3177,17 +3177,17 @@ describe("solidDatasetAsMarkdown", () => {
     let changedThing1 = addStringNoLocale(
       thing1,
       "https://some.vocab/predicate",
-      "Yet another string"
+      "Yet another string",
     );
     changedThing1 = removeStringNoLocale(
       changedThing1,
       "https://some.vocab/predicate",
-      "Some other string"
+      "Some other string",
     );
     const changedThing2 = removeStringNoLocale(
       thing2,
       "https://some.vocab/predicate",
-      "Some other string"
+      "Some other string",
     );
     let changedDataset = setThing(datasetWithSavedThings, changedThing1);
     changedDataset = setThing(changedDataset, changedThing2);
@@ -3202,7 +3202,7 @@ describe("solidDatasetAsMarkdown", () => {
         "## Thing: https://some.pod/resource#thing2\n\n" +
         "Property: https://some.vocab/predicate\n" +
         '- "Some string" (string)\n\n' +
-        "(0 new values added / 1 value removed)\n"
+        "(0 new values added / 1 value removed)\n",
     );
   });
 
@@ -3210,7 +3210,7 @@ describe("solidDatasetAsMarkdown", () => {
     const mockThing = addStringNoLocale(
       createThing({ url: "https://arbitrary.pod/resource#thing" }),
       "https://arbitrary.vocab/predicate",
-      "Arbitrary string"
+      "Arbitrary string",
     );
     const datasetWithoutChangeLog = {
       ...setThing(createSolidDataset(), mockThing),
@@ -3221,7 +3221,7 @@ describe("solidDatasetAsMarkdown", () => {
       "# SolidDataset (no URL yet)\n\n" +
         "## Thing: https://arbitrary.pod/resource#thing\n\n" +
         "Property: https://arbitrary.vocab/predicate\n" +
-        '- "Arbitrary string" (string)\n'
+        '- "Arbitrary string" (string)\n',
     );
   });
 });
@@ -3232,10 +3232,10 @@ describe("changeLogAsMarkdown", () => {
 
     expect(
       changeLogAsMarkdown(
-        freshDataset as unknown as SolidDataset & WithChangeLog
-      )
+        freshDataset as unknown as SolidDataset & WithChangeLog,
+      ),
     ).toBe(
-      "This is a newly initialized SolidDataset, so there is no source to compare it to."
+      "This is a newly initialized SolidDataset, so there is no source to compare it to.",
     );
   });
 
@@ -3244,11 +3244,11 @@ describe("changeLogAsMarkdown", () => {
 
     expect(
       changeLogAsMarkdown(
-        unchangedDataset as unknown as SolidDataset & WithChangeLog
-      )
+        unchangedDataset as unknown as SolidDataset & WithChangeLog,
+      ),
     ).toBe(
       "## Changes compared to https://some.pod/resource\n\n" +
-        "This SolidDataset has not been modified since it was fetched from https://some.pod/resource.\n"
+        "This SolidDataset has not been modified since it was fetched from https://some.pod/resource.\n",
     );
   });
 
@@ -3257,20 +3257,20 @@ describe("changeLogAsMarkdown", () => {
     thing = addStringNoLocale(
       thing,
       "https://arbitrary.vocab/predicate",
-      "Arbitrary string"
+      "Arbitrary string",
     );
     const newDataset = mockSolidDatasetFrom("https://some.pod/resource");
     const changedDataset = setThing(newDataset, thing);
     const undoneThing = removeStringNoLocale(
       thing,
       "https://arbitrary.vocab/predicate",
-      "Arbitrary string"
+      "Arbitrary string",
     );
     const undoneDataset = setThing(changedDataset, undoneThing);
 
     expect(changeLogAsMarkdown(undoneDataset)).toBe(
       "## Changes compared to https://some.pod/resource\n\n" +
-        "This SolidDataset has not been modified since it was fetched from https://some.pod/resource.\n"
+        "This SolidDataset has not been modified since it was fetched from https://some.pod/resource.\n",
     );
   });
 
@@ -3279,7 +3279,7 @@ describe("changeLogAsMarkdown", () => {
     thing = addStringNoLocale(
       thing,
       "https://arbitrary.vocab/predicate",
-      "Arbitrary string"
+      "Arbitrary string",
     );
     const newDataset = mockSolidDatasetFrom("https://some.pod/resource");
     const fetchedDataset = {
@@ -3296,7 +3296,7 @@ describe("changeLogAsMarkdown", () => {
         "### Thing: https://some.pod/resource#some-new-thing\n\n" +
         "Property: https://arbitrary.vocab/predicate\n" +
         "- Added:\n" +
-        '  - "Arbitrary string" (string)\n'
+        '  - "Arbitrary string" (string)\n',
     );
   });
 
@@ -3305,27 +3305,27 @@ describe("changeLogAsMarkdown", () => {
     thing1 = addStringNoLocale(
       thing1,
       "https://some.vocab/predicate",
-      "Some string"
+      "Some string",
     );
     thing1 = addStringNoLocale(
       thing1,
       "https://some.vocab/predicate",
-      "Some other string"
+      "Some other string",
     );
     let thing2 = mockThingFrom("https://some.pod/resource#thing2");
     thing2 = addStringNoLocale(
       thing2,
       "https://some.vocab/predicate",
-      "Some string"
+      "Some string",
     );
     thing2 = addStringNoLocale(
       thing2,
       "https://some.vocab/predicate",
-      "Some other string"
+      "Some other string",
     );
     let datasetWithSavedThings = setThing(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      thing1
+      thing1,
     );
     datasetWithSavedThings = setThing(datasetWithSavedThings, thing2);
 
@@ -3340,22 +3340,22 @@ describe("changeLogAsMarkdown", () => {
     let changedThing1 = addStringNoLocale(
       thing1,
       "https://some.vocab/predicate",
-      "Yet another string"
+      "Yet another string",
     );
     changedThing1 = removeStringNoLocale(
       changedThing1,
       "https://some.vocab/predicate",
-      "Some other string"
+      "Some other string",
     );
     let changedThing2 = removeStringNoLocale(
       thing2,
       "https://some.vocab/predicate",
-      "Some string"
+      "Some string",
     );
     changedThing2 = removeStringNoLocale(
       changedThing2,
       "https://some.vocab/predicate",
-      "Some other string"
+      "Some other string",
     );
     let changedDataset = setThing(datasetWithSavedThings, changedThing1);
     changedDataset = setThing(changedDataset, changedThing2);
@@ -3364,7 +3364,7 @@ describe("changeLogAsMarkdown", () => {
     newThing = addStringNoLocale(
       newThing,
       "https://some.vocab/predicate",
-      "Some string"
+      "Some string",
     );
     changedDataset = setThing(changedDataset, newThing);
 
@@ -3384,7 +3384,7 @@ describe("changeLogAsMarkdown", () => {
         "### Thing: https://some.pod/resource#thing3\n\n" +
         "Property: https://some.vocab/predicate\n" +
         "- Added:\n" +
-        '  - "Some string" (string)\n'
+        '  - "Some string" (string)\n',
     );
   });
 
@@ -3393,37 +3393,37 @@ describe("changeLogAsMarkdown", () => {
     thing = addStringNoLocale(
       thing,
       "https://some.vocab/predicate",
-      "Some string"
+      "Some string",
     );
     const datasetWithInvalidChangeLog = setThing(
       mockSolidDatasetFrom("https://some.pod/resource"),
-      thing
+      thing,
     );
 
     // Pretend that the deletions and additions contain the same Quad:
     datasetWithInvalidChangeLog.internal_changeLog.deletions.push(
-      datasetWithInvalidChangeLog.internal_changeLog.additions[0]
+      datasetWithInvalidChangeLog.internal_changeLog.additions[0],
     );
 
     const quadWithInvalidSubject = DataFactory.quad(
       // We'd never use a variable as the Subject:
       DataFactory.variable("Arbitrary variable name"),
       DataFactory.namedNode("https://arbitrary.vocab/predicate"),
-      DataFactory.literal("Arbitrary object")
+      DataFactory.literal("Arbitrary object"),
     );
     const quadWithInvalidPredicate = DataFactory.quad(
       DataFactory.namedNode("https://arbitrary.pod/resource#thing"),
       // Predicates should always be NamedNodes:
       DataFactory.literal("Not a NamedNode") as any,
-      DataFactory.literal("Arbitrary object")
+      DataFactory.literal("Arbitrary object"),
     );
     datasetWithInvalidChangeLog.internal_changeLog.additions.push(
       quadWithInvalidSubject,
-      quadWithInvalidPredicate
+      quadWithInvalidPredicate,
     );
     datasetWithInvalidChangeLog.internal_changeLog.deletions.push(
       quadWithInvalidSubject,
-      quadWithInvalidPredicate
+      quadWithInvalidPredicate,
     );
 
     expect(changeLogAsMarkdown(datasetWithInvalidChangeLog)).toBe(
@@ -3433,7 +3433,7 @@ describe("changeLogAsMarkdown", () => {
         "- Removed:\n" +
         '  - "Some string" (string)\n' +
         "- Added:\n" +
-        '  - "Some string" (string)\n'
+        '  - "Some string" (string)\n',
     );
   });
 });
@@ -3463,8 +3463,8 @@ describe("getWellKnownSolid", () => {
           headers: {
             "Content-Type": "text/turtle",
           },
-        }
-      )
+        },
+      ),
     );
 
   const mockESS11 = () =>
@@ -3483,7 +3483,7 @@ describe("getWellKnownSolid", () => {
                 link: `<${podUrl}>; rel="http://www.w3.org/ns/pim/space#storage"`,
               },
             },
-            resourceUrl
+            resourceUrl,
           );
         }
 
@@ -3500,12 +3500,12 @@ describe("getWellKnownSolid", () => {
             {
               headers: { "Content-Type": "application/ld+json" },
             },
-            url
+            url,
           );
         }
 
         throw new Error(`Unhandled request: ${url}, ${JSON.stringify(init)}`);
-      }
+      },
     );
 
   beforeAll(() => {
@@ -3522,7 +3522,7 @@ describe("getWellKnownSolid", () => {
 
     expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
     expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
-      serverUrl.concat(wellKnownSolid)
+      serverUrl.concat(wellKnownSolid),
     );
   });
 
@@ -3533,7 +3533,7 @@ describe("getWellKnownSolid", () => {
 
     expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
     expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
-      serverUrl.concat(wellKnownSolid)
+      serverUrl.concat(wellKnownSolid),
     );
   });
 
@@ -3546,13 +3546,13 @@ describe("getWellKnownSolid", () => {
 
     // Tries the root well known solid first is used to determine well known Solid
     expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
-      serverUrl.concat(wellKnownSolid)
+      serverUrl.concat(wellKnownSolid),
     );
     // Checks the resource's location header otherwise
     expect(mockedFetcher.fetch.mock.calls[1][0]).toBe(resourceUrl);
     // The advertised podIdentifier (as storage) is used to determine well known Solid
     expect(mockedFetcher.fetch.mock.calls[2][0]).toBe(
-      podUrl.concat(wellKnownSolid)
+      podUrl.concat(wellKnownSolid),
     );
   });
 
@@ -3565,20 +3565,20 @@ describe("getWellKnownSolid", () => {
 
     // Fails at pod root (unauthenticated)
     expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
-      serverUrl.concat(wellKnownSolid)
+      serverUrl.concat(wellKnownSolid),
     );
     // Checks the pod root (authenticated/with the provided fetcher)
     expect(mockedFetcher.fetch.mock.calls[1][0]).toBe(resourceUrl);
     // Retrieve pod root well known solid
     expect(mockedFetcher.fetch.mock.calls[2][0]).toBe(
-      podUrl.concat(".well-known/solid")
+      podUrl.concat(".well-known/solid"),
     );
   });
 
   it("appends a / to the Pod root if missing before appending .well-known/solid", async () => {
     // Root cannot be fetched
     mockedFetcher.fetch.mockResolvedValueOnce(
-      new Response(undefined, { status: 404 })
+      new Response(undefined, { status: 404 }),
     );
     // Resource advertises Pod root
     mockedFetcher.fetch.mockResolvedValueOnce(
@@ -3590,8 +3590,8 @@ describe("getWellKnownSolid", () => {
             link: `</username>; rel="http://www.w3.org/ns/pim/space#storage"`,
           },
         },
-        resourceUrl
-      )
+        resourceUrl,
+      ),
     );
     // Fetches Pod root well known
     mockedFetcher.fetch.mockResolvedValueOnce(
@@ -3607,8 +3607,8 @@ describe("getWellKnownSolid", () => {
           headers: {
             "Content-Type": "application/ld+json",
           },
-        }
-      )
+        },
+      ),
     );
 
     await getWellKnownSolid(resourceUrl);
@@ -3617,20 +3617,20 @@ describe("getWellKnownSolid", () => {
 
     // Tries the root well known solid first is used to determine well known Solid
     expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
-      serverUrl.concat(wellKnownSolid)
+      serverUrl.concat(wellKnownSolid),
     );
     // Checks the resource's location header otherwise
     expect(mockedFetcher.fetch.mock.calls[1][0]).toBe(resourceUrl);
     // The advertised podIdentifier (as storage) is used to determine well known Solid
     expect(mockedFetcher.fetch.mock.calls[2][0]).toBe(
-      serverUrl.concat("username/", wellKnownSolid)
+      serverUrl.concat("username/", wellKnownSolid),
     );
   });
 
   it("Throws an error if the resource metadata can't be fetched", async () => {
     // Can't fetch root well known
     mockedFetcher.fetch.mockResolvedValueOnce(
-      new Response(undefined, { status: 404 })
+      new Response(undefined, { status: 404 }),
     );
     // Resource advertises Pod root
     mockedFetcher.fetch.mockResolvedValueOnce(
@@ -3642,12 +3642,12 @@ describe("getWellKnownSolid", () => {
             link: `</username>; rel="http://www.w3.org/ns/pim/space#storage"`,
           },
         },
-        resourceUrl
-      )
+        resourceUrl,
+      ),
     );
     // Can't fetch pod root well known solid
     mockedFetcher.fetch.mockResolvedValueOnce(
-      new Response(undefined, { status: 404 })
+      new Response(undefined, { status: 404 }),
     );
 
     await expect(getWellKnownSolid(resourceUrl)).rejects.toThrow();
@@ -3658,13 +3658,13 @@ describe("getWellKnownSolid", () => {
   it("Throws an error if the pod root cannot be determined", async () => {
     // Can't fetch root well known
     mockedFetcher.fetch.mockResolvedValueOnce(
-      new Response(undefined, { status: 404 })
+      new Response(undefined, { status: 404 }),
     );
     // Resource does not advertise pod root
     mockedFetcher.fetch.mockResolvedValueOnce(new Response(undefined));
 
     await expect(getWellKnownSolid(resourceUrl)).rejects.toThrow(
-      "Could not determine storage root or well-known solid resource."
+      "Could not determine storage root or well-known solid resource.",
     );
 
     expect(mockedFetcher.fetch.mock.calls).toHaveLength(2);
@@ -3685,7 +3685,7 @@ describe("getWellKnownSolid", () => {
       // skipIf confuses jest
       // eslint-disable-next-line jest/no-standalone-expect
       expect(wellKnownSolidResponse).toMatchSnapshot();
-    }
+    },
   );
 
   it("returns the contents of .well-known/solid for the given resource (1.1)", async () => {

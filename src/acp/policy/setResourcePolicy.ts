@@ -40,7 +40,7 @@ import { setAccessControlResourceThing } from "../internal/setAccessControlResou
  */
 export function setResourcePolicy<T extends WithAccessibleAcr>(
   resourceWithAcr: T,
-  policy: ThingPersisted
+  policy: ThingPersisted,
 ): T {
   return setAccessControlResourceThing(resourceWithAcr, policy);
 }

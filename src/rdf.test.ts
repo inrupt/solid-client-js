@@ -45,43 +45,43 @@ describe("fromRdfJsDataset", () => {
     .map((value) =>
       DataFactory.literal(
         serializeInteger(value),
-        DataFactory.namedNode(xmlSchemaTypes.integer)
-      )
+        DataFactory.namedNode(xmlSchemaTypes.integer),
+      ),
     );
   const fcDecimal = fc
     .float()
     .map((value) =>
       DataFactory.literal(
         serializeDecimal(value),
-        DataFactory.namedNode(xmlSchemaTypes.decimal)
-      )
+        DataFactory.namedNode(xmlSchemaTypes.decimal),
+      ),
     );
   const fcDatetime = fc
     .date()
     .map((value) =>
       DataFactory.literal(
         serializeDatetime(value),
-        DataFactory.namedNode(xmlSchemaTypes.dateTime)
-      )
+        DataFactory.namedNode(xmlSchemaTypes.dateTime),
+      ),
     );
   const fcBoolean = fc
     .boolean()
     .map((value) =>
       DataFactory.literal(
         serializeBoolean(value),
-        DataFactory.namedNode(xmlSchemaTypes.boolean)
-      )
+        DataFactory.namedNode(xmlSchemaTypes.boolean),
+      ),
     );
   const fcLangString = fc
     .tuple(
       fc.string(),
-      fc.oneof(fc.constant("nl-NL"), fc.constant("en-GB"), fc.constant("fr"))
+      fc.oneof(fc.constant("nl-NL"), fc.constant("en-GB"), fc.constant("fr")),
     )
     .map(([value, lang]) => DataFactory.literal(value, lang));
   const fcArbitraryLiteral = fc
     .tuple(fc.string(), fc.webUrl({ withFragments: true }))
     .map(([value, dataType]) =>
-      DataFactory.literal(value, DataFactory.namedNode(dataType))
+      DataFactory.literal(value, DataFactory.namedNode(dataType)),
     );
   const fcLiteral = fc.oneof(
     fcString,
@@ -90,7 +90,7 @@ describe("fromRdfJsDataset", () => {
     fcDatetime,
     fcBoolean,
     fcLangString,
-    fcArbitraryLiteral
+    fcArbitraryLiteral,
   );
   const fcBlankNode = fc
     .asciiString()
@@ -103,7 +103,7 @@ describe("fromRdfJsDataset", () => {
   const fcQuad = fc
     .tuple(fcQuadSubject, fcQuadPredicate, fcQuadObject, fcGraph)
     .map(([subject, predicate, object, graph]) =>
-      DataFactory.quad(subject, predicate, object, graph)
+      DataFactory.quad(subject, predicate, object, graph),
     );
   const fcDatasetWithReusedBlankNodes = fc.set(fcQuad).map((quads) => {
     const reusedBlankNode = DataFactory.blankNode();
@@ -130,7 +130,7 @@ describe("fromRdfJsDataset", () => {
 
     function hasMatchingQuads(
       a: RdfJs.DatasetCore,
-      b: RdfJs.DatasetCore
+      b: RdfJs.DatasetCore,
     ): boolean {
       function blankNodeToNull(term: RdfJs.Term): RdfJs.Term | null {
         return term.termType === "BlankNode" ? null : term;
@@ -144,16 +144,16 @@ describe("fromRdfJsDataset", () => {
             blankNodeToNull(quad.subject),
             quad.predicate,
             blankNodeToNull(quad.object),
-            quad.graph
-          )
+            quad.graph,
+          ),
         ) &&
         bQuads.every((quad) =>
           a.match(
             blankNodeToNull(quad.subject),
             quad.predicate,
             blankNodeToNull(quad.object),
-            quad.graph
-          )
+            quad.graph,
+          ),
         )
       );
     }
@@ -164,7 +164,7 @@ describe("fromRdfJsDataset", () => {
         expect(thereAndBackAgain.size).toBe(dataset.size);
         expect(hasMatchingQuads(thereAndBackAgain, dataset)).toBe(true);
       }),
-      { numRuns: runs }
+      { numRuns: runs },
     );
 
     expect(fcResult.counterexample).toBeNull();
@@ -185,18 +185,18 @@ describe("fromRdfJsDataset", () => {
     const literalStringValue = "Some string";
     const literalString = DataFactory.literal(
       literalStringValue,
-      DataFactory.namedNode(xmlSchemaTypes.string)
+      DataFactory.namedNode(xmlSchemaTypes.string),
     );
     const literalLangStringValue = "Some lang string";
     const literalLangStringLocale = "en-gb";
     const literalLangString = DataFactory.literal(
       literalLangStringValue,
-      literalLangStringLocale
+      literalLangStringLocale,
     );
     const literalIntegerValue = "42";
     const literalInteger = DataFactory.literal(
       literalIntegerValue,
-      DataFactory.namedNode(xmlSchemaTypes.integer)
+      DataFactory.namedNode(xmlSchemaTypes.integer),
     );
     const defaultGraph = DataFactory.defaultGraph();
     const acrGraphIriString = "https://some.pod/resource?ext=acr";
@@ -277,26 +277,26 @@ describe("fromRdfJsDataset", () => {
 
   it("can represent lists", () => {
     const first = DataFactory.namedNode(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#first"
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
     );
     const rest = DataFactory.namedNode(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest"
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
     );
     const nil = DataFactory.namedNode(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil",
     );
     const item1Node = DataFactory.blankNode();
     const item2Node = DataFactory.blankNode();
     const quad1 = DataFactory.quad(
       item1Node,
       first,
-      DataFactory.literal("First item in a list")
+      DataFactory.literal("First item in a list"),
     );
     const quad2 = DataFactory.quad(item1Node, rest, item2Node);
     const quad3 = DataFactory.quad(
       item2Node,
       first,
-      DataFactory.literal("Second item in a list")
+      DataFactory.literal("Second item in a list"),
     );
     const quad4 = DataFactory.quad(item2Node, rest, nil);
 
@@ -307,15 +307,15 @@ describe("fromRdfJsDataset", () => {
       thereAndBackAgain.match(
         null,
         null,
-        DataFactory.literal("First item in a list")
-      ).size
+        DataFactory.literal("First item in a list"),
+      ).size,
     ).toBe(1);
     expect(
       thereAndBackAgain.match(
         null,
         null,
-        DataFactory.literal("Second item in a list")
-      ).size
+        DataFactory.literal("Second item in a list"),
+      ).size,
     ).toBe(1);
   });
 
@@ -403,7 +403,7 @@ describe("fromRdfJsDataset", () => {
         DataFactory.namedNode("https://some.subject"),
         DataFactory.namedNode("https://some.predicate"),
         DataFactory.blankNode("some-blank-node"),
-        DataFactory.defaultGraph()
+        DataFactory.defaultGraph(),
       );
       const dataset = addRdfJsQuadToDataset(mockDataset, mockQuad);
 
@@ -434,10 +434,10 @@ describe("fromRdfJsDataset", () => {
         DataFactory.namedNode("https://arbitrary.subject"),
         DataFactory.namedNode("https://arbitrary.predicate"),
         DataFactory.namedNode("https://arbitrary.object"),
-        { termType: "Unknown term type" } as any
+        { termType: "Unknown term type" } as any,
       );
       expect(() => addRdfJsQuadToDataset(mockDataset, mockQuad)).toThrow(
-        "Cannot parse Quads with nodes of type [Unknown term type] as their Graph node."
+        "Cannot parse Quads with nodes of type [Unknown term type] as their Graph node.",
       );
     });
 
@@ -450,10 +450,10 @@ describe("fromRdfJsDataset", () => {
         { termType: "Unknown term type" } as any,
         DataFactory.namedNode("https://arbitrary.predicate"),
         DataFactory.namedNode("https://arbitrary.object"),
-        DataFactory.defaultGraph()
+        DataFactory.defaultGraph(),
       );
       expect(() => addRdfJsQuadToDataset(mockDataset, mockQuad)).toThrow(
-        "Cannot parse Quads with nodes of type [Unknown term type] as their Subject node."
+        "Cannot parse Quads with nodes of type [Unknown term type] as their Subject node.",
       );
     });
 
@@ -466,10 +466,10 @@ describe("fromRdfJsDataset", () => {
         DataFactory.namedNode("https://arbitrary.subject"),
         { termType: "Unknown term type" } as any,
         DataFactory.namedNode("https://arbitrary.object"),
-        DataFactory.defaultGraph()
+        DataFactory.defaultGraph(),
       );
       expect(() => addRdfJsQuadToDataset(mockDataset, mockQuad)).toThrow(
-        "Cannot parse Quads with nodes of type [Unknown term type] as their Predicate node."
+        "Cannot parse Quads with nodes of type [Unknown term type] as their Predicate node.",
       );
     });
 
@@ -483,21 +483,21 @@ describe("fromRdfJsDataset", () => {
         DataFactory.namedNode("https://arbitrary.subject"),
         DataFactory.namedNode("https://arbitrary.predicate"),
         chainBlankNode,
-        DataFactory.defaultGraph()
+        DataFactory.defaultGraph(),
       );
       const mockQuad = DataFactory.quad(
         chainBlankNode,
         { termType: "Unknown term type" } as any,
         DataFactory.namedNode("https://arbitrary.object"),
-        DataFactory.defaultGraph()
+        DataFactory.defaultGraph(),
       );
       expect(() =>
         addRdfJsQuadToDataset(mockDataset, otherQuad, {
           chainBlankNodes: [chainBlankNode],
           otherQuads: [mockQuad],
-        })
+        }),
       ).toThrow(
-        "Cannot parse Quads with nodes of type [Unknown term type] as their Predicate node."
+        "Cannot parse Quads with nodes of type [Unknown term type] as their Predicate node.",
       );
     });
 
@@ -512,27 +512,27 @@ describe("fromRdfJsDataset", () => {
         DataFactory.namedNode("https://arbitrary.subject"),
         DataFactory.namedNode("https://arbitrary.predicate"),
         chainBlankNode1,
-        DataFactory.defaultGraph()
+        DataFactory.defaultGraph(),
       );
       const inBetweenQuad = DataFactory.quad(
         chainBlankNode1,
         { termType: "Unknown term type" } as any,
         chainBlankNode2,
-        DataFactory.defaultGraph()
+        DataFactory.defaultGraph(),
       );
       const mockQuad = DataFactory.quad(
         chainBlankNode2,
         DataFactory.namedNode("https://arbitrary.predicate"),
         DataFactory.namedNode("https://arbitrary.object"),
-        DataFactory.defaultGraph()
+        DataFactory.defaultGraph(),
       );
       expect(() =>
         addRdfJsQuadToDataset(mockDataset, otherQuad, {
           chainBlankNodes: [chainBlankNode1, chainBlankNode2],
           otherQuads: [mockQuad, inBetweenQuad],
-        })
+        }),
       ).toThrow(
-        "Cannot parse Quads with nodes of type [Unknown term type] as their Predicate node."
+        "Cannot parse Quads with nodes of type [Unknown term type] as their Predicate node.",
       );
     });
 
@@ -547,27 +547,27 @@ describe("fromRdfJsDataset", () => {
         DataFactory.namedNode("https://arbitrary.subject"),
         DataFactory.namedNode("https://arbitrary.predicate"),
         chainBlankNode1,
-        DataFactory.defaultGraph()
+        DataFactory.defaultGraph(),
       );
       const inBetweenQuad = DataFactory.quad(
         chainBlankNode1,
         DataFactory.namedNode("https://arbitrary.predicate"),
         chainBlankNode2,
-        DataFactory.defaultGraph()
+        DataFactory.defaultGraph(),
       );
       const mockQuad = DataFactory.quad(
         chainBlankNode2,
         { termType: "Unknown term type" } as any,
         DataFactory.namedNode("https://arbitrary.object"),
-        DataFactory.defaultGraph()
+        DataFactory.defaultGraph(),
       );
       expect(() =>
         addRdfJsQuadToDataset(mockDataset, otherQuad, {
           chainBlankNodes: [chainBlankNode1, chainBlankNode2],
           otherQuads: [mockQuad, inBetweenQuad],
-        })
+        }),
       ).toThrow(
-        "Cannot parse Quads with nodes of type [Unknown term type] as their Predicate node."
+        "Cannot parse Quads with nodes of type [Unknown term type] as their Predicate node.",
       );
     });
 
@@ -580,10 +580,10 @@ describe("fromRdfJsDataset", () => {
         DataFactory.namedNode("https://arbitrary.subject"),
         DataFactory.namedNode("https://arbitrary.predicate"),
         { termType: "Unknown term type" } as any,
-        DataFactory.defaultGraph()
+        DataFactory.defaultGraph(),
       );
       expect(() => addRdfJsQuadToDataset(mockDataset, mockQuad)).toThrow(
-        "Objects of type [Unknown term type] are not supported."
+        "Objects of type [Unknown term type] are not supported.",
       );
     });
 
@@ -597,13 +597,13 @@ describe("fromRdfJsDataset", () => {
         DataFactory.namedNode("https://some.subject"),
         DataFactory.namedNode("https://some.predicate/1"),
         chainBlankNode1,
-        DataFactory.defaultGraph()
+        DataFactory.defaultGraph(),
       );
       const mockQuad = DataFactory.quad(
         chainBlankNode1,
         DataFactory.namedNode("https://some.predicate/2"),
         DataFactory.blankNode("some-blank-node"),
-        DataFactory.defaultGraph()
+        DataFactory.defaultGraph(),
       );
 
       const updatedDataset = addRdfJsQuadToDataset(mockDataset, otherQuad, {
@@ -646,19 +646,19 @@ describe("fromRdfJsDataset", () => {
         DataFactory.namedNode("https://some.subject"),
         DataFactory.namedNode("https://some.predicate/1"),
         chainBlankNode1,
-        DataFactory.defaultGraph()
+        DataFactory.defaultGraph(),
       );
       const inBetweenQuad = DataFactory.quad(
         chainBlankNode1,
         DataFactory.namedNode("https://some.predicate/2"),
         chainBlankNode2,
-        DataFactory.defaultGraph()
+        DataFactory.defaultGraph(),
       );
       const mockQuad = DataFactory.quad(
         chainBlankNode2,
         DataFactory.namedNode("https://some.predicate/3"),
         DataFactory.blankNode("some-blank-node"),
-        DataFactory.defaultGraph()
+        DataFactory.defaultGraph(),
       );
 
       const updatedDataset = addRdfJsQuadToDataset(mockDataset, otherQuad, {
@@ -714,13 +714,13 @@ describe("toRdfJsDataset", () => {
   const fcLiterals = fc
     .dictionary(
       fc.webUrl({ withFragments: true }),
-      fc.set(fc.string(), { minLength: 1 })
+      fc.set(fc.string(), { minLength: 1 }),
     )
     .filter(isNotEmpty);
   const fcLangStrings = fc
     .dictionary(
       fc.hexaString({ minLength: 1 }).map((str) => str.toLowerCase()),
-      fc.set(fc.string(), { minLength: 1 })
+      fc.set(fc.string(), { minLength: 1 }),
     )
     .filter(isNotEmpty);
   const fcLocalNodeIri = fc.webUrl({ withFragments: true }).map((url) => {
@@ -730,11 +730,11 @@ describe("toRdfJsDataset", () => {
   const fcNamedNodes = fc.set(
     fc.oneof(
       fcLocalNodeIri,
-      fc.webUrl({ withFragments: true, withQueryParameters: true })
+      fc.webUrl({ withFragments: true, withQueryParameters: true }),
     ),
     {
       minLength: 1,
-    }
+    },
   );
   const fcObjects = fc
     .record(
@@ -744,7 +744,7 @@ describe("toRdfJsDataset", () => {
         namedNodes: fcNamedNodes,
         // blankNodes: fcBlankNodes,
       },
-      { withDeletedKeys: true }
+      { withDeletedKeys: true },
     )
     .filter(isNotEmpty);
   // Unfortunately I haven't figured out how to generate the nested blank node
@@ -756,13 +756,13 @@ describe("toRdfJsDataset", () => {
     .dictionary(
       fc.oneof(
         fcLocalNodeIri,
-        fc.webUrl({ withFragments: true, withQueryParameters: true })
+        fc.webUrl({ withFragments: true, withQueryParameters: true }),
       ),
       fc.record({
         type: fc.constant("Subject"),
         url: fc.webUrl({ withFragments: true, withQueryParameters: true }),
         predicates: fcPredicates,
-      })
+      }),
     )
     .filter(isNotEmpty)
     .map((graph) => {
@@ -776,7 +776,7 @@ describe("toRdfJsDataset", () => {
     graphs: fc
       .tuple(
         fc.dictionary(fc.webUrl({ withQueryParameters: true }), fcGraph),
-        fcGraph
+        fcGraph,
       )
       .map(([otherGraphs, defaultGraph]) => ({
         ...otherGraphs,
@@ -791,10 +791,10 @@ describe("toRdfJsDataset", () => {
     const fcResult = fc.check(
       fc.property(fcDataset, (dataset) => {
         expect(
-          sortObject(fromRdfJsDataset(toRdfJsDataset(dataset as any)))
+          sortObject(fromRdfJsDataset(toRdfJsDataset(dataset as any))),
         ).toStrictEqual(sortObject(dataset));
       }),
-      { numRuns: runs }
+      { numRuns: runs },
     );
 
     expect(fcResult.counterexample).toBeNull();
@@ -887,6 +887,6 @@ function sortObject(value: Record<string, any>): Record<string, any> {
 
   return keys.reduce(
     (newObject, key) => ({ ...newObject, [key]: sortObject(value[key]) }),
-    {}
+    {},
   );
 }

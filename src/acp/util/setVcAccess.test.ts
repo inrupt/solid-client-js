@@ -67,7 +67,7 @@ describe("setVcAccess", () => {
             [ACP.vc, [VC_ACCESS_GRANT]],
           ],
         ],
-      ]).graphs.default
+      ]).graphs.default,
     );
   });
 
@@ -98,12 +98,12 @@ describe("setVcAccess", () => {
             [ACP.vc, [VC_ACCESS_GRANT]],
           ],
         ],
-      ])
+      ]),
     );
 
     expect(
       setVcAccess(resource, { read: false, write: true }).internal_acp.acr
-        .graphs.default
+        .graphs.default,
     ).toStrictEqual(
       createDatasetFromSubjects([
         [
@@ -130,7 +130,7 @@ describe("setVcAccess", () => {
             [ACP.vc, [VC_ACCESS_GRANT]],
           ],
         ],
-      ]).graphs.default
+      ]).graphs.default,
     );
   });
 
@@ -154,12 +154,12 @@ describe("setVcAccess", () => {
           ],
         ],
         // Note that the VC matcher does not exist
-      ])
+      ]),
     );
 
     expect(
       setVcAccess(resource, { read: false, write: true }).internal_acp.acr
-        .graphs.default
+        .graphs.default,
     ).toMatchObject(
       createDatasetFromSubjects([
         [
@@ -174,7 +174,7 @@ describe("setVcAccess", () => {
             [ACP.vc, [VC_ACCESS_GRANT]],
           ],
         ],
-      ]).graphs.default
+      ]).graphs.default,
     );
   });
 
@@ -186,7 +186,7 @@ describe("setVcAccess", () => {
           [[rdf.type, [ACP.AccessControlResource]]],
         ],
         // Note that the default Access Control does not exist
-      ])
+      ]),
     );
     const updatedResource = setVcAccess(resource, { read: false, write: true });
     expect(updatedResource.internal_acp.acr.graphs.default).toMatchObject(
@@ -195,7 +195,7 @@ describe("setVcAccess", () => {
           DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
           [[ACP.accessControl, [TEST_URL.defaultAccessControl]]],
         ],
-      ]).graphs.default
+      ]).graphs.default,
     );
   });
 
@@ -206,7 +206,7 @@ describe("setVcAccess", () => {
     const updatedResource = setVcAccess(
       resource,
       { read: true },
-      { inherit: true }
+      { inherit: true },
     );
     expect(updatedResource.internal_acp.acr.graphs.default).toStrictEqual(
       createDatasetFromSubjects([
@@ -247,7 +247,7 @@ describe("setVcAccess", () => {
             [ACP.vc, [VC_ACCESS_GRANT]],
           ],
         ],
-      ]).graphs.default
+      ]).graphs.default,
     );
   });
 
@@ -259,12 +259,12 @@ describe("setVcAccess", () => {
           [[rdf.type, [ACP.AccessControlResource]]],
         ],
         // Note that the default Access Control does not exist
-      ])
+      ]),
     );
     const updatedResource = setVcAccess(
       resource,
       { read: false, write: true },
-      { inherit: true }
+      { inherit: true },
     );
     expect(updatedResource.internal_acp.acr.graphs.default).toMatchObject(
       createDatasetFromSubjects([
@@ -275,7 +275,7 @@ describe("setVcAccess", () => {
             [ACP.memberAccessControl, [TEST_URL.defaultMemberAccessControl]],
           ],
         ],
-      ]).graphs.default
+      ]).graphs.default,
     );
   });
 });
@@ -287,9 +287,9 @@ it("defaults to non-recursive access", () => {
   const updatedResourceExplicit = setVcAccess(
     resource,
     { read: true },
-    { inherit: false }
+    { inherit: false },
   );
   expect(updatedResourceDefault.internal_acp.acr.graphs.default).toStrictEqual(
-    updatedResourceExplicit.internal_acp.acr.graphs.default
+    updatedResourceExplicit.internal_acp.acr.graphs.default,
   );
 });

@@ -40,7 +40,7 @@ import { getAccessControlResourceThing } from "../internal/getAccessControlResou
  * @since 1.6.0
  */
 export function getAccessControlUrlAll(
-  resourceWithAcr: WithAccessibleAcr
+  resourceWithAcr: WithAccessibleAcr,
 ): UrlString[] {
   const acrThing = getAccessControlResourceThing(resourceWithAcr);
 

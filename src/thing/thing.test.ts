@@ -99,7 +99,7 @@ describe("isThing", () => {
 
   it("returns true for a ThingPersisted", () => {
     expect(isThing(mockThingFrom("https://arbitrary.pod/resource#thing"))).toBe(
-      true
+      true,
     );
   });
 
@@ -155,7 +155,7 @@ describe("getThing", () => {
   };
   function getMockDataset(
     things = [mockThing1, mockThing2],
-    otherGraphThings = [mockThing1]
+    otherGraphThings = [mockThing1],
   ): SolidDataset {
     const solidDataset: SolidDataset = {
       type: "Dataset",
@@ -184,7 +184,7 @@ describe("getThing", () => {
   it("accepts a Named Node as the Subject identifier", () => {
     const thing = getThing(
       getMockDataset(),
-      DataFactory.namedNode(mockThing1Iri)
+      DataFactory.namedNode(mockThing1Iri),
     );
 
     expect(thing).toStrictEqual(mockThing1);
@@ -193,7 +193,7 @@ describe("getThing", () => {
   it("accepts a LocalNode as the Subject identifier", () => {
     const thing = getThing(
       getMockDataset([mockLocalThing]),
-      DataFactory.namedNode(mockLocalThingIri)
+      DataFactory.namedNode(mockLocalThingIri),
     );
 
     expect(thing).toStrictEqual(mockLocalThing);
@@ -202,7 +202,7 @@ describe("getThing", () => {
   it("returns null if the given SolidDataset does not include Quads with the given Subject", () => {
     const thing = getThing(
       getMockDataset([]),
-      "https://arbitrary.vocab/subject"
+      "https://arbitrary.vocab/subject",
     );
 
     expect(thing).toBeNull();
@@ -217,13 +217,13 @@ describe("getThing", () => {
         linkedResources: {},
         sourceIri: mockThing1Iri.substring(
           0,
-          mockThing1Iri.length - "subject1".length
+          mockThing1Iri.length - "subject1".length,
         ),
       },
     };
     const thing = getThing(
       mockDatasetWithResourceInfo,
-      `${localNodeSkolemPrefix}subject1`
+      `${localNodeSkolemPrefix}subject1`,
     );
 
     expect(thing).toStrictEqual(mockThing1);
@@ -231,10 +231,10 @@ describe("getThing", () => {
 
   it("only returns Quads from the default graph if no scope was specified", () => {
     expect(
-      getThing(getMockDataset([mockThing1], [mockThing2]), mockThing2Iri)
+      getThing(getMockDataset([mockThing1], [mockThing2]), mockThing2Iri),
     ).toBeNull();
     expect(
-      getThing(getMockDataset([mockThing1], [mockThing2]), mockThing1Iri)
+      getThing(getMockDataset([mockThing1], [mockThing2]), mockThing1Iri),
     ).toStrictEqual(mockThing1);
   });
 
@@ -242,7 +242,7 @@ describe("getThing", () => {
     expect(
       getThing(getMockDataset([mockThing1], [mockThing2]), mockThing2Iri, {
         scope: otherGraphIri,
-      })
+      }),
     ).toStrictEqual(mockThing2);
   });
 
@@ -250,7 +250,7 @@ describe("getThing", () => {
     expect(
       getThing(getMockDataset([mockThing1], [mockThing2]), mockThing2Iri, {
         scope: DataFactory.namedNode(otherGraphIri),
-      })
+      }),
     ).toStrictEqual(mockThing2);
   });
 
@@ -258,7 +258,7 @@ describe("getThing", () => {
     expect(
       getThing(getMockDataset([mockThing1], [mockThing2]), mockThing1Iri, {
         scope: otherGraphIri,
-      })
+      }),
     ).toBeNull();
   });
 
@@ -266,13 +266,13 @@ describe("getThing", () => {
     expect(
       getThing(getMockDataset([mockThing1], [mockThing2]), mockThing2Iri, {
         scope: "https://arbitrary.vocab/other-graph",
-      })
+      }),
     ).toBeNull();
   });
 
   it("throws an error when given an invalid URL", () => {
     expect(() => getThing(getMockDataset(), "not-a-url")).toThrow(
-      "Expected a valid URL to identify a Thing, but received: [not-a-url]."
+      "Expected a valid URL to identify a Thing, but received: [not-a-url].",
     );
   });
 
@@ -312,7 +312,7 @@ describe("getThingAll", () => {
   };
   function getMockDataset(
     things = [mockThing1, mockThing2],
-    otherGraphThings = [mockThing1]
+    otherGraphThings = [mockThing1],
   ): SolidDataset {
     const solidDataset: SolidDataset = {
       type: "Dataset",
@@ -446,7 +446,7 @@ describe("setThing", () => {
     const updatedDataset = setThing(datasetWithExistingThings, mockThing2);
 
     expect(updatedDataset.graphs).toStrictEqual(
-      getMockDataset([mockThing1, mockThing2]).graphs
+      getMockDataset([mockThing1, mockThing2]).graphs,
     );
   });
 
@@ -458,7 +458,7 @@ describe("setThing", () => {
     expect(updatedDataset.internal_changeLog.additions).toHaveLength(1);
     expect(updatedDataset.internal_changeLog.deletions).toHaveLength(0);
     expect(updatedDataset.internal_changeLog.additions[0].subject.value).toBe(
-      mockThing2Iri
+      mockThing2Iri,
     );
   });
 
@@ -467,26 +467,26 @@ describe("setThing", () => {
 
     const datasetWithThing2Removed = removeThing(
       datasetWithExistingThings,
-      mockThing2
+      mockThing2,
     );
 
     expect(datasetWithThing2Removed.internal_changeLog.additions).toHaveLength(
-      0
+      0,
     );
     expect(datasetWithThing2Removed.internal_changeLog.deletions).toHaveLength(
-      1
+      1,
     );
 
     const datasetWithThing2AddedAgain = setThing(
       datasetWithThing2Removed,
-      mockThing2
+      mockThing2,
     );
 
     expect(
-      datasetWithThing2AddedAgain.internal_changeLog.additions
+      datasetWithThing2AddedAgain.internal_changeLog.additions,
     ).toHaveLength(0);
     expect(
-      datasetWithThing2AddedAgain.internal_changeLog.deletions
+      datasetWithThing2AddedAgain.internal_changeLog.deletions,
     ).toHaveLength(0);
   });
 
@@ -500,14 +500,14 @@ describe("setThing", () => {
 
     const datasetWithThing2AddedToo = setThing(
       datasetWithThing1Added,
-      mockThing2
+      mockThing2,
     );
 
     expect(datasetWithThing2AddedToo.internal_changeLog.additions).toHaveLength(
-      2
+      2,
     );
     expect(datasetWithThing2AddedToo.internal_changeLog.deletions).toHaveLength(
-      0
+      0,
     );
   });
 
@@ -545,7 +545,7 @@ describe("setThing", () => {
 
     expect(
       getThing(updatedDataset, "https://some.pod/resource#subjectName")
-        ?.predicates
+        ?.predicates,
     ).toStrictEqual(updatedThing.predicates);
   });
 
@@ -574,7 +574,7 @@ describe("setThing", () => {
     const updatedDataset = setThing(solidDataset, updatedThing);
 
     expect(
-      getThing(updatedDataset, "https://some.pod/resource#subjectName")
+      getThing(updatedDataset, "https://some.pod/resource#subjectName"),
     ).toStrictEqual(originalThing);
   });
 });
@@ -631,7 +631,7 @@ describe("removeThing", () => {
     const updatedDataset = removeThing(datasetWithMultipleThings, mockThing2);
 
     expect(updatedDataset.graphs).toStrictEqual(
-      getMockDataset([mockThing1]).graphs
+      getMockDataset([mockThing1]).graphs,
     );
   });
 
@@ -643,7 +643,7 @@ describe("removeThing", () => {
     expect(updatedDataset.internal_changeLog.additions).toHaveLength(0);
     expect(updatedDataset.internal_changeLog.deletions).toHaveLength(1);
     expect(updatedDataset.internal_changeLog.deletions[0].subject.value).toBe(
-      mockThing2Iri
+      mockThing2Iri,
     );
   });
 
@@ -652,7 +652,7 @@ describe("removeThing", () => {
 
     const datasetWithThing2Added = setThing(
       datasetWithExistingThings,
-      mockThing2
+      mockThing2,
     );
 
     expect(datasetWithThing2Added.internal_changeLog.additions).toHaveLength(1);
@@ -660,14 +660,14 @@ describe("removeThing", () => {
 
     const datasetWithThing2RemovedAgain = removeThing(
       datasetWithExistingThings,
-      mockThing2
+      mockThing2,
     );
 
     expect(
-      datasetWithThing2RemovedAgain.internal_changeLog.additions
+      datasetWithThing2RemovedAgain.internal_changeLog.additions,
     ).toHaveLength(0);
     expect(
-      datasetWithThing2RemovedAgain.internal_changeLog.deletions
+      datasetWithThing2RemovedAgain.internal_changeLog.deletions,
     ).toHaveLength(0);
   });
 
@@ -681,14 +681,14 @@ describe("removeThing", () => {
 
     const datasetWithThing2AddedToo = removeThing(
       datasetWithThing1Added,
-      mockThing2
+      mockThing2,
     );
 
     expect(datasetWithThing2AddedToo.internal_changeLog.additions).toHaveLength(
-      1
+      1,
     );
     expect(datasetWithThing2AddedToo.internal_changeLog.deletions).toHaveLength(
-      1
+      1,
     );
   });
 
@@ -698,7 +698,7 @@ describe("removeThing", () => {
       {
         resourceAcl: null,
         fallbackAcl: null,
-      }
+      },
     );
     // The assertion is to tell the type system we can write to this:
     (datasetWithFetchedAcls.graphs.default[mockThing1Iri] as Thing) =
@@ -717,11 +717,11 @@ describe("removeThing", () => {
 
     const updatedDataset = removeThing(
       datasetWithMultipleThings,
-      mockThing2Iri
+      mockThing2Iri,
     );
 
     expect(updatedDataset.graphs).toStrictEqual(
-      getMockDataset([mockThing1]).graphs
+      getMockDataset([mockThing1]).graphs,
     );
   });
 
@@ -730,11 +730,11 @@ describe("removeThing", () => {
 
     const updatedDataset = removeThing(
       datasetWithMultipleThings,
-      mockThing2Iri
+      mockThing2Iri,
     );
 
     expect(datasetWithMultipleThings.graphs).not.toStrictEqual(
-      updatedDataset.graphs
+      updatedDataset.graphs,
     );
   });
 
@@ -743,11 +743,11 @@ describe("removeThing", () => {
 
     const updatedDataset = removeThing(
       datasetWithMultipleThings,
-      DataFactory.namedNode(mockThing2Iri)
+      DataFactory.namedNode(mockThing2Iri),
     );
 
     expect(updatedDataset.graphs).toStrictEqual(
-      getMockDataset([mockThing1]).graphs
+      getMockDataset([mockThing1]).graphs,
     );
   });
 
@@ -774,7 +774,7 @@ describe("removeThing", () => {
 
     const updatedDataset = removeThing(
       solidDataset,
-      `${localNodeSkolemPrefix}subjectName`
+      `${localNodeSkolemPrefix}subjectName`,
     );
 
     expect(getThingAll(updatedDataset)).toHaveLength(0);
@@ -806,7 +806,7 @@ describe("removeThing", () => {
     const updatedDataset = removeThing(solidDataset, localThing);
 
     expect(
-      getThing(updatedDataset, "https://some.pod/resource#subjectName")
+      getThing(updatedDataset, "https://some.pod/resource#subjectName"),
     ).toStrictEqual(resolvedThing);
   });
 });
@@ -826,7 +826,7 @@ describe("asIri", () => {
     };
 
     expect(asUrl(localThing, "https://some.pod/resource")).toBe(
-      "https://some.pod/resource#some-name"
+      "https://some.pod/resource#some-name",
     );
   });
 
@@ -834,7 +834,7 @@ describe("asIri", () => {
     const thing = mockThingFrom("https://some.pod/resource#thing");
 
     expect(asUrl(thing as Thing, "https://arbitrary.url")).toBe(
-      "https://some.pod/resource#thing"
+      "https://some.pod/resource#thing",
     );
   });
 
@@ -861,7 +861,7 @@ describe("asIri", () => {
     // We're only checking for the absence TypeScript errors:
     expect.assertions(0);
     const resolvedThing: ThingPersisted = mockThingFrom(
-      "https://some.pod/resource#thing"
+      "https://some.pod/resource#thing",
     );
 
     // This should not error:
@@ -876,7 +876,7 @@ describe("asIri", () => {
     };
 
     expect(() => asUrl(localThing, undefined as any)).toThrow(
-      "The URL of a Thing that has not been persisted cannot be determined without a base URL."
+      "The URL of a Thing that has not been persisted cannot be determined without a base URL.",
     );
   });
 });
@@ -885,13 +885,13 @@ describe("thingAsMarkdown", () => {
   it("returns a readable version of an empty, unsaved Thing", () => {
     const emptyThing = createThing({ name: "empty-thing" });
     expect(thingAsMarkdown(emptyThing)).toBe(
-      "## Thing (no URL yet — identifier: `#empty-thing`)\n\n<empty>\n"
+      "## Thing (no URL yet — identifier: `#empty-thing`)\n\n<empty>\n",
     );
   });
   it("returns a readable version of an empty Thing with a known URL", () => {
     const emptyThing = mockThingFrom("https://some.pod/resource#thing");
     expect(thingAsMarkdown(emptyThing)).toBe(
-      "## Thing: https://some.pod/resource#thing\n\n<empty>\n"
+      "## Thing: https://some.pod/resource#thing\n\n<empty>\n",
     );
   });
   it("returns a readable version of a Thing with just one property", () => {
@@ -899,13 +899,13 @@ describe("thingAsMarkdown", () => {
     thingWithValue = addStringNoLocale(
       thingWithValue,
       "https://some.vocab/predicate",
-      "Some value"
+      "Some value",
     );
     expect(thingAsMarkdown(thingWithValue)).toBe(
       "## Thing (no URL yet — identifier: `#with-one-value`)\n" +
         "\n" +
         "Property: https://some.vocab/predicate\n" +
-        '- "Some value" (string)\n'
+        '- "Some value" (string)\n',
     );
   });
   it("returns a readable version of a Thing with multiple properties and values", () => {
@@ -915,42 +915,42 @@ describe("thingAsMarkdown", () => {
       thingWithValues,
       "https://some.vocab/predicate",
       "Some value",
-      "en-gb"
+      "en-gb",
     );
     thingWithValues = addStringNoLocale(
       thingWithValues,
       "https://some.vocab/predicate",
-      "Some other value"
+      "Some other value",
     );
     thingWithValues = addBoolean(
       thingWithValues,
       "https://some.vocab/predicate",
-      true
+      true,
     );
     thingWithValues = addDatetime(
       thingWithValues,
       "https://some.vocab/predicate",
-      new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0))
+      new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0)),
     );
     thingWithValues = addDecimal(
       thingWithValues,
       "https://some.vocab/predicate",
-      13.37
+      13.37,
     );
     thingWithValues = addInteger(
       thingWithValues,
       "https://some.vocab/predicate",
-      42
+      42,
     );
     thingWithValues = addIri(
       thingWithValues,
       "https://some.vocab/other-predicate",
-      "https://some.url"
+      "https://some.url",
     );
     thingWithValues = addIri(
       thingWithValues,
       "https://some.vocab/other-predicate",
-      mockThingObject
+      mockThingObject,
     );
     expect(thingAsMarkdown(thingWithValues)).toBe(
       "## Thing (no URL yet — identifier: `#with-values`)\n" +
@@ -965,7 +965,7 @@ describe("thingAsMarkdown", () => {
         "\n" +
         "Property: https://some.vocab/other-predicate\n" +
         "- <https://some.url> (URL)\n" +
-        "- <#local-node-object> (URL)\n"
+        "- <#local-node-object> (URL)\n",
     );
   });
   it("returns a readable version of a Thing that points to other Things", () => {
@@ -979,7 +979,7 @@ describe("thingAsMarkdown", () => {
         "\n" +
         "Property: https://some.vocab/predicate\n" +
         "- <https://some.pod/resource#thing2> (URL)\n" +
-        "- <#thing3> (URL)\n"
+        "- <#thing3> (URL)\n",
     );
   });
   it("renders when values are invalid", () => {
@@ -1008,7 +1008,7 @@ describe("thingAsMarkdown", () => {
         "- Invalid data: `not-a-decimal` (decimal)\n" +
         "- Invalid data: `not-an-integer` (integer)\n" +
         "- [some other value] (RDF/JS Literal of type: `https://some.vocab/other-type`)\n" +
-        "- [some-blank-node] (RDF/JS BlankNode)\n"
+        "- [some-blank-node] (RDF/JS BlankNode)\n",
     );
   });
 });
@@ -1016,7 +1016,7 @@ describe("thingAsMarkdown", () => {
 describe("throwIfNotThing", () => {
   it("throws when passed null", () => {
     expect(() => internal_throwIfNotThing(null as unknown as Thing)).toThrow(
-      "Expected a Thing, but received: [null]."
+      "Expected a Thing, but received: [null].",
     );
   });
 
@@ -1050,17 +1050,17 @@ describe("ValidPropertyUrlExpectedError", () => {
     const error = new ValidPropertyUrlExpectedError(null);
 
     expect(error.message).toBe(
-      "Expected a valid URL to identify a property, but received: [null]."
+      "Expected a valid URL to identify a property, but received: [null].",
     );
   });
 
   it("logs the value of an invalid URL inside a Named Node in its error message", () => {
     const error = new ValidPropertyUrlExpectedError(
-      DataFactory.namedNode("not-a-url")
+      DataFactory.namedNode("not-a-url"),
     );
 
     expect(error.message).toBe(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -1076,17 +1076,17 @@ describe("ValidValueUrlExpectedError", () => {
     const error = new ValidValueUrlExpectedError(null);
 
     expect(error.message).toBe(
-      "Expected a valid URL value, but received: [null]."
+      "Expected a valid URL value, but received: [null].",
     );
   });
 
   it("logs the value of an invalid URL inside a Named Node in its error message", () => {
     const error = new ValidValueUrlExpectedError(
-      DataFactory.namedNode("not-a-url")
+      DataFactory.namedNode("not-a-url"),
     );
 
     expect(error.message).toBe(
-      "Expected a valid URL value, but received: [not-a-url]."
+      "Expected a valid URL value, but received: [not-a-url].",
     );
   });
 
@@ -1102,17 +1102,17 @@ describe("ValidThingUrlExpectedError", () => {
     const error = new ValidThingUrlExpectedError(null);
 
     expect(error.message).toBe(
-      "Expected a valid URL to identify a Thing, but received: [null]."
+      "Expected a valid URL to identify a Thing, but received: [null].",
     );
   });
 
   it("logs the value of an invalid URL inside a Named Node in its error message", () => {
     const error = new ValidThingUrlExpectedError(
-      DataFactory.namedNode("not-a-url")
+      DataFactory.namedNode("not-a-url"),
     );
 
     expect(error.message).toBe(
-      "Expected a valid URL to identify a Thing, but received: [not-a-url]."
+      "Expected a valid URL to identify a Thing, but received: [not-a-url].",
     );
   });
 

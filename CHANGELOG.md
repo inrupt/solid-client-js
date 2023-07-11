@@ -377,7 +377,7 @@ The following changes have been implemented but not released yet:
   const bookmarkBuilder = buildThing()
     .addUrl(
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-      "http://www.w3.org/2002/01/bookmark#Bookmark"
+      "http://www.w3.org/2002/01/bookmark#Bookmark",
     )
     .addUrl("http://www.w3.org/2002/01/bookmark#recalls", form.url);
 
@@ -385,7 +385,7 @@ The following changes have been implemented but not released yet:
     // In earlier versions, this would be discarded:
     bookmarkBuilder.addStringNoLocale(
       "http://purl.org/dc/terms/title",
-      form.title
+      form.title,
     );
   }
 

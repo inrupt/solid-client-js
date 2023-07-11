@@ -49,7 +49,7 @@ function createVcPolicy(
   acr: SolidDataset,
   policyIri: string,
   matcherIri: string,
-  access: Partial<AccessModes>
+  access: Partial<AccessModes>,
 ): { policy: Thing; matcher: Thing } {
   let vcPolicy = getThing(acr, policyIri);
   if (vcPolicy === null) {
@@ -106,7 +106,7 @@ export function setVcAccess(
   access: Partial<AccessModes>,
   options: {
     inherit: boolean;
-  } = { inherit: false }
+  } = { inherit: false },
 ): WithAccessibleAcr {
   let acr = internal_getAcr(resourceWithAcr);
   const defaultVcPolicyIri = `${getSourceIri(acr)}#${DEFAULT_VC_POLICY_NAME}`;
@@ -116,12 +116,12 @@ export function setVcAccess(
     acr,
     defaultVcPolicyIri,
     defaultVcMatcherIri,
-    access
+    access,
   );
 
   let accessControl = getDefaultAccessControlThing(
     resourceWithAcr,
-    "defaultAccessControl"
+    "defaultAccessControl",
   );
   if (!getIriAll(accessControl, ACP.apply).includes(asIri(policy))) {
     // Case when the ACR Thing existed, but did not include a link to the default Access Control.
@@ -130,7 +130,7 @@ export function setVcAccess(
 
   let memberAccessControl = getDefaultAccessControlThing(
     resourceWithAcr,
-    "defaultMemberAccessControl"
+    "defaultMemberAccessControl",
   );
 
   let acrThing =
@@ -153,7 +153,7 @@ export function setVcAccess(
     }
     if (
       !getIriAll(acrThing, ACP.memberAccessControl).includes(
-        asIri(memberAccessControl)
+        asIri(memberAccessControl),
       )
     ) {
       acrThing = addIri(acrThing, ACP.memberAccessControl, memberAccessControl);

@@ -49,8 +49,8 @@ jest.mock("../fetcher.ts", () => ({
     Promise.resolve(
       new Response(undefined, {
         headers: { Location: "https://arbitrary.pod/resource" },
-      })
-    )
+      }),
+    ),
   ),
 }));
 
@@ -64,7 +64,7 @@ describe("getResourceInfo", () => {
 
     expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
     expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
-      "https://some.pod/resource"
+      "https://some.pod/resource",
     );
   });
 
@@ -85,18 +85,18 @@ describe("getResourceInfo", () => {
     const mockFetch = jest
       .fn<typeof fetch>()
       .mockResolvedValue(
-        mockResponse(undefined, undefined, "https://some.pod/resource")
+        mockResponse(undefined, undefined, "https://some.pod/resource"),
       );
 
     const solidDatasetInfo = await getResourceInfo(
       "https://some.pod/resource",
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     expect(solidDatasetInfo.internal_resourceInfo.sourceIri).toBe(
-      "https://some.pod/resource"
+      "https://some.pod/resource",
     );
   });
 
@@ -108,16 +108,16 @@ describe("getResourceInfo", () => {
           {
             headers: { "Content-Type": "text/turtle" },
           },
-          "https://arbitrary.pod/resource"
-        )
-      )
+          "https://arbitrary.pod/resource",
+        ),
+      ),
     );
 
     const solidDatasetInfo = await getResourceInfo(
       "https://arbitrary.pod/resource",
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     expect(solidDatasetInfo.internal_resourceInfo.isRawData).toBe(false);
@@ -131,16 +131,16 @@ describe("getResourceInfo", () => {
           {
             headers: { "Content-Type": "image/svg+xml" },
           },
-          "https://arbitrary.pod/resource"
-        )
-      )
+          "https://arbitrary.pod/resource",
+        ),
+      ),
     );
 
     const solidDatasetInfo = await getResourceInfo(
       "https://arbitrary.pod/resource",
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     expect(solidDatasetInfo.internal_resourceInfo.isRawData).toBe(true);
@@ -151,15 +151,15 @@ describe("getResourceInfo", () => {
       .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
-          mockResponse(undefined, undefined, "https://arbitrary.pod/resource")
-        )
+          mockResponse(undefined, undefined, "https://arbitrary.pod/resource"),
+        ),
       );
 
     const solidDatasetInfo = await getResourceInfo(
       "https://arbitrary.pod/resource",
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     expect(solidDatasetInfo.internal_resourceInfo.isRawData).toBe(true);
@@ -173,20 +173,20 @@ describe("getResourceInfo", () => {
           {
             headers: { "Content-Type": "text/turtle; charset=UTF-8" },
           },
-          "https://some.pod/resource"
-        )
-      )
+          "https://some.pod/resource",
+        ),
+      ),
     );
 
     const solidDatasetInfo = await getResourceInfo(
       "https://some.pod/resource",
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     expect(solidDatasetInfo.internal_resourceInfo.contentType).toBe(
-      "text/turtle; charset=UTF-8"
+      "text/turtle; charset=UTF-8",
     );
   });
 
@@ -199,7 +199,7 @@ describe("getResourceInfo", () => {
       "https://some.pod/resource",
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     expect(solidDatasetInfo.internal_resourceInfo.contentType).toBeUndefined();
@@ -215,18 +215,18 @@ describe("getResourceInfo", () => {
               Link: '<aclresource.acl>; rel="acl"',
             },
           },
-          "https://some.pod/container/resource"
-        )
-      )
+          "https://some.pod/container/resource",
+        ),
+      ),
     );
 
     const solidDatasetInfo = await getResourceInfo(
       "https://some.pod/container/resource",
-      { fetch: mockFetch }
+      { fetch: mockFetch },
     );
 
     expect(solidDatasetInfo.internal_resourceInfo.aclUrl).toBe(
-      "https://some.pod/container/aclresource.acl"
+      "https://some.pod/container/aclresource.acl",
     );
   });
 
@@ -240,14 +240,14 @@ describe("getResourceInfo", () => {
               Link: '<aclresource.acl>; rel="acl", <https://some.pod/profile#WebId>; rel="http://www.w3.org/ns/solid/terms#podOwner", <https://some.pod/rss>; rel="alternate", <https://some.pod/atom>; rel="alternate"',
             },
           },
-          "https://some.pod"
-        )
-      )
+          "https://some.pod",
+        ),
+      ),
     );
 
     const solidDatasetInfo = await getResourceInfo(
       "https://some.pod/container/resource",
-      { fetch: mockFetch }
+      { fetch: mockFetch },
     );
 
     expect(solidDatasetInfo.internal_resourceInfo.linkedResources).toEqual({
@@ -266,7 +266,7 @@ describe("getResourceInfo", () => {
 
     const solidDatasetInfo = await getResourceInfo(
       "https://some.pod/container/resource",
-      { fetch: mockFetch }
+      { fetch: mockFetch },
     );
 
     expect(solidDatasetInfo.internal_resourceInfo.linkedResources).toEqual({});
@@ -280,13 +280,13 @@ describe("getResourceInfo", () => {
           Link: '<arbitrary-resource>; rel="not-acl"',
         },
       },
-      "https://arbitrary.pod"
+      "https://arbitrary.pod",
     );
     const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(mockedResponse);
 
     const solidDatasetInfo = await getResourceInfo(
       "https://some.pod/container/resource",
-      { fetch: mockFetch }
+      { fetch: mockFetch },
     );
 
     expect(solidDatasetInfo.internal_resourceInfo.aclUrl).toBeUndefined();
@@ -299,13 +299,13 @@ describe("getResourceInfo", () => {
           headers: {
             "wac-aLLOW": 'public="read",user="read write append control"',
           },
-        })
-      )
+        }),
+      ),
     );
 
     const solidDatasetInfo = await getResourceInfo(
       "https://arbitrary.pod/container/resource",
-      { fetch: mockFetch }
+      { fetch: mockFetch },
     );
 
     expect(solidDatasetInfo.internal_resourceInfo.permissions).toEqual({
@@ -332,13 +332,13 @@ describe("getResourceInfo", () => {
             // Public permissions are missing double quotes, user permissions are absent:
             "WAC-Allow": "public=read",
           },
-        })
-      )
+        }),
+      ),
     );
 
     const solidDatasetInfo = await getResourceInfo(
       "https://arbitrary.pod/container/resource",
-      { fetch: mockFetch }
+      { fetch: mockFetch },
     );
 
     expect(solidDatasetInfo.internal_resourceInfo.permissions).toEqual({
@@ -362,13 +362,13 @@ describe("getResourceInfo", () => {
       Promise.resolve(
         new Response(undefined, {
           headers: {},
-        })
-      )
+        }),
+      ),
     );
 
     const solidDatasetInfo = await getResourceInfo(
       "https://arbitrary.pod/container/resource",
-      { fetch: mockFetch }
+      { fetch: mockFetch },
     );
 
     expect(solidDatasetInfo.internal_resourceInfo.permissions).toBeUndefined();
@@ -379,8 +379,8 @@ describe("getResourceInfo", () => {
       .fn<typeof fetch>()
       .mockReturnValue(
         Promise.resolve(
-          mockResponse(undefined, undefined, "https://some.pod/resource")
-        )
+          mockResponse(undefined, undefined, "https://some.pod/resource"),
+        ),
       );
 
     await getResourceInfo("https://some.pod/resource", {
@@ -409,7 +409,7 @@ describe("getResourceInfo", () => {
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      /Fetching the metadata of the Resource at \[https:\/\/some.pod\/resource\] failed: \[403\] \[Forbidden\]/
+      /Fetching the metadata of the Resource at \[https:\/\/some.pod\/resource\] failed: \[403\] \[Forbidden\]/,
     );
   });
 
@@ -422,9 +422,9 @@ describe("getResourceInfo", () => {
             status: 403,
             statusText: "Forbidden",
           },
-          "https://some.url"
-        )
-      )
+          "https://some.url",
+        ),
+      ),
     );
 
     const resourceInfo = await getResourceInfo("https://some.pod/resource", {
@@ -433,7 +433,7 @@ describe("getResourceInfo", () => {
     });
 
     expect(resourceInfo.internal_resourceInfo.sourceIri).toBe(
-      "https://some.url"
+      "https://some.url",
     );
   });
 
@@ -454,7 +454,7 @@ describe("getResourceInfo", () => {
     });
 
     await expect(fetchPromise).rejects.toThrow(
-      /Fetching the metadata of the Resource at \[https:\/\/some.pod\/resource\] failed: \[404\] \[Not Found\]/
+      /Fetching the metadata of the Resource at \[https:\/\/some.pod\/resource\] failed: \[404\] \[Not Found\]/,
     );
   });
 
@@ -464,8 +464,8 @@ describe("getResourceInfo", () => {
         new Response("I'm a teapot!", {
           status: 418,
           statusText: "I'm a teapot!",
-        })
-      )
+        }),
+      ),
     );
 
     const fetchPromise = getResourceInfo("https://arbitrary.pod/resource", {
@@ -484,8 +484,8 @@ describe("getResourceInfo", () => {
         new Response("I'm a teapot!", {
           status: 418,
           statusText: "I'm a teapot!",
-        })
-      )
+        }),
+      ),
     );
 
     const fetchPromise = getResourceInfo("https://arbitrary.pod/resource", {
@@ -505,8 +505,8 @@ describe("getResourceInfo", () => {
         new Response("I'm a teapot!", {
           status: 418,
           statusText: "I'm a teapot!",
-        })
-      )
+        }),
+      ),
     );
 
     const fetchPromise = getResourceInfo("https://arbitrary.pod/resource", {
@@ -522,8 +522,8 @@ describe("getResourceInfo", () => {
         new Response("I'm a teapot!", {
           status: 418,
           statusText: "I'm a teapot!",
-        })
-      )
+        }),
+      ),
     );
 
     const fetchPromise = getResourceInfo("https://arbitrary.pod/resource", {
@@ -563,7 +563,7 @@ describe("isContainer", () => {
 
   it("should recognise non-Container URLs", () => {
     expect(isContainer("https://arbitrary.pod/container/not-a-container")).toBe(
-      false
+      false,
     );
   });
 });
@@ -603,7 +603,7 @@ describe("getContentType", () => {
     };
 
     expect(getContentType(resourceInfo)).toBe(
-      "multipart/form-data; boundary=something"
+      "multipart/form-data; boundary=something",
     );
   });
 
@@ -688,7 +688,7 @@ describe("isPodOwner", () => {
     };
 
     expect(isPodOwner("https://some.pod/profile#WebId", resourceInfo)).toBe(
-      true
+      true,
     );
   });
 
@@ -706,7 +706,7 @@ describe("isPodOwner", () => {
     };
 
     expect(
-      isPodOwner("https://some-other.pod/profile#WebId", resourceInfo)
+      isPodOwner("https://some-other.pod/profile#WebId", resourceInfo),
     ).toBe(false);
   });
 
@@ -720,7 +720,7 @@ describe("isPodOwner", () => {
     };
 
     expect(
-      isPodOwner("https://arbitrary.pod/profile#WebId", resourceInfo)
+      isPodOwner("https://arbitrary.pod/profile#WebId", resourceInfo),
     ).toBeNull();
   });
 });

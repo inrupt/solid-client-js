@@ -27,7 +27,7 @@ import type { WithServerResourceInfo } from "../interfaces";
  * @internal
  */
 export function internal_parseResourceInfo(
-  response: Response
+  response: Response,
 ): WithServerResourceInfo["internal_resourceInfo"] {
   const contentTypeParts =
     response.headers.get("Content-Type")?.split(";") ?? [];
@@ -57,7 +57,7 @@ export function internal_parseResourceInfo(
     if (aclLinks.length === 1) {
       resourceInfo.aclUrl = new URL(
         aclLinks[0].uri,
-        resourceInfo.sourceIri
+        resourceInfo.sourceIri,
       ).href;
     }
     // Parse all link headers and expose them in a standard way
@@ -132,7 +132,7 @@ function parseWacAllowHeader(wacAllowHeader: string) {
 
 /** @hidden Used to instantiate a separate instance from input parameters */
 export function internal_cloneResource<ResourceExt extends object>(
-  resource: ResourceExt
+  resource: ResourceExt,
 ): ResourceExt {
   let clonedResource;
   if (typeof (resource as File).slice === "function") {
@@ -148,13 +148,13 @@ export function internal_cloneResource<ResourceExt extends object>(
 
 /** @internal */
 export function internal_isUnsuccessfulResponse(
-  response: Response
+  response: Response,
 ): response is Response & { ok: false } {
   return !response.ok;
 }
 
 export function internal_isAuthenticationFailureResponse(
-  response: Response
+  response: Response,
 ): response is Response & { status: 401 | 403 } {
   return response.status === 401 || response.status === 403;
 }

@@ -36,7 +36,7 @@ import {
 
 jest.mock("../resource/solidDataset", () => {
   const actualResourceModule = jest.requireActual(
-    "../resource/solidDataset"
+    "../resource/solidDataset",
   ) as any;
   return {
     ...actualResourceModule,
@@ -58,8 +58,8 @@ jest.mock("../fetcher.ts", () => ({
     Promise.resolve(
       new Response(JSON.stringify({ keys: [] }), {
         headers: { Location: "https://arbitrary.pod/resource" },
-      })
-    )
+      }),
+    ),
   ),
 }));
 
@@ -73,11 +73,11 @@ describe("setProfileJwks", () => {
     dataset = setProfileJwks(
       dataset,
       "https://example.org/pod/me",
-      "https://example.org/pod/new-jwks"
+      "https://example.org/pod/new-jwks",
     );
     const updatedProfile = getThing(dataset, "https://example.org/pod/me");
     expect(getUrl(updatedProfile!, security.publicKey)).toBe(
-      "https://example.org/pod/new-jwks"
+      "https://example.org/pod/new-jwks",
     );
   });
 });
@@ -90,7 +90,7 @@ describe("getProfileJwksIri", () => {
       .build();
     dataset = setThing(dataset, profile);
     expect(getProfileJwksIri(dataset, "https://example.org/pod/me")).toBe(
-      "https://example.org/pod/jwks"
+      "https://example.org/pod/jwks",
     );
   });
 
@@ -112,7 +112,7 @@ describe("addJwkToJwks", () => {
       "https://example.org/jwks",
       {
         fetch: mockFetch,
-      }
+      },
     );
     expect(jwks).toEqual({ keys: [{ kid: "..." }] });
   });
@@ -126,7 +126,7 @@ describe("addJwkToJwks", () => {
 
     expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
     expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
-      "https://example.org/jwks"
+      "https://example.org/jwks",
     );
   });
 
@@ -137,7 +137,7 @@ describe("addJwkToJwks", () => {
     await expect(
       addJwkToJwks({ kid: "..." }, "https://example.org/jwks", {
         fetch: mockFetch,
-      })
+      }),
     ).rejects.toThrow(/example.org.*Not a JWKS/);
   });
 
@@ -145,12 +145,12 @@ describe("addJwkToJwks", () => {
     const mockFetch = jest
       .fn<typeof fetch>()
       .mockResolvedValueOnce(
-        new Response("", { status: 400, statusText: "Bad request" })
+        new Response("", { status: 400, statusText: "Bad request" }),
       );
     await expect(
       addJwkToJwks({ kid: "..." }, "https://example.org/jwks", {
         fetch: mockFetch,
-      })
+      }),
     ).rejects.toThrow(/400.*Bad request/);
   });
 
@@ -158,12 +158,12 @@ describe("addJwkToJwks", () => {
     const mockFetch = jest
       .fn<typeof fetch>()
       .mockResolvedValueOnce(
-        new Response(JSON.stringify({ someKey: "some value" }))
+        new Response(JSON.stringify({ someKey: "some value" })),
       );
     await expect(
       addJwkToJwks({ kid: "..." }, "https://example.org/jwks", {
         fetch: mockFetch,
-      })
+      }),
     ).rejects.toThrow(/example.org.*valid JWKS.*some value/);
   });
 });
@@ -171,15 +171,15 @@ describe("addJwkToJwks", () => {
 describe("addPublicKeyToProfileJwks", () => {
   it("throws if the profile cannot be fetched", async () => {
     const mockedDatasetModule = jest.requireMock(
-      "../resource/solidDataset"
+      "../resource/solidDataset",
     ) as any;
     mockedDatasetModule.getSolidDataset.mockResolvedValueOnce(null);
 
     await expect(
       addPublicKeyToProfileJwks(
         { kid: "..." },
-        "https://some.pod/resource#webId"
-      )
+        "https://some.pod/resource#webId",
+      ),
     ).rejects.toThrow(/profile document.*webId.*retrieved/);
   });
 
@@ -191,15 +191,15 @@ describe("addPublicKeyToProfileJwks", () => {
     mockedDataset = setThing(mockedDataset, profile);
 
     const mockedDatasetModule = jest.requireMock(
-      "../resource/solidDataset"
+      "../resource/solidDataset",
     ) as any;
     mockedDatasetModule.getSolidDataset.mockResolvedValueOnce(mockedDataset);
 
     await expect(
       addPublicKeyToProfileJwks(
         { kid: "..." },
-        "https://some.pod/resource#webId"
-      )
+        "https://some.pod/resource#webId",
+      ),
     ).rejects.toThrow(/No key set.*webId/);
   });
 
@@ -211,7 +211,7 @@ describe("addPublicKeyToProfileJwks", () => {
     mockedDataset = setThing(mockedDataset, profile);
 
     const mockedDatasetModule = jest.requireMock(
-      "../resource/solidDataset"
+      "../resource/solidDataset",
     ) as any;
     mockedDatasetModule.getSolidDataset.mockResolvedValueOnce(mockedDataset);
 
@@ -228,7 +228,7 @@ describe("addPublicKeyToProfileJwks", () => {
       "https://some.pod/resource#webId",
       {
         fetch: mockFetch,
-      }
+      },
     );
 
     // Intercept the saved dataset
@@ -236,21 +236,21 @@ describe("addPublicKeyToProfileJwks", () => {
 
     // check public key matches
     expect(savedJwks).toEqual(
-      new Blob([JSON.stringify({ keys: [{ kid: "..." }] })])
+      new Blob([JSON.stringify({ keys: [{ kid: "..." }] })]),
     );
   });
 
   it("throws if the profile doc does not include the WebId", async () => {
     const mockedDataset = mockSolidDatasetFrom("https://some.pod/resource");
     const mockedDatasetModule = jest.requireMock(
-      "../resource/solidDataset"
+      "../resource/solidDataset",
     ) as any;
     mockedDatasetModule.getSolidDataset.mockResolvedValueOnce(mockedDataset);
     await expect(
       addPublicKeyToProfileJwks(
         { kid: "..." },
-        "https://some.pod/resource#webId"
-      )
+        "https://some.pod/resource#webId",
+      ),
     ).rejects.toThrow(/Profile document.*webId/);
   });
 });

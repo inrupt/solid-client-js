@@ -32,7 +32,7 @@ describe("addMemberPolicyUrl()", () => {
     expect(resource.internal_acp.acr.graphs).toStrictEqual({ default: {} });
     expect(
       addMemberPolicyUrl(resource, TEST_URL.defaultMemberAccessControlPolicy1)
-        .internal_acp.acr.graphs
+        .internal_acp.acr.graphs,
     ).toStrictEqual({
       default: {
         [TEST_URL.accessControlResource]: {
@@ -64,14 +64,14 @@ describe("addMemberPolicyUrl()", () => {
 
     const resourceWithDefaultAccessControlPolicy1 = addMemberPolicyUrl(
       resource,
-      TEST_URL.defaultMemberAccessControlPolicy1
+      TEST_URL.defaultMemberAccessControlPolicy1,
     );
 
     expect(
       addMemberPolicyUrl(
         resourceWithDefaultAccessControlPolicy1,
-        TEST_URL.defaultMemberAccessControlPolicy2
-      ).internal_acp.acr.graphs
+        TEST_URL.defaultMemberAccessControlPolicy2,
+      ).internal_acp.acr.graphs,
     ).toStrictEqual({
       default: {
         [TEST_URL.accessControlResource]: {

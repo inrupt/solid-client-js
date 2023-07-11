@@ -47,7 +47,7 @@ import { mockResponse } from "../tests.internal";
 
 jest.mock("@inrupt/universal-fetch", () => {
   const crossFetchModule = jest.requireActual(
-    "@inrupt/universal-fetch"
+    "@inrupt/universal-fetch",
   ) as typeof CrossFetch;
   return {
     ...crossFetchModule,
@@ -65,15 +65,15 @@ const MOCK_PROFILE = setThing(
   setStringNoLocale(
     createThing({ url: MOCK_WEBID }),
     "https://example.org/ns#somePredicate",
-    "Some value"
-  )
+    "Some value",
+  ),
 );
 
 describe("getAltProfileUrlAllFrom", () => {
   it("returns no alt profiles if the WebID profile contains no triples with the rdfs:seeAlso or foaf:primaryTopic/foaf:isPrimaryTopicOf predicate", async () => {
     const webIdProfile = mockSolidDatasetFrom(MOCK_WEBID);
     await expect(
-      getProfileAll(MOCK_WEBID, { webIdProfile })
+      getProfileAll(MOCK_WEBID, { webIdProfile }),
     ).resolves.toStrictEqual({
       webIdProfile,
       altProfileAll: [],
@@ -91,7 +91,7 @@ describe("getAltProfileUrlAllFrom", () => {
       .build();
     let webIdProfile = setThing(
       mockSolidDatasetFrom(MOCK_WEBID),
-      profileContent
+      profileContent,
     );
     webIdProfile = setThing(webIdProfile, otherProfileContent);
     const result = getAltProfileUrlAllFrom(MOCK_WEBID, webIdProfile);
@@ -108,7 +108,7 @@ describe("getAltProfileUrlAllFrom", () => {
 
     const webIdProfile = setThing(
       mockSolidDatasetFrom(MOCK_WEBID),
-      profileContent
+      profileContent,
     );
     const result = getAltProfileUrlAllFrom(MOCK_WEBID, webIdProfile);
     expect(result).toHaveLength(2);
@@ -124,7 +124,7 @@ describe("getAltProfileUrlAllFrom", () => {
 
     const webIdProfile = setThing(
       mockSolidDatasetFrom(MOCK_WEBID),
-      profileContent
+      profileContent,
     );
     const result = getAltProfileUrlAllFrom(MOCK_WEBID, webIdProfile);
     expect(result).toHaveLength(2);
@@ -140,7 +140,7 @@ describe("getAltProfileUrlAllFrom", () => {
 
     const webIdProfile = setThing(
       mockSolidDatasetFrom(MOCK_WEBID),
-      profileContent
+      profileContent,
     );
     const result = getAltProfileUrlAllFrom(MOCK_WEBID, webIdProfile);
     expect(result).toHaveLength(2);
@@ -159,7 +159,7 @@ describe("getAltProfileUrlAllFrom", () => {
       .build();
     let webIdProfile = setThing(
       mockSolidDatasetFrom(MOCK_WEBID),
-      profileContent
+      profileContent,
     );
     webIdProfile = setThing(webIdProfile, webidData);
     const result = getAltProfileUrlAllFrom(MOCK_WEBID, webIdProfile);
@@ -183,7 +183,7 @@ describe("getProfileAll", () => {
           "Content-Type": "text/turtle",
         },
       },
-      "https://some.profile"
+      "https://some.profile",
     );
 
     const profileContent = buildThing({ url: "https://some.profile" })
@@ -192,7 +192,7 @@ describe("getProfileAll", () => {
 
     const webIdProfile = setThing(
       mockSolidDatasetFrom(MOCK_WEBID),
-      profileContent
+      profileContent,
     );
     const mockedProfileResponse = mockResponse(
       await triplesToTurtle(toRdfJsQuads(webIdProfile)),
@@ -201,7 +201,7 @@ describe("getProfileAll", () => {
           "Content-Type": "text/turtle",
         },
       },
-      MOCK_WEBID
+      MOCK_WEBID,
     );
 
     mockedFetch
@@ -215,12 +215,12 @@ describe("getProfileAll", () => {
     expect(mockedFetch).toHaveBeenNthCalledWith(
       1,
       MOCK_WEBID,
-      expect.anything()
+      expect.anything(),
     );
     expect(mockedFetch).toHaveBeenNthCalledWith(
       2,
       "https://some.profile",
-      expect.anything()
+      expect.anything(),
     );
   });
 
@@ -235,8 +235,8 @@ describe("getProfileAll", () => {
             "Content-Type": "text/turtle",
           },
         },
-        "https://some.profile"
-      )
+        "https://some.profile",
+      ),
     );
 
     const profileContent = buildThing({ url: "https://some.profile" })
@@ -245,7 +245,7 @@ describe("getProfileAll", () => {
 
     const webIdProfile = setThing(
       mockSolidDatasetFrom(MOCK_WEBID),
-      profileContent
+      profileContent,
     );
     // Mock the webid unauthenticated fetch
     const mockedUnauthFetch = jest.requireMock("../fetcher") as {
@@ -259,8 +259,8 @@ describe("getProfileAll", () => {
             "Content-Type": "text/turtle",
           },
         },
-        MOCK_WEBID
-      )
+        MOCK_WEBID,
+      ),
     );
 
     await getProfileAll(MOCK_WEBID, { fetch: mockedAuthFetcher });
@@ -273,7 +273,7 @@ describe("getProfileAll", () => {
     const mockedFetch = jest.fn<(typeof CrossFetch)["fetch"]>();
     const webIdProfile = mockSolidDatasetFrom(MOCK_WEBID);
     await expect(
-      getProfileAll(MOCK_WEBID, { fetch: mockedFetch, webIdProfile })
+      getProfileAll(MOCK_WEBID, { fetch: mockedFetch, webIdProfile }),
     ).resolves.toStrictEqual({
       webIdProfile,
       altProfileAll: [],
@@ -292,8 +292,8 @@ describe("getProfileAll", () => {
               "Content-Type": "text/turtle",
             },
           },
-          "https://some.profile"
-        )
+          "https://some.profile",
+        ),
       )
       .mockResolvedValueOnce(
         mockResponse(
@@ -303,8 +303,8 @@ describe("getProfileAll", () => {
               "Content-Type": "text/turtle",
             },
           },
-          "https://some.other.profile"
-        )
+          "https://some.other.profile",
+        ),
       );
     const profileContent = buildThing({ url: "https://some.profile" })
       .addIri(foaf.primaryTopic, MOCK_WEBID)
@@ -316,7 +316,7 @@ describe("getProfileAll", () => {
       .build();
     let webIdProfile = setThing(
       mockSolidDatasetFrom(MOCK_WEBID),
-      profileContent
+      profileContent,
     );
     webIdProfile = setThing(webIdProfile, otherProfileContent);
     const result = await getProfileAll(MOCK_WEBID, {
@@ -327,10 +327,10 @@ describe("getProfileAll", () => {
     expect(mockedFetch).toHaveBeenCalled();
     expect(result.altProfileAll).toHaveLength(2);
     expect(getThingAll(result.altProfileAll[0])).toStrictEqual(
-      getThingAll(MOCK_PROFILE)
+      getThingAll(MOCK_PROFILE),
     );
     expect(getThingAll(result.altProfileAll[1])).toStrictEqual(
-      getThingAll(MOCK_PROFILE)
+      getThingAll(MOCK_PROFILE),
     );
   });
 
@@ -345,8 +345,8 @@ describe("getProfileAll", () => {
               "Content-Type": "text/turtle",
             },
           },
-          "https://some.profile"
-        )
+          "https://some.profile",
+        ),
       )
       .mockResolvedValueOnce(
         mockResponse(
@@ -356,8 +356,8 @@ describe("getProfileAll", () => {
               "Content-Type": "text/turtle",
             },
           },
-          "https://some.other.profile"
-        )
+          "https://some.other.profile",
+        ),
       );
     const profileContent = buildThing({ url: MOCK_WEBID })
       .addIri(rdfs.seeAlso, "https://some.profile")
@@ -366,7 +366,7 @@ describe("getProfileAll", () => {
 
     const webIdProfile = setThing(
       mockSolidDatasetFrom(MOCK_WEBID),
-      profileContent
+      profileContent,
     );
     const result = await getProfileAll(MOCK_WEBID, {
       fetch: mockedFetch,
@@ -374,10 +374,10 @@ describe("getProfileAll", () => {
     });
     expect(result.altProfileAll).toHaveLength(2);
     expect(getThingAll(result.altProfileAll[0])).toStrictEqual(
-      getThingAll(MOCK_PROFILE)
+      getThingAll(MOCK_PROFILE),
     );
     expect(getThingAll(result.altProfileAll[1])).toStrictEqual(
-      getThingAll(MOCK_PROFILE)
+      getThingAll(MOCK_PROFILE),
     );
   });
 
@@ -392,8 +392,8 @@ describe("getProfileAll", () => {
               "Content-Type": "text/turtle",
             },
           },
-          "https://some.profile"
-        )
+          "https://some.profile",
+        ),
       )
       .mockResolvedValueOnce(
         mockResponse(
@@ -403,8 +403,8 @@ describe("getProfileAll", () => {
               "Content-Type": "text/turtle",
             },
           },
-          "https://some.other.profile"
-        )
+          "https://some.other.profile",
+        ),
       );
     const profileContent = buildThing({ url: MOCK_WEBID })
       .addIri(foaf.isPrimaryTopicOf, "https://some.profile")
@@ -413,7 +413,7 @@ describe("getProfileAll", () => {
 
     const webIdProfile = setThing(
       mockSolidDatasetFrom(MOCK_WEBID),
-      profileContent
+      profileContent,
     );
     const result = await getProfileAll(MOCK_WEBID, {
       fetch: mockedFetch,
@@ -421,10 +421,10 @@ describe("getProfileAll", () => {
     });
     expect(result.altProfileAll).toHaveLength(2);
     expect(getThingAll(result.altProfileAll[0])).toStrictEqual(
-      getThingAll(MOCK_PROFILE)
+      getThingAll(MOCK_PROFILE),
     );
     expect(getThingAll(result.altProfileAll[1])).toStrictEqual(
-      getThingAll(MOCK_PROFILE)
+      getThingAll(MOCK_PROFILE),
     );
   });
 
@@ -439,8 +439,8 @@ describe("getProfileAll", () => {
               "Content-Type": "text/turtle",
             },
           },
-          "https://some.profile"
-        )
+          "https://some.profile",
+        ),
       );
     // The profile document will have two triples <profile, foaf:primaryTopic, webid>...
     const profileContent = buildThing({ url: "https://some.profile" })
@@ -453,7 +453,7 @@ describe("getProfileAll", () => {
       .build();
     let webIdProfile = setThing(
       mockSolidDatasetFrom(MOCK_WEBID),
-      profileContent
+      profileContent,
     );
     webIdProfile = setThing(webIdProfile, webidData);
     const result = await getProfileAll(MOCK_WEBID, {
@@ -476,14 +476,14 @@ describe("getProfileAll", () => {
               "Content-Type": "text/turtle",
             },
           },
-          "https://some.profile"
-        )
+          "https://some.profile",
+        ),
       )
       // Fetching one of the alt profiles fails.
       .mockResolvedValueOnce(
         mockResponse(undefined, {
           status: 401,
-        })
+        }),
       );
     const profileContent = buildThing({ url: MOCK_WEBID })
       .addIri(foaf.isPrimaryTopicOf, "https://some.profile")
@@ -492,7 +492,7 @@ describe("getProfileAll", () => {
 
     const webIdProfile = setThing(
       mockSolidDatasetFrom(MOCK_WEBID),
-      profileContent
+      profileContent,
     );
     const result = await getProfileAll(MOCK_WEBID, {
       fetch: mockedFetch,
@@ -500,7 +500,7 @@ describe("getProfileAll", () => {
     });
     expect(result.altProfileAll).toHaveLength(1);
     expect(getThingAll(result.altProfileAll[0])).toStrictEqual(
-      getThingAll(MOCK_PROFILE)
+      getThingAll(MOCK_PROFILE),
     );
   });
 });
@@ -508,11 +508,11 @@ describe("getProfileAll", () => {
 const mockProfileDoc = (
   iri: string,
   webId: string,
-  content: Partial<{ altProfiles: string[]; pods: string[] }>
+  content: Partial<{ altProfiles: string[]; pods: string[] }>,
 ): SolidDataset & WithServerResourceInfo => {
   const profileContent = buildThing({ url: webId }).addIri(
     rdf.type,
-    foaf.Agent
+    foaf.Agent,
   );
   content.altProfiles?.forEach((altProfileIri) => {
     profileContent.addIri(foaf.isPrimaryTopicOf, altProfileIri);
@@ -536,8 +536,8 @@ describe("getPodUrlAll", () => {
             "Content-Type": "text/turtle",
           },
         },
-        "https://some.profile"
-      )
+        "https://some.profile",
+      ),
     );
     const mockedFetch = jest.fn<(typeof CrossFetch)["fetch"]>();
     await getPodUrlAll(MOCK_WEBID, { fetch: mockedFetch });
@@ -558,8 +558,8 @@ describe("getPodUrlAll", () => {
             "Content-Type": "text/turtle",
           },
         },
-        "https://some.profile"
-      )
+        "https://some.profile",
+      ),
     );
 
     const profileContent = buildThing({ url: MOCK_WEBID })
@@ -570,7 +570,7 @@ describe("getPodUrlAll", () => {
 
     const webIdProfile = setThing(
       mockSolidDatasetFrom(MOCK_WEBID),
-      profileContent
+      profileContent,
     );
 
     // The WebID is explicitly fetched using the unauthenticated fetch.
@@ -583,7 +583,7 @@ describe("getPodUrlAll", () => {
           "Content-Type": "text/turtle",
         },
         url: MOCK_WEBID,
-      } as ResponseInit)
+      } as ResponseInit),
     );
     await getPodUrlAll(MOCK_WEBID);
     // The embedded fetch should have been used.
@@ -601,8 +601,8 @@ describe("getPodUrlAll", () => {
             "Content-Type": "text/turtle",
           },
         },
-        "https://some.profile"
-      )
+        "https://some.profile",
+      ),
     );
 
     const profileContent = buildThing({ url: MOCK_WEBID })
@@ -613,7 +613,7 @@ describe("getPodUrlAll", () => {
 
     const webIdProfile = setThing(
       mockSolidDatasetFrom(MOCK_WEBID),
-      profileContent
+      profileContent,
     );
 
     // The WebID is explicitly fetched using the unauthenticated fetch.
@@ -626,24 +626,24 @@ describe("getPodUrlAll", () => {
           "Content-Type": "text/turtle",
         },
         url: MOCK_WEBID,
-      } as ResponseInit)
+      } as ResponseInit),
     );
     await getPodUrlAll(MOCK_WEBID, { fetch: mockedAuthFetch });
     // The provided authenticated fetch should have been used to fetch the alt profile.
     expect(mockedAuthFetch).toHaveBeenCalledTimes(2);
     expect(mockedAuthFetch).toHaveBeenCalledWith(
       "https://some.profile",
-      expect.anything()
+      expect.anything(),
     );
     expect(mockedAuthFetch).toHaveBeenCalledWith(
       "https://some.other.profile",
-      expect.anything()
+      expect.anything(),
     );
     // The unauthenticated fetch should have been used to fetch the webid profile.
     expect(mockedUnauthFetcher.fetch).toHaveBeenCalledTimes(1);
     expect(mockedUnauthFetcher.fetch).toHaveBeenCalledWith(
       MOCK_WEBID,
-      expect.anything()
+      expect.anything(),
     );
   });
 
@@ -662,7 +662,7 @@ describe("getPodUrlAll", () => {
         headers: {
           "Content-Type": "text/turtle",
         },
-      })
+      }),
     );
     await expect(getPodUrlAll(MOCK_WEBID)).resolves.toStrictEqual([
       MOCK_STORAGE,
@@ -696,7 +696,7 @@ describe("getPodUrlAll", () => {
         headers: {
           "Content-Type": "text/turtle",
         },
-      })
+      }),
     );
 
     // The alternative profiles are Solid resources, and require authentication.
@@ -710,8 +710,8 @@ describe("getPodUrlAll", () => {
               "Content-Type": "text/turtle",
             },
           },
-          "https://some.alt-profile"
-        )
+          "https://some.alt-profile",
+        ),
       )
       .mockResolvedValueOnce(
         mockResponse(
@@ -721,12 +721,12 @@ describe("getPodUrlAll", () => {
               "Content-Type": "text/turtle",
             },
           },
-          "https://some.other.alt-profile"
-        )
+          "https://some.other.alt-profile",
+        ),
       );
 
     await expect(
-      getPodUrlAll(MOCK_WEBID, { fetch: mockedFetch })
+      getPodUrlAll(MOCK_WEBID, { fetch: mockedFetch }),
     ).resolves.toStrictEqual([ALT_MOCK_STORAGE_1, ALT_MOCK_STORAGE_2]);
   });
 
@@ -755,7 +755,7 @@ describe("getPodUrlAll", () => {
         headers: {
           "Content-Type": "text/turtle",
         },
-      })
+      }),
     );
 
     const mockedFetch = jest
@@ -768,12 +768,12 @@ describe("getPodUrlAll", () => {
               "Content-Type": "text/turtle",
             },
           },
-          "https://some.alt-profile"
-        )
+          "https://some.alt-profile",
+        ),
       );
 
     await expect(
-      getPodUrlAll(MOCK_WEBID, { fetch: mockedFetch })
+      getPodUrlAll(MOCK_WEBID, { fetch: mockedFetch }),
     ).resolves.toStrictEqual([MOCK_STORAGE, ALT_MOCK_STORAGE]);
   });
 });
@@ -786,10 +786,10 @@ describe("getPodUrlAllFrom", () => {
       "https://some.different.webid",
       {
         pods: [MOCK_STORAGE],
-      }
+      },
     );
     expect(
-      getPodUrlAllFrom({ webIdProfile, altProfileAll: [] }, MOCK_WEBID)
+      getPodUrlAllFrom({ webIdProfile, altProfileAll: [] }, MOCK_WEBID),
     ).toStrictEqual([]);
   });
 
@@ -799,7 +799,7 @@ describe("getPodUrlAllFrom", () => {
       pods: [MOCK_STORAGE],
     });
     expect(
-      getPodUrlAllFrom({ webIdProfile, altProfileAll: [] }, MOCK_WEBID)
+      getPodUrlAllFrom({ webIdProfile, altProfileAll: [] }, MOCK_WEBID),
     ).toStrictEqual([MOCK_STORAGE]);
   });
 
@@ -819,7 +819,7 @@ describe("getPodUrlAllFrom", () => {
     });
 
     expect(
-      getPodUrlAllFrom({ webIdProfile, altProfileAll }, MOCK_WEBID)
+      getPodUrlAllFrom({ webIdProfile, altProfileAll }, MOCK_WEBID),
     ).toStrictEqual([ALT_MOCK_STORAGE_1, ALT_MOCK_STORAGE_2]);
   });
 
@@ -836,7 +836,7 @@ describe("getPodUrlAllFrom", () => {
       pods: [MOCK_STORAGE],
     });
     expect(
-      getPodUrlAllFrom({ webIdProfile, altProfileAll }, MOCK_WEBID)
+      getPodUrlAllFrom({ webIdProfile, altProfileAll }, MOCK_WEBID),
     ).toStrictEqual([MOCK_STORAGE, ALT_MOCK_STORAGE]);
   });
 });
@@ -852,7 +852,7 @@ describe("getWebIdDataset", () => {
         headers: {
           "Content-Type": "text/turtle",
         },
-      })
+      }),
     );
     const result = await getWebIdDataset(MOCK_WEBID);
     expect(result?.graphs).toEqual(webIdProfile.graphs);

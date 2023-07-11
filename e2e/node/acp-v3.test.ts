@@ -82,19 +82,19 @@ describe("Authenticated end-to-end ACP V3", () => {
       session,
       sessionContainer,
       sessionResource,
-      fetchOptions
+      fetchOptions,
     );
   });
 
   async function initialisePolicyResource(
     policyResourceUrl: UrlString,
-    session: Session
+    session: Session,
   ) {
     let publicRule = acp.createRule(`${policyResourceUrl}#rule-public`);
     publicRule = acp.setPublic(publicRule);
 
     let publicReadPolicy = acp.createPolicy(
-      `${policyResourceUrl}#policy-publicRead`
+      `${policyResourceUrl}#policy-publicRead`,
     );
     // Note: we should think of a better name for "optional", as this isn't really optional.
     //       At least one "optional" rule should apply, and since this is the only rule for this
@@ -111,11 +111,11 @@ describe("Authenticated end-to-end ACP V3", () => {
     // This policy denies write access to the current user,
     // but allows write access so the Resource can still be removed afterwards:
     let selfWriteNoReadPolicy = acp.createPolicy(
-      `${policyResourceUrl}#policy-selfWriteNoRead`
+      `${policyResourceUrl}#policy-selfWriteNoRead`,
     );
     selfWriteNoReadPolicy = acp.addAllOfRuleUrl(
       selfWriteNoReadPolicy,
-      selfRule
+      selfRule,
     );
     selfWriteNoReadPolicy = acp.setAllowModes(selfWriteNoReadPolicy, {
       read: false,
@@ -139,17 +139,17 @@ describe("Authenticated end-to-end ACP V3", () => {
 
   async function applyPolicyToPolicyResource(
     resourceUrl: UrlString,
-    policyUrl: UrlString
+    policyUrl: UrlString,
   ) {
     const resourceWithAcr = await acp.getSolidDatasetWithAcr(
       resourceUrl,
-      fetchOptions
+      fetchOptions,
     );
     if (!acp.hasAccessibleAcr(resourceWithAcr)) {
       throw new Error(
         `The test Resource at [${getSourceUrl(
-          resourceWithAcr
-        )}] does not appear to have a readable Access Control Resource. Please check the Pod setup.`
+          resourceWithAcr,
+        )}] does not appear to have a readable Access Control Resource. Please check the Pod setup.`,
       );
     }
     const changedResourceWithAcr = acp.addPolicyUrl(resourceWithAcr, policyUrl);
@@ -164,7 +164,7 @@ describe("Authenticated end-to-end ACP V3", () => {
 
     // Verify that we can fetch the Resource before Denying Read access:
     await expect(
-      getSolidDataset(policyResourceUrl, fetchOptions)
+      getSolidDataset(policyResourceUrl, fetchOptions),
     ).resolves.not.toBeNull();
 
     // In the Resource's Access Control Resource, apply the Policy
@@ -172,16 +172,16 @@ describe("Authenticated end-to-end ACP V3", () => {
     // and that denies Read access to the current user:
     await applyPolicyToPolicyResource(
       policyResourceUrl,
-      `${policyResourceUrl}#policy-selfWriteNoRead`
+      `${policyResourceUrl}#policy-selfWriteNoRead`,
     );
 
     // Verify that indeed, the current user can no longer read it:
     await expect(
-      getSolidDataset(policyResourceUrl, fetchOptions)
+      getSolidDataset(policyResourceUrl, fetchOptions),
     ).rejects.toThrow(
       // Forbidden:
       // @ts-ignore-next
-      expect.objectContaining({ statusCode: 403 }) as FetchError
+      expect.objectContaining({ statusCode: 403 }) as FetchError,
     );
 
     // Clean up:
@@ -199,7 +199,7 @@ describe("Authenticated end-to-end ACP V3", () => {
     await expect(getSolidDataset(policyResourceUrl)).rejects.toThrow(
       // Unauthorised:
       // @ts-ignore-next
-      expect.objectContaining({ statusCode: 401 }) as FetchError
+      expect.objectContaining({ statusCode: 401 }) as FetchError,
     );
 
     // In the Resource's Access Control Resource, apply the Policy
@@ -207,7 +207,7 @@ describe("Authenticated end-to-end ACP V3", () => {
     // and provides Read access to the public:
     await applyPolicyToPolicyResource(
       policyResourceUrl,
-      `${policyResourceUrl}#policy-publicRead`
+      `${policyResourceUrl}#policy-publicRead`,
     );
 
     // Verify that indeed, an unauthenticated user can now read it:
@@ -223,26 +223,26 @@ describe("Authenticated end-to-end ACP V3", () => {
     await overwriteFile(
       resourceUrl,
       Buffer.from("To-be-public Resource", "utf8"),
-      fetchOptions
+      fetchOptions,
     );
 
     const resourceInfoWithAcr = await acp.getResourceInfoWithAcr(
       resourceUrl,
-      fetchOptions
+      fetchOptions,
     );
     if (!acp.hasAccessibleAcr(resourceInfoWithAcr)) {
       throw new Error(
-        `The end-to-end tests expect the end-to-end test user to be able to access Access Control Resources, but the ACR of [${resourceUrl}] was not accessible.`
+        `The end-to-end tests expect the end-to-end test user to be able to access Access Control Resources, but the ACR of [${resourceUrl}] was not accessible.`,
       );
     }
     let publicRule = acp.createResourceRuleFor(
       resourceInfoWithAcr,
-      "publicRule"
+      "publicRule",
     );
     publicRule = acp.setPublic(publicRule);
     let publicReadPolicy = acp.createResourcePolicyFor(
       resourceInfoWithAcr,
-      "publicReadPolicy"
+      "publicReadPolicy",
     );
     publicReadPolicy = acp.addAllOfRuleUrl(publicReadPolicy, publicRule);
     publicReadPolicy = acp.setAllowModes(publicReadPolicy, {
@@ -253,11 +253,11 @@ describe("Authenticated end-to-end ACP V3", () => {
 
     let updatedResourceInfoWithAcr = acp.setResourceRule(
       resourceInfoWithAcr,
-      publicRule
+      publicRule,
     );
     updatedResourceInfoWithAcr = acp.setResourcePolicy(
       updatedResourceInfoWithAcr,
-      publicReadPolicy
+      publicReadPolicy,
     );
 
     // Verify that we cannot fetch the Resource before adding public Read access
@@ -265,7 +265,7 @@ describe("Authenticated end-to-end ACP V3", () => {
     await expect(getFile(resourceUrl)).rejects.toThrow(
       // Unauthorised:
       // @ts-ignore-next
-      expect.objectContaining({ statusCode: 401 }) as FetchError
+      expect.objectContaining({ statusCode: 401 }) as FetchError,
     );
 
     await acp.saveAcrFor(updatedResourceInfoWithAcr, fetchOptions);

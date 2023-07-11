@@ -63,7 +63,7 @@ export async function getResourceInfo(
     typeof internal_defaultFetchOptions & {
       ignoreAuthenticationErrors: boolean;
     }
-  > = { ...internal_defaultFetchOptions, ignoreAuthenticationErrors: false }
+  > = { ...internal_defaultFetchOptions, ignoreAuthenticationErrors: false },
 ): Promise<WithServerResourceInfo> {
   const config = {
     ...internal_defaultFetchOptions,
@@ -87,7 +87,7 @@ export function responseToResourceInfo(
   response: Response,
   options: {
     ignoreAuthenticationErrors: boolean;
-  } = { ignoreAuthenticationErrors: false }
+  } = { ignoreAuthenticationErrors: false },
 ): WithServerResourceInfo {
   if (
     internal_isUnsuccessfulResponse(response) &&
@@ -96,7 +96,7 @@ export function responseToResourceInfo(
   ) {
     throw new FetchError(
       `Fetching the metadata of the Resource at [${response.url}] failed: [${response.status}] [${response.statusText}].`,
-      response
+      response,
     );
   }
 
@@ -110,7 +110,7 @@ export function responseToResourceInfo(
  * @returns Whether `resource` is a Container.
  */
 export function isContainer(
-  resource: Url | UrlString | WithResourceInfo
+  resource: Url | UrlString | WithResourceInfo,
 ): boolean {
   const containerUrl = hasResourceInfo(resource)
     ? getSourceUrl(resource)
@@ -143,7 +143,7 @@ export function getContentType(resource: WithResourceInfo): string | null {
 export function getSourceUrl(resource: WithResourceInfo): string;
 export function getSourceUrl(resource: Resource): string | null;
 export function getSourceUrl(
-  resource: Resource | WithResourceInfo
+  resource: Resource | WithResourceInfo,
 ): string | null {
   if (hasResourceInfo(resource)) {
     return resource.internal_resourceInfo.sourceIri;
@@ -195,7 +195,7 @@ export function getPodOwner(resource: WithServerResourceInfo): WebId | null {
  */
 export function isPodOwner(
   webId: WebId,
-  resource: WithServerResourceInfo
+  resource: WithServerResourceInfo,
 ): boolean | null {
   const podOwner = getPodOwner(resource);
 
@@ -218,7 +218,7 @@ export function isPodOwner(
  * @since 1.7.0
  */
 export function getLinkedResourceUrlAll(
-  resource: WithServerResourceInfo
+  resource: WithServerResourceInfo,
 ): LinkedResourceUrlAll {
   return resource.internal_resourceInfo.linkedResources;
 }
@@ -237,7 +237,7 @@ export function getLinkedResourceUrlAll(
  * @since 1.7.0
  */
 export function getEffectiveAccess(
-  resource: WithServerResourceInfo
+  resource: WithServerResourceInfo,
 ): EffectiveAccess {
   if (typeof resource.internal_resourceInfo.permissions === "object") {
     return {

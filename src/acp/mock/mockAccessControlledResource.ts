@@ -29,7 +29,7 @@ import {
 
 /** @hidden */
 export function mockAccessControlledResource(
-  dataset: SolidDataset = createSolidDataset()
+  dataset: SolidDataset = createSolidDataset(),
 ): WithAccessibleAcr {
   return {
     ...createSolidDataset(),

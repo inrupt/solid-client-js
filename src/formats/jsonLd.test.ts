@@ -79,13 +79,13 @@ const personQuads = [
     DataFactory.namedNode("https://example.com/some-path#someSubject"),
     DataFactory.namedNode(rdf.type),
     DataFactory.namedNode(foaf.Person),
-    undefined
+    undefined,
   ),
   DataFactory.quad(
     DataFactory.namedNode("https://example.com/some-path#someSubject"),
     DataFactory.namedNode(foaf.name),
     DataFactory.literal("Some name"),
-    undefined
+    undefined,
   ),
 ];
 
@@ -117,8 +117,8 @@ describe("The Parser", () => {
     expect(
       isomorphic(
         onQuadCallback.mock.calls.map(([quad]) => quad),
-        personQuads
-      )
+        personQuads,
+      ),
     ).toBe(true);
     expect(onCompleteCallback).toHaveBeenCalledTimes(1);
   });
@@ -169,8 +169,8 @@ describe("The Parser", () => {
               storage: { "@id": "pim:storage", "@type": "@id" },
             },
           }),
-          { headers: { "Content-Type": "application/ld+json" } }
-        )
+          { headers: { "Content-Type": "application/ld+json" } },
+        ),
       );
 
       // FIXME: Despite the type signature, parser.parse does return a Promise,
@@ -218,7 +218,7 @@ describe("The Parser", () => {
 
     it("Should parse valid JSON-LD to correct quads", async () => {
       expect(
-        isomorphic(await stringToArray(jsonLdPersonData), personQuads)
+        isomorphic(await stringToArray(jsonLdPersonData), personQuads),
       ).toBe(true);
     });
 

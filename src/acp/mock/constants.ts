@@ -63,22 +63,22 @@ export const TEST_URL = {
   memberAccessControl2AccessPolicy1: DEFAULT_DOMAIN.concat("mac2ap1"),
   memberAccessControl2AccessPolicy2: DEFAULT_DOMAIN.concat("mac2ap2"),
   defaultAccessControl: DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat("#").concat(
-    DEFAULT_ACCESS_CONTROL
+    DEFAULT_ACCESS_CONTROL,
   ),
   defaultAccessControlPolicy1: DEFAULT_DOMAIN.concat("dacp1"),
   defaultAccessControlPolicy2: DEFAULT_DOMAIN.concat("dacp2"),
   defaultAcrAccessControl: DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
-    "#"
+    "#",
   ).concat(DEFAULT_ACR_ACCESS_CONTROL),
   defaultAcrAccessControlPolicy1: DEFAULT_DOMAIN.concat("dacracp1"),
   defaultAcrAccessControlPolicy2: DEFAULT_DOMAIN.concat("dacracp2"),
   defaultMemberAccessControl: DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
-    "#"
+    "#",
   ).concat(DEFAULT_MEMBER_ACCESS_CONTROL),
   defaultMemberAccessControlPolicy1: DEFAULT_DOMAIN.concat("dmacp1"),
   defaultMemberAccessControlPolicy2: DEFAULT_DOMAIN.concat("dmacp2"),
   defaultMemberAcrAccessControl: DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
-    "#"
+    "#",
   ).concat(DEFAULT_MEMBER_ACR_ACCESS_CONTROL),
   defaultMemberAcrAccessControlPolicy1: DEFAULT_DOMAIN.concat("dmacracp1"),
   defaultMemberAcrAccessControlPolicy2: DEFAULT_DOMAIN.concat("dmacracp2"),
@@ -87,58 +87,58 @@ export const TEST_URL = {
   otherWebId: DEFAULT_DOMAIN.concat("wid2"),
   defaultAccessControlAgentMatcherReadPolicy:
     DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
-      "#defaultAccessControlAgentMatcherReadPolicy"
+      "#defaultAccessControlAgentMatcherReadPolicy",
     ),
   defaultAccessControlAgentMatcherAppendPolicy:
     DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
-      "#defaultAccessControlAgentMatcherAppendPolicy"
+      "#defaultAccessControlAgentMatcherAppendPolicy",
     ),
   defaultAccessControlAgentMatcherWritePolicy:
     DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
-      "#defaultAccessControlAgentMatcherWritePolicy"
+      "#defaultAccessControlAgentMatcherWritePolicy",
     ),
   defaultAcrAccessControlAgentMatcherControlReadPolicy:
     DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
-      "#defaultAcrAccessControlAgentMatcherControlReadPolicy"
+      "#defaultAcrAccessControlAgentMatcherControlReadPolicy",
     ),
   defaultAcrAccessControlAgentMatcherControlWritePolicy:
     DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
-      "#defaultAcrAccessControlAgentMatcherControlWritePolicy"
+      "#defaultAcrAccessControlAgentMatcherControlWritePolicy",
     ),
   defaultAccessControlAgentMatcherReadPolicyMatcher:
     DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
-      "#defaultAccessControlAgentMatcherReadPolicyMatcher"
+      "#defaultAccessControlAgentMatcherReadPolicyMatcher",
     ),
   defaultAccessControlAgentMatcherAppendPolicyMatcher:
     DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
-      "#defaultAccessControlAgentMatcherAppendPolicyMatcher"
+      "#defaultAccessControlAgentMatcherAppendPolicyMatcher",
     ),
   defaultAccessControlAgentMatcherWritePolicyMatcher:
     DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
-      "#defaultAccessControlAgentMatcherWritePolicyMatcher"
+      "#defaultAccessControlAgentMatcherWritePolicyMatcher",
     ),
   defaultAcrAccessControlAgentMatcherControlReadPolicyMatcher:
     DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
-      "#defaultAcrAccessControlAgentMatcherControlReadPolicyMatcher"
+      "#defaultAcrAccessControlAgentMatcherControlReadPolicyMatcher",
     ),
   defaultAcrAccessControlAgentMatcherControlWritePolicyMatcher:
     DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
-      "#defaultAcrAccessControlAgentMatcherControlWritePolicyMatcher"
+      "#defaultAcrAccessControlAgentMatcherControlWritePolicyMatcher",
     ),
   defaultMemberAccessControlAgentMatcherReadPolicy:
     DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
-      "#defaultMemberAccessControlAgentMatcherReadPolicy"
+      "#defaultMemberAccessControlAgentMatcherReadPolicy",
     ),
   defaultMemberAccessControlAgentMatcherReadPolicyMatcher:
     DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
-      "#defaultMemberAccessControlAgentMatcherReadPolicyMatcher"
+      "#defaultMemberAccessControlAgentMatcherReadPolicyMatcher",
     ),
   defaultAccessControlVcPolicy: DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
     "#",
-    DEFAULT_VC_POLICY_NAME
+    DEFAULT_VC_POLICY_NAME,
   ),
   defaultAccessControlVcMatcher: DEFAULT_ACCESS_CONTROL_RESOURCE_URL.concat(
     "#",
-    DEFAULT_VC_MATCHER_NAME
+    DEFAULT_VC_MATCHER_NAME,
   ),
 };

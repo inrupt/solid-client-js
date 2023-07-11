@@ -75,7 +75,7 @@ function getMockThingWithLiteralFor(
     | "boolean"
     | "dateTime"
     | "date"
-    | "time"
+    | "time",
 ): Thing {
   return {
     type: "Subject",
@@ -100,7 +100,7 @@ function getMockThingWithLiteralsFor(
     | "boolean"
     | "dateTime"
     | "date"
-    | "time"
+    | "time",
 ): Thing {
   return {
     type: "Subject",
@@ -124,7 +124,7 @@ describe("getPropertyAll", () => {
       "https://some.vocab/predicate1",
       "value1",
       "value2",
-      "string"
+      "string",
     );
 
     expect(getPropertyAll(mockThing)).toStrictEqual([
@@ -137,22 +137,22 @@ describe("getPropertyAll", () => {
       "https://some.vocab/predicate1",
       "value1",
       "value2",
-      "string"
+      "string",
     );
     mockThing = addStringNoLocale(
       mockThing,
       "https://arbitrary.vocab/predicate2",
-      "value 3"
+      "value 3",
     );
     mockThing = addStringNoLocale(
       mockThing,
       "https://some.vocab/predicate3",
-      "value 4"
+      "value 4",
     );
     mockThing = removeStringNoLocale(
       mockThing,
       "https://arbitrary.vocab/predicate2",
-      "value 3"
+      "value 3",
     );
 
     expect(getPropertyAll(mockThing)).toStrictEqual([
@@ -169,7 +169,7 @@ describe("getPropertyAll", () => {
 describe("getIri", () => {
   function getMockThingWithIri(
     predicate: IriString,
-    iri: IriString = "https://arbitrary.vocab/object"
+    iri: IriString = "https://arbitrary.vocab/object",
   ): Thing {
     const thing: Thing = {
       type: "Subject",
@@ -187,32 +187,32 @@ describe("getIri", () => {
   it("returns the IRI value for the given Property", () => {
     const thingWithIri = getMockThingWithIri(
       "https://some.vocab/predicate",
-      "https://some.vocab/object"
+      "https://some.vocab/object",
     );
 
     expect(getUrl(thingWithIri, "https://some.vocab/predicate")).toBe(
-      "https://some.vocab/object"
+      "https://some.vocab/object",
     );
   });
 
   it("accepts Properties as Named Nodes", () => {
     const thingWithIri = getMockThingWithIri(
       "https://some.vocab/predicate",
-      "https://some.vocab/object"
+      "https://some.vocab/object",
     );
 
     expect(
       getUrl(
         thingWithIri,
-        DataFactory.namedNode("https://some.vocab/predicate")
-      )
+        DataFactory.namedNode("https://some.vocab/predicate"),
+      ),
     ).toBe("https://some.vocab/object");
   });
 
   it("returns an LocalNode if that is the first match", () => {
     const thingWithIriAndLocalNode = getMockThingWithIri(
       "https://some.vocab/predicate",
-      `${localNodeSkolemPrefix}someLocalNode`
+      `${localNodeSkolemPrefix}someLocalNode`,
     );
     (
       thingWithIriAndLocalNode.predicates["https://some.vocab/predicate"]
@@ -220,7 +220,7 @@ describe("getIri", () => {
     ).push("https://some.vocab/object");
 
     expect(
-      getUrl(thingWithIriAndLocalNode, "https://some.vocab/predicate")
+      getUrl(thingWithIriAndLocalNode, "https://some.vocab/predicate"),
     ).toBe("#someLocalNode");
   });
 
@@ -228,7 +228,7 @@ describe("getIri", () => {
     const thingWithoutIri = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
-      "integer"
+      "integer",
     );
 
     expect(getUrl(thingWithoutIri, "https://some.vocab/predicate")).toBeNull();
@@ -237,11 +237,11 @@ describe("getIri", () => {
   it("returns LocalNodes", () => {
     const thingWithIri = getMockThingWithIri(
       "https://some.vocab/predicate",
-      `${localNodeSkolemPrefix}someLocalNode`
+      `${localNodeSkolemPrefix}someLocalNode`,
     );
 
     expect(getUrl(thingWithIri, "https://some.vocab/predicate")).toBe(
-      "#someLocalNode"
+      "#someLocalNode",
     );
   });
 
@@ -249,7 +249,7 @@ describe("getIri", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
-      "integer"
+      "integer",
     );
     (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
       .namedNodes as UrlString[]) = [
@@ -258,7 +258,7 @@ describe("getIri", () => {
     ];
 
     expect(
-      getUrl(thingWithDifferentDatatypes, "https://some.vocab/predicate")
+      getUrl(thingWithDifferentDatatypes, "https://some.vocab/predicate"),
     ).toBe("https://some.vocab/object");
   });
 
@@ -266,21 +266,24 @@ describe("getIri", () => {
     const thingWithIri = getMockThingWithIri("https://some.vocab/predicate");
 
     expect(
-      getUrl(thingWithIri, "https://some-other.vocab/predicate")
+      getUrl(thingWithIri, "https://some-other.vocab/predicate"),
     ).toBeNull();
   });
 
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
-      getUrl(null as unknown as Thing, "https://arbitrary.vocab/predicate")
+      getUrl(null as unknown as Thing, "https://arbitrary.vocab/predicate"),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
   it("throws an error when passed an invalid property URL", () => {
     expect(() =>
-      getUrl(mockThingFrom("https://arbitrary.pod/resource#thing"), "not-a-url")
+      getUrl(
+        mockThingFrom("https://arbitrary.pod/resource#thing"),
+        "not-a-url",
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -290,7 +293,7 @@ describe("getIri", () => {
     try {
       getUrl(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
+        "not-a-url",
       );
     } catch (e) {
       thrownError = e;
@@ -303,7 +306,7 @@ describe("getIriAll", () => {
   function getMockThingWithIris(
     predicate: IriString,
     iri1: IriString = "https://arbitrary.vocab/object1",
-    iri2: IriString = "https://arbitrary.vocab/object2"
+    iri2: IriString = "https://arbitrary.vocab/object2",
   ): Thing {
     return {
       type: "Subject",
@@ -320,7 +323,7 @@ describe("getIriAll", () => {
     const thingWithIris = getMockThingWithIris(
       "https://some.vocab/predicate",
       "https://some.vocab/object1",
-      "https://some.vocab/object2"
+      "https://some.vocab/object2",
     );
 
     expect(getUrlAll(thingWithIris, "https://some.vocab/predicate")).toEqual([
@@ -333,14 +336,14 @@ describe("getIriAll", () => {
     const thingWithIris = getMockThingWithIris(
       "https://some.vocab/predicate",
       "https://some.vocab/object1",
-      "https://some.vocab/object2"
+      "https://some.vocab/object2",
     );
 
     expect(
       getUrlAll(
         thingWithIris,
-        DataFactory.namedNode("https://some.vocab/predicate")
-      )
+        DataFactory.namedNode("https://some.vocab/predicate"),
+      ),
     ).toEqual(["https://some.vocab/object1", "https://some.vocab/object2"]);
   });
 
@@ -348,11 +351,11 @@ describe("getIriAll", () => {
     const thingWithoutIris = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
-      "integer"
+      "integer",
     );
 
     expect(getUrlAll(thingWithoutIris, "https://some.vocab/predicate")).toEqual(
-      []
+      [],
     );
   });
 
@@ -360,13 +363,13 @@ describe("getIriAll", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
-      "integer"
+      "integer",
     );
     (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
       .namedNodes as UrlString[]) = ["https://some.vocab/object"];
 
     expect(
-      getUrlAll(thingWithDifferentDatatypes, "https://some.vocab/predicate")
+      getUrlAll(thingWithDifferentDatatypes, "https://some.vocab/predicate"),
     ).toEqual(["https://some.vocab/object"]);
   });
 
@@ -374,13 +377,13 @@ describe("getIriAll", () => {
     const thingWithIri = getMockThingWithIris("https://some.vocab/predicate");
 
     expect(
-      getUrlAll(thingWithIri, "https://some-other.vocab/predicate")
+      getUrlAll(thingWithIri, "https://some-other.vocab/predicate"),
     ).toEqual([]);
   });
 
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
-      getUrlAll(null as unknown as Thing, "https://arbitrary.vocab/predicate")
+      getUrlAll(null as unknown as Thing, "https://arbitrary.vocab/predicate"),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -388,10 +391,10 @@ describe("getIriAll", () => {
     expect(() =>
       getUrlAll(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
-      )
+        "not-a-url",
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -401,7 +404,7 @@ describe("getIriAll", () => {
     try {
       getIriAll(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
+        "not-a-url",
       );
     } catch (e) {
       thrownError = e;
@@ -415,11 +418,11 @@ describe("getBoolean", () => {
     const thingWithBoolean = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "1",
-      "boolean"
+      "boolean",
     );
 
     expect(getBoolean(thingWithBoolean, "https://some.vocab/predicate")).toBe(
-      true
+      true,
     );
   });
 
@@ -427,14 +430,14 @@ describe("getBoolean", () => {
     const thingWithBoolean = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "0",
-      "boolean"
+      "boolean",
     );
 
     expect(
       getBoolean(
         thingWithBoolean,
-        DataFactory.namedNode("https://some.vocab/predicate")
-      )
+        DataFactory.namedNode("https://some.vocab/predicate"),
+      ),
     ).toBe(false);
   });
 
@@ -442,11 +445,11 @@ describe("getBoolean", () => {
     const thingWithoutBoolean = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
-      "integer"
+      "integer",
     );
 
     expect(
-      getBoolean(thingWithoutBoolean, "https://some.vocab/predicate")
+      getBoolean(thingWithoutBoolean, "https://some.vocab/predicate"),
     ).toBeNull();
   });
 
@@ -454,7 +457,7 @@ describe("getBoolean", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Arbitrary value",
-      "string"
+      "string",
     );
     (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
       .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
@@ -464,7 +467,7 @@ describe("getBoolean", () => {
     ];
 
     expect(
-      getBoolean(thingWithDifferentDatatypes, "https://some.vocab/predicate")
+      getBoolean(thingWithDifferentDatatypes, "https://some.vocab/predicate"),
     ).toBe(true);
   });
 
@@ -472,11 +475,11 @@ describe("getBoolean", () => {
     const thingWithBoolean = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "1",
-      "boolean"
+      "boolean",
     );
 
     expect(
-      getBoolean(thingWithBoolean, "https://some-other.vocab/predicate")
+      getBoolean(thingWithBoolean, "https://some-other.vocab/predicate"),
     ).toBeNull();
   });
 
@@ -484,17 +487,17 @@ describe("getBoolean", () => {
     const thingWithNonBoolean = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Not a boolean",
-      "boolean"
+      "boolean",
     );
 
     expect(
-      getBoolean(thingWithNonBoolean, "https://some.vocab/predicate")
+      getBoolean(thingWithNonBoolean, "https://some.vocab/predicate"),
     ).toBeNull();
   });
 
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
-      getBoolean(null as unknown as Thing, "https://arbitrary.vocab/predicate")
+      getBoolean(null as unknown as Thing, "https://arbitrary.vocab/predicate"),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -502,10 +505,10 @@ describe("getBoolean", () => {
     expect(() =>
       getBoolean(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
-      )
+        "not-a-url",
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -515,7 +518,7 @@ describe("getBoolean", () => {
     try {
       getBoolean(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
+        "not-a-url",
       );
     } catch (e) {
       thrownError = e;
@@ -530,11 +533,11 @@ describe("getBooleanAll", () => {
       "https://some.vocab/predicate",
       "1",
       "0",
-      "boolean"
+      "boolean",
     );
 
     expect(
-      getBooleanAll(thingWithBooleans, "https://some.vocab/predicate")
+      getBooleanAll(thingWithBooleans, "https://some.vocab/predicate"),
     ).toEqual([true, false]);
   });
 
@@ -543,14 +546,14 @@ describe("getBooleanAll", () => {
       "https://some.vocab/predicate",
       "1",
       "0",
-      "boolean"
+      "boolean",
     );
 
     expect(
       getBooleanAll(
         thingWithBooleans,
-        DataFactory.namedNode("https://some.vocab/predicate")
-      )
+        DataFactory.namedNode("https://some.vocab/predicate"),
+      ),
     ).toEqual([true, false]);
   });
 
@@ -558,11 +561,11 @@ describe("getBooleanAll", () => {
     const thingWithoutBooleans = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
-      "integer"
+      "integer",
     );
 
     expect(
-      getBooleanAll(thingWithoutBooleans, "https://some.vocab/predicate")
+      getBooleanAll(thingWithoutBooleans, "https://some.vocab/predicate"),
     ).toEqual([]);
   });
 
@@ -570,7 +573,7 @@ describe("getBooleanAll", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Arbitrary value",
-      "string"
+      "string",
     );
     (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
       .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
@@ -580,7 +583,10 @@ describe("getBooleanAll", () => {
     ];
 
     expect(
-      getBooleanAll(thingWithDifferentDatatypes, "https://some.vocab/predicate")
+      getBooleanAll(
+        thingWithDifferentDatatypes,
+        "https://some.vocab/predicate",
+      ),
     ).toEqual([true]);
   });
 
@@ -588,11 +594,11 @@ describe("getBooleanAll", () => {
     const thingWithBoolean = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "1",
-      "boolean"
+      "boolean",
     );
 
     expect(
-      getBooleanAll(thingWithBoolean, "https://some-other.vocab/predicate")
+      getBooleanAll(thingWithBoolean, "https://some-other.vocab/predicate"),
     ).toEqual([]);
   });
 
@@ -601,11 +607,11 @@ describe("getBooleanAll", () => {
       "https://some.vocab/predicate",
       "Not a boolean",
       "0",
-      "boolean"
+      "boolean",
     );
 
     expect(
-      getBooleanAll(thingWithNonBoolean, "https://some.vocab/predicate")
+      getBooleanAll(thingWithNonBoolean, "https://some.vocab/predicate"),
     ).toEqual([false]);
   });
 
@@ -613,8 +619,8 @@ describe("getBooleanAll", () => {
     expect(() =>
       getBooleanAll(
         null as unknown as Thing,
-        "https://arbitrary.vocab/predicate"
-      )
+        "https://arbitrary.vocab/predicate",
+      ),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -622,10 +628,10 @@ describe("getBooleanAll", () => {
     expect(() =>
       getBooleanAll(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
-      )
+        "not-a-url",
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -635,7 +641,7 @@ describe("getBooleanAll", () => {
     try {
       getBooleanAll(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
+        "not-a-url",
       );
     } catch (e) {
       thrownError = e;
@@ -649,12 +655,12 @@ describe("getDatetime", () => {
     const thingWithDatetime = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "1990-11-12T13:37:42.000Z",
-      "dateTime"
+      "dateTime",
     );
     const expectedDate = new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0));
 
     expect(
-      getDatetime(thingWithDatetime, "https://some.vocab/predicate")
+      getDatetime(thingWithDatetime, "https://some.vocab/predicate"),
     ).toEqual(expectedDate);
   });
 
@@ -662,15 +668,15 @@ describe("getDatetime", () => {
     const thingWithDatetime = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "1990-11-12T13:37:42.000Z",
-      "dateTime"
+      "dateTime",
     );
     const expectedDate = new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0));
 
     expect(
       getDatetime(
         thingWithDatetime,
-        DataFactory.namedNode("https://some.vocab/predicate")
-      )
+        DataFactory.namedNode("https://some.vocab/predicate"),
+      ),
     ).toEqual(expectedDate);
   });
 
@@ -678,11 +684,11 @@ describe("getDatetime", () => {
     const thingWithoutDatetime = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
-      "integer"
+      "integer",
     );
 
     expect(
-      getDatetime(thingWithoutDatetime, "https://some.vocab/predicate")
+      getDatetime(thingWithoutDatetime, "https://some.vocab/predicate"),
     ).toBeNull();
   });
 
@@ -690,7 +696,7 @@ describe("getDatetime", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Arbitrary value",
-      "string"
+      "string",
     );
     (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
       .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
@@ -701,7 +707,7 @@ describe("getDatetime", () => {
     const expectedDate = new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0));
 
     expect(
-      getDatetime(thingWithDifferentDatatypes, "https://some.vocab/predicate")
+      getDatetime(thingWithDifferentDatatypes, "https://some.vocab/predicate"),
     ).toEqual(expectedDate);
   });
 
@@ -709,11 +715,11 @@ describe("getDatetime", () => {
     const thingWithDatetime = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "1990-11-12T13:37:42.000Z",
-      "dateTime"
+      "dateTime",
     );
 
     expect(
-      getDatetime(thingWithDatetime, "https://some-other.vocab/predicate")
+      getDatetime(thingWithDatetime, "https://some-other.vocab/predicate"),
     ).toBeNull();
   });
 
@@ -721,17 +727,20 @@ describe("getDatetime", () => {
     const thingWithNonDatetime = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Not a datetime",
-      "dateTime"
+      "dateTime",
     );
 
     expect(
-      getDatetime(thingWithNonDatetime, "https://some.vocab/predicate")
+      getDatetime(thingWithNonDatetime, "https://some.vocab/predicate"),
     ).toBeNull();
   });
 
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
-      getDatetime(null as unknown as Thing, "https://arbitrary.vocab/predicate")
+      getDatetime(
+        null as unknown as Thing,
+        "https://arbitrary.vocab/predicate",
+      ),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -739,10 +748,10 @@ describe("getDatetime", () => {
     expect(() =>
       getDatetime(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
-      )
+        "not-a-url",
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -752,7 +761,7 @@ describe("getDatetime", () => {
     try {
       getDatetime(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
+        "not-a-url",
       );
     } catch (e) {
       thrownError = e;
@@ -767,13 +776,13 @@ describe("getDatetimeAll", () => {
       "https://some.vocab/predicate",
       "1955-06-08T13:37:42.000Z",
       "1990-11-12T13:37:42.000Z",
-      "dateTime"
+      "dateTime",
     );
     const expectedDate1 = new Date(Date.UTC(1955, 5, 8, 13, 37, 42, 0));
     const expectedDate2 = new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0));
 
     expect(
-      getDatetimeAll(thingWithDatetimes, "https://some.vocab/predicate")
+      getDatetimeAll(thingWithDatetimes, "https://some.vocab/predicate"),
     ).toEqual([expectedDate1, expectedDate2]);
   });
 
@@ -782,7 +791,7 @@ describe("getDatetimeAll", () => {
       "https://some.vocab/predicate",
       "1955-06-08T13:37:42.000Z",
       "1990-11-12T13:37:42.000Z",
-      "dateTime"
+      "dateTime",
     );
     const expectedDate1 = new Date(Date.UTC(1955, 5, 8, 13, 37, 42, 0));
     const expectedDate2 = new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0));
@@ -790,8 +799,8 @@ describe("getDatetimeAll", () => {
     expect(
       getDatetimeAll(
         thingWithDatetimes,
-        DataFactory.namedNode("https://some.vocab/predicate")
-      )
+        DataFactory.namedNode("https://some.vocab/predicate"),
+      ),
     ).toEqual([expectedDate1, expectedDate2]);
   });
 
@@ -799,11 +808,11 @@ describe("getDatetimeAll", () => {
     const thingWithoutDatetimes = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
-      "integer"
+      "integer",
     );
 
     expect(
-      getDatetimeAll(thingWithoutDatetimes, "https://some.vocab/predicate")
+      getDatetimeAll(thingWithoutDatetimes, "https://some.vocab/predicate"),
     ).toEqual([]);
   });
 
@@ -811,7 +820,7 @@ describe("getDatetimeAll", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Arbitrary value",
-      "string"
+      "string",
     );
     (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
       .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
@@ -824,8 +833,8 @@ describe("getDatetimeAll", () => {
     expect(
       getDatetimeAll(
         thingWithDifferentDatatypes,
-        "https://some.vocab/predicate"
-      )
+        "https://some.vocab/predicate",
+      ),
     ).toEqual([expectedDate]);
   });
 
@@ -833,11 +842,11 @@ describe("getDatetimeAll", () => {
     const thingWithDatetime = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "1990-11-12T13:37:42.000Z",
-      "dateTime"
+      "dateTime",
     );
 
     expect(
-      getDatetimeAll(thingWithDatetime, "https://some-other.vocab/predicate")
+      getDatetimeAll(thingWithDatetime, "https://some-other.vocab/predicate"),
     ).toEqual([]);
   });
 
@@ -846,13 +855,13 @@ describe("getDatetimeAll", () => {
       "https://some.vocab/predicate",
       "Not a datetime",
       "1990-11-12T13:37:42.000Z",
-      "dateTime"
+      "dateTime",
     );
 
     const expectedDate = new Date(Date.UTC(1990, 10, 12, 13, 37, 42, 0));
 
     expect(
-      getDatetimeAll(thingWithNonDatetime, "https://some.vocab/predicate")
+      getDatetimeAll(thingWithNonDatetime, "https://some.vocab/predicate"),
     ).toEqual([expectedDate]);
   });
 
@@ -860,8 +869,8 @@ describe("getDatetimeAll", () => {
     expect(() =>
       getDatetimeAll(
         null as unknown as Thing,
-        "https://arbitrary.vocab/predicate"
-      )
+        "https://arbitrary.vocab/predicate",
+      ),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -869,10 +878,10 @@ describe("getDatetimeAll", () => {
     expect(() =>
       getDatetimeAll(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
-      )
+        "not-a-url",
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -882,7 +891,7 @@ describe("getDatetimeAll", () => {
     try {
       getDatetimeAll(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
+        "not-a-url",
       );
     } catch (e) {
       thrownError = e;
@@ -896,12 +905,12 @@ describe("getDate", () => {
     const thingWithDate = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "1990-11-12Z",
-      "date"
+      "date",
     );
     const expectedDate = new Date(Date.UTC(1990, 10, 12, 12));
 
     expect(getDate(thingWithDate, "https://some.vocab/predicate")).toEqual(
-      expectedDate
+      expectedDate,
     );
   });
 
@@ -909,15 +918,15 @@ describe("getDate", () => {
     const thingWithDate = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "1990-11-12Z",
-      "date"
+      "date",
     );
     const expectedDate = new Date(Date.UTC(1990, 10, 12, 12));
 
     expect(
       getDate(
         thingWithDate,
-        DataFactory.namedNode("https://some.vocab/predicate")
-      )
+        DataFactory.namedNode("https://some.vocab/predicate"),
+      ),
     ).toEqual(expectedDate);
   });
 
@@ -925,11 +934,11 @@ describe("getDate", () => {
     const thingWithoutDate = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
-      "integer"
+      "integer",
     );
 
     expect(
-      getDate(thingWithoutDate, "https://some.vocab/predicate")
+      getDate(thingWithoutDate, "https://some.vocab/predicate"),
     ).toBeNull();
   });
 
@@ -937,7 +946,7 @@ describe("getDate", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Arbitrary value",
-      "string"
+      "string",
     );
     (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
       .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
@@ -948,7 +957,7 @@ describe("getDate", () => {
     const expectedDate = new Date(Date.UTC(1990, 10, 12, 12));
 
     expect(
-      getDate(thingWithDifferentDatatypes, "https://some.vocab/predicate")
+      getDate(thingWithDifferentDatatypes, "https://some.vocab/predicate"),
     ).toEqual(expectedDate);
   });
 
@@ -956,11 +965,11 @@ describe("getDate", () => {
     const thingWithDate = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "1990-11-12",
-      "date"
+      "date",
     );
 
     expect(
-      getDate(thingWithDate, "https://some-other.vocab/predicate")
+      getDate(thingWithDate, "https://some-other.vocab/predicate"),
     ).toBeNull();
   });
 
@@ -968,17 +977,17 @@ describe("getDate", () => {
     const thingWithNonDate = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Not a date",
-      "date"
+      "date",
     );
 
     expect(
-      getDate(thingWithNonDate, "https://some.vocab/predicate")
+      getDate(thingWithNonDate, "https://some.vocab/predicate"),
     ).toBeNull();
   });
 
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
-      getDate(null as unknown as Thing, "https://arbitrary.vocab/predicate")
+      getDate(null as unknown as Thing, "https://arbitrary.vocab/predicate"),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -986,10 +995,10 @@ describe("getDate", () => {
     expect(() =>
       getDate(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
-      )
+        "not-a-url",
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -999,7 +1008,7 @@ describe("getDate", () => {
     try {
       getDate(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
+        "not-a-url",
       );
     } catch (e) {
       thrownError = e;
@@ -1014,7 +1023,7 @@ describe("getDateAll", () => {
       "https://some.vocab/predicate",
       "1955-06-08",
       "1990-11-12",
-      "date"
+      "date",
     );
     const expectedDate1 = new Date(Date.UTC(1955, 5, 8, 12));
     const expectedDate2 = new Date(Date.UTC(1990, 10, 12, 12));
@@ -1030,7 +1039,7 @@ describe("getDateAll", () => {
       "https://some.vocab/predicate",
       "1955-06-08",
       "1990-11-12",
-      "date"
+      "date",
     );
     const expectedDate1 = new Date(Date.UTC(1955, 5, 8, 12));
     const expectedDate2 = new Date(Date.UTC(1990, 10, 12, 12));
@@ -1038,8 +1047,8 @@ describe("getDateAll", () => {
     expect(
       getDateAll(
         thingWithDates,
-        DataFactory.namedNode("https://some.vocab/predicate")
-      )
+        DataFactory.namedNode("https://some.vocab/predicate"),
+      ),
     ).toEqual([expectedDate1, expectedDate2]);
   });
 
@@ -1047,11 +1056,11 @@ describe("getDateAll", () => {
     const thingWithoutDates = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
-      "integer"
+      "integer",
     );
 
     expect(
-      getDateAll(thingWithoutDates, "https://some.vocab/predicate")
+      getDateAll(thingWithoutDates, "https://some.vocab/predicate"),
     ).toEqual([]);
   });
 
@@ -1059,7 +1068,7 @@ describe("getDateAll", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Arbitrary value",
-      "string"
+      "string",
     );
     (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
       .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
@@ -1070,7 +1079,7 @@ describe("getDateAll", () => {
     const expectedDate = new Date(Date.UTC(1990, 10, 12, 12));
 
     expect(
-      getDateAll(thingWithDifferentDatatypes, "https://some.vocab/predicate")
+      getDateAll(thingWithDifferentDatatypes, "https://some.vocab/predicate"),
     ).toEqual([expectedDate]);
   });
 
@@ -1078,11 +1087,11 @@ describe("getDateAll", () => {
     const thingWithDate = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "1990-11-12",
-      "date"
+      "date",
     );
 
     expect(
-      getDateAll(thingWithDate, "https://some-other.vocab/predicate")
+      getDateAll(thingWithDate, "https://some-other.vocab/predicate"),
     ).toEqual([]);
   });
 
@@ -1091,19 +1100,19 @@ describe("getDateAll", () => {
       "https://some.vocab/predicate",
       "Not a date",
       "1990-11-12",
-      "date"
+      "date",
     );
 
     const expectedDate = new Date(Date.UTC(1990, 10, 12, 12));
 
     expect(
-      getDateAll(thingWithNonDate, "https://some.vocab/predicate")
+      getDateAll(thingWithNonDate, "https://some.vocab/predicate"),
     ).toEqual([expectedDate]);
   });
 
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
-      getDateAll(null as unknown as Thing, "https://arbitrary.vocab/predicate")
+      getDateAll(null as unknown as Thing, "https://arbitrary.vocab/predicate"),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -1111,10 +1120,10 @@ describe("getDateAll", () => {
     expect(() =>
       getDateAll(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
-      )
+        "not-a-url",
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -1124,7 +1133,7 @@ describe("getDateAll", () => {
     try {
       getDateAll(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
+        "not-a-url",
       );
     } catch (e) {
       thrownError = e;
@@ -1138,7 +1147,7 @@ describe("getTime", () => {
     const thingWithTime = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "13:37:42",
-      "time"
+      "time",
     );
     const expectedTime = {
       hour: 13,
@@ -1147,7 +1156,7 @@ describe("getTime", () => {
     };
 
     expect(
-      getTime(thingWithTime, "https://some.vocab/predicate")
+      getTime(thingWithTime, "https://some.vocab/predicate"),
     ).toStrictEqual(expectedTime);
   });
 
@@ -1155,7 +1164,7 @@ describe("getTime", () => {
     const thingWithTime = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "13:37:42",
-      "time"
+      "time",
     );
     const expectedTime = {
       hour: 13,
@@ -1166,8 +1175,8 @@ describe("getTime", () => {
     expect(
       getTime(
         thingWithTime,
-        DataFactory.namedNode("https://some.vocab/predicate")
-      )
+        DataFactory.namedNode("https://some.vocab/predicate"),
+      ),
     ).toStrictEqual(expectedTime);
   });
 
@@ -1175,11 +1184,11 @@ describe("getTime", () => {
     const thingWithoutTime = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
-      "integer"
+      "integer",
     );
 
     expect(
-      getTime(thingWithoutTime, "https://some.vocab/predicate")
+      getTime(thingWithoutTime, "https://some.vocab/predicate"),
     ).toBeNull();
   });
 
@@ -1187,7 +1196,7 @@ describe("getTime", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Arbitrary value",
-      "string"
+      "string",
     );
     (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
       .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
@@ -1202,7 +1211,7 @@ describe("getTime", () => {
     };
 
     expect(
-      getTime(thingWithDifferentDatatypes, "https://some.vocab/predicate")
+      getTime(thingWithDifferentDatatypes, "https://some.vocab/predicate"),
     ).toStrictEqual(expectedTime);
   });
 
@@ -1210,11 +1219,11 @@ describe("getTime", () => {
     const thingWithTime = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "13:37:42",
-      "time"
+      "time",
     );
 
     expect(
-      getTime(thingWithTime, "https://some-other.vocab/predicate")
+      getTime(thingWithTime, "https://some-other.vocab/predicate"),
     ).toBeNull();
   });
 
@@ -1222,17 +1231,17 @@ describe("getTime", () => {
     const thingWithNonTime = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Not a time",
-      "time"
+      "time",
     );
 
     expect(
-      getTime(thingWithNonTime, "https://some.vocab/predicate")
+      getTime(thingWithNonTime, "https://some.vocab/predicate"),
     ).toBeNull();
   });
 
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
-      getTime(null as unknown as Thing, "https://arbitrary.vocab/predicate")
+      getTime(null as unknown as Thing, "https://arbitrary.vocab/predicate"),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -1240,10 +1249,10 @@ describe("getTime", () => {
     expect(() =>
       getTime(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
-      )
+        "not-a-url",
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -1253,7 +1262,7 @@ describe("getTime", () => {
     try {
       getTime(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
+        "not-a-url",
       );
     } catch (e) {
       thrownError = e;
@@ -1268,7 +1277,7 @@ describe("getTimeAll", () => {
       "https://some.vocab/predicate",
       "14:37:42",
       "13:37:42",
-      "time"
+      "time",
     );
     const expectedTime1 = {
       hour: 14,
@@ -1282,7 +1291,7 @@ describe("getTimeAll", () => {
     };
 
     expect(
-      getTimeAll(thingWithTimes, "https://some.vocab/predicate")
+      getTimeAll(thingWithTimes, "https://some.vocab/predicate"),
     ).toStrictEqual([expectedTime1, expectedTime2]);
   });
 
@@ -1291,7 +1300,7 @@ describe("getTimeAll", () => {
       "https://some.vocab/predicate",
       "14:37:42",
       "13:37:42",
-      "time"
+      "time",
     );
     const expectedTime1 = {
       hour: 14,
@@ -1307,8 +1316,8 @@ describe("getTimeAll", () => {
     expect(
       getTimeAll(
         thingWithTimes,
-        DataFactory.namedNode("https://some.vocab/predicate")
-      )
+        DataFactory.namedNode("https://some.vocab/predicate"),
+      ),
     ).toStrictEqual([expectedTime1, expectedTime2]);
   });
 
@@ -1316,11 +1325,11 @@ describe("getTimeAll", () => {
     const thingWithoutTimes = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
-      "integer"
+      "integer",
     );
 
     expect(
-      getTimeAll(thingWithoutTimes, "https://some.vocab/predicate")
+      getTimeAll(thingWithoutTimes, "https://some.vocab/predicate"),
     ).toStrictEqual([]);
   });
 
@@ -1328,7 +1337,7 @@ describe("getTimeAll", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Arbitrary value",
-      "string"
+      "string",
     );
     (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
       .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
@@ -1343,7 +1352,7 @@ describe("getTimeAll", () => {
     };
 
     expect(
-      getTimeAll(thingWithDifferentDatatypes, "https://some.vocab/predicate")
+      getTimeAll(thingWithDifferentDatatypes, "https://some.vocab/predicate"),
     ).toStrictEqual([expectedTime]);
   });
 
@@ -1351,11 +1360,11 @@ describe("getTimeAll", () => {
     const thingWithTime = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "13:37:42",
-      "time"
+      "time",
     );
 
     expect(
-      getTimeAll(thingWithTime, "https://some-other.vocab/predicate")
+      getTimeAll(thingWithTime, "https://some-other.vocab/predicate"),
     ).toStrictEqual([]);
   });
 
@@ -1364,7 +1373,7 @@ describe("getTimeAll", () => {
       "https://some.vocab/predicate",
       "Not a time",
       "13:37:42",
-      "time"
+      "time",
     );
 
     const expectedTime = {
@@ -1374,13 +1383,13 @@ describe("getTimeAll", () => {
     };
 
     expect(
-      getTimeAll(thingWithNonTime, "https://some.vocab/predicate")
+      getTimeAll(thingWithNonTime, "https://some.vocab/predicate"),
     ).toStrictEqual([expectedTime]);
   });
 
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
-      getTimeAll(null as unknown as Thing, "https://arbitrary.vocab/predicate")
+      getTimeAll(null as unknown as Thing, "https://arbitrary.vocab/predicate"),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -1388,10 +1397,10 @@ describe("getTimeAll", () => {
     expect(() =>
       getTimeAll(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
-      )
+        "not-a-url",
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -1401,7 +1410,7 @@ describe("getTimeAll", () => {
     try {
       getTimeAll(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
+        "not-a-url",
       );
     } catch (e) {
       thrownError = e;
@@ -1415,11 +1424,11 @@ describe("getDecimal", () => {
     const thingWithDecimal = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "13.37",
-      "decimal"
+      "decimal",
     );
 
     expect(getDecimal(thingWithDecimal, "https://some.vocab/predicate")).toBe(
-      13.37
+      13.37,
     );
   });
 
@@ -1427,14 +1436,14 @@ describe("getDecimal", () => {
     const thingWithDecimal = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "13.37",
-      "decimal"
+      "decimal",
     );
 
     expect(
       getDecimal(
         thingWithDecimal,
-        DataFactory.namedNode("https://some.vocab/predicate")
-      )
+        DataFactory.namedNode("https://some.vocab/predicate"),
+      ),
     ).toBe(13.37);
   });
 
@@ -1442,11 +1451,11 @@ describe("getDecimal", () => {
     const thingWithoutDecimal = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
-      "integer"
+      "integer",
     );
 
     expect(
-      getDecimal(thingWithoutDecimal, "https://some.vocab/predicate")
+      getDecimal(thingWithoutDecimal, "https://some.vocab/predicate"),
     ).toBeNull();
   });
 
@@ -1454,7 +1463,7 @@ describe("getDecimal", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Arbitrary value",
-      "string"
+      "string",
     );
     (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
       .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
@@ -1464,7 +1473,7 @@ describe("getDecimal", () => {
     ];
 
     expect(
-      getDecimal(thingWithDifferentDatatypes, "https://some.vocab/predicate")
+      getDecimal(thingWithDifferentDatatypes, "https://some.vocab/predicate"),
     ).toBe(13.37);
   });
 
@@ -1472,17 +1481,17 @@ describe("getDecimal", () => {
     const thingWithDecimal = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "13.37",
-      "decimal"
+      "decimal",
     );
 
     expect(
-      getDecimal(thingWithDecimal, "https://some-other.vocab/predicate")
+      getDecimal(thingWithDecimal, "https://some-other.vocab/predicate"),
     ).toBeNull();
   });
 
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
-      getDecimal(null as unknown as Thing, "https://arbitrary.vocab/predicate")
+      getDecimal(null as unknown as Thing, "https://arbitrary.vocab/predicate"),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -1490,10 +1499,10 @@ describe("getDecimal", () => {
     expect(() =>
       getDecimal(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
-      )
+        "not-a-url",
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -1503,7 +1512,7 @@ describe("getDecimal", () => {
     try {
       getDecimal(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
+        "not-a-url",
       );
     } catch (e) {
       thrownError = e;
@@ -1518,11 +1527,11 @@ describe("getDecimalAll", () => {
       "https://some.vocab/predicate",
       "13.37",
       "7.2",
-      "decimal"
+      "decimal",
     );
 
     expect(
-      getDecimalAll(thingWithDecimals, "https://some.vocab/predicate")
+      getDecimalAll(thingWithDecimals, "https://some.vocab/predicate"),
     ).toEqual([13.37, 7.2]);
   });
 
@@ -1531,14 +1540,14 @@ describe("getDecimalAll", () => {
       "https://some.vocab/predicate",
       "13.37",
       "7.2",
-      "decimal"
+      "decimal",
     );
 
     expect(
       getDecimalAll(
         thingWithDecimals,
-        DataFactory.namedNode("https://some.vocab/predicate")
-      )
+        DataFactory.namedNode("https://some.vocab/predicate"),
+      ),
     ).toEqual([13.37, 7.2]);
   });
 
@@ -1546,11 +1555,11 @@ describe("getDecimalAll", () => {
     const thingWithoutDecimals = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
-      "integer"
+      "integer",
     );
 
     expect(
-      getDecimalAll(thingWithoutDecimals, "https://some.vocab/predicate")
+      getDecimalAll(thingWithoutDecimals, "https://some.vocab/predicate"),
     ).toEqual([]);
   });
 
@@ -1558,7 +1567,7 @@ describe("getDecimalAll", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Arbitrary value",
-      "string"
+      "string",
     );
     (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
       .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
@@ -1568,7 +1577,10 @@ describe("getDecimalAll", () => {
     ];
 
     expect(
-      getDecimalAll(thingWithDifferentDatatypes, "https://some.vocab/predicate")
+      getDecimalAll(
+        thingWithDifferentDatatypes,
+        "https://some.vocab/predicate",
+      ),
     ).toEqual([13.37]);
   });
 
@@ -1576,11 +1588,11 @@ describe("getDecimalAll", () => {
     const thingWithDecimal = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "13.37",
-      "decimal"
+      "decimal",
     );
 
     expect(
-      getDecimalAll(thingWithDecimal, "https://some-other.vocab/predicate")
+      getDecimalAll(thingWithDecimal, "https://some-other.vocab/predicate"),
     ).toEqual([]);
   });
 
@@ -1588,8 +1600,8 @@ describe("getDecimalAll", () => {
     expect(() =>
       getDecimalAll(
         null as unknown as Thing,
-        "https://arbitrary.vocab/predicate"
-      )
+        "https://arbitrary.vocab/predicate",
+      ),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -1597,10 +1609,10 @@ describe("getDecimalAll", () => {
     expect(() =>
       getDecimalAll(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
-      )
+        "not-a-url",
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -1610,7 +1622,7 @@ describe("getDecimalAll", () => {
     try {
       getDecimalAll(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
+        "not-a-url",
       );
     } catch (e) {
       thrownError = e;
@@ -1624,11 +1636,11 @@ describe("getInteger", () => {
     const thingWithInteger = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
-      "integer"
+      "integer",
     );
 
     expect(getInteger(thingWithInteger, "https://some.vocab/predicate")).toBe(
-      42
+      42,
     );
   });
 
@@ -1636,14 +1648,14 @@ describe("getInteger", () => {
     const thingWithInteger = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
-      "integer"
+      "integer",
     );
 
     expect(
       getInteger(
         thingWithInteger,
-        DataFactory.namedNode("https://some.vocab/predicate")
-      )
+        DataFactory.namedNode("https://some.vocab/predicate"),
+      ),
     ).toBe(42);
   });
 
@@ -1651,11 +1663,11 @@ describe("getInteger", () => {
     const thingWithoutInteger = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "13.37",
-      "decimal"
+      "decimal",
     );
 
     expect(
-      getInteger(thingWithoutInteger, "https://some.vocab/predicate")
+      getInteger(thingWithoutInteger, "https://some.vocab/predicate"),
     ).toBeNull();
   });
 
@@ -1663,7 +1675,7 @@ describe("getInteger", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Arbitrary value",
-      "string"
+      "string",
     );
     (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
       .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
@@ -1673,7 +1685,7 @@ describe("getInteger", () => {
     ];
 
     expect(
-      getInteger(thingWithDifferentDatatypes, "https://some.vocab/predicate")
+      getInteger(thingWithDifferentDatatypes, "https://some.vocab/predicate"),
     ).toBe(42);
   });
 
@@ -1681,17 +1693,17 @@ describe("getInteger", () => {
     const thingWithInteger = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
-      "integer"
+      "integer",
     );
 
     expect(
-      getInteger(thingWithInteger, "https://some-other.vocab/predicate")
+      getInteger(thingWithInteger, "https://some-other.vocab/predicate"),
     ).toBeNull();
   });
 
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
-      getInteger(null as unknown as Thing, "https://arbitrary.vocab/predicate")
+      getInteger(null as unknown as Thing, "https://arbitrary.vocab/predicate"),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -1699,10 +1711,10 @@ describe("getInteger", () => {
     expect(() =>
       getInteger(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
-      )
+        "not-a-url",
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -1712,7 +1724,7 @@ describe("getInteger", () => {
     try {
       getInteger(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
+        "not-a-url",
       );
     } catch (e) {
       thrownError = e;
@@ -1727,11 +1739,11 @@ describe("getIntegerAll", () => {
       "https://some.vocab/predicate",
       "42",
       "1337",
-      "integer"
+      "integer",
     );
 
     expect(
-      getIntegerAll(thingWithIntegers, "https://some.vocab/predicate")
+      getIntegerAll(thingWithIntegers, "https://some.vocab/predicate"),
     ).toEqual([42, 1337]);
   });
 
@@ -1740,14 +1752,14 @@ describe("getIntegerAll", () => {
       "https://some.vocab/predicate",
       "42",
       "1337",
-      "integer"
+      "integer",
     );
 
     expect(
       getIntegerAll(
         thingWithIntegers,
-        DataFactory.namedNode("https://some.vocab/predicate")
-      )
+        DataFactory.namedNode("https://some.vocab/predicate"),
+      ),
     ).toEqual([42, 1337]);
   });
 
@@ -1755,11 +1767,11 @@ describe("getIntegerAll", () => {
     const thingWithoutIntegers = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "13.37",
-      "decimal"
+      "decimal",
     );
 
     expect(
-      getIntegerAll(thingWithoutIntegers, "https://some.vocab/predicate")
+      getIntegerAll(thingWithoutIntegers, "https://some.vocab/predicate"),
     ).toEqual([]);
   });
 
@@ -1767,7 +1779,7 @@ describe("getIntegerAll", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Arbitrary value",
-      "string"
+      "string",
     );
     (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
       .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
@@ -1777,7 +1789,10 @@ describe("getIntegerAll", () => {
     ];
 
     expect(
-      getIntegerAll(thingWithDifferentDatatypes, "https://some.vocab/predicate")
+      getIntegerAll(
+        thingWithDifferentDatatypes,
+        "https://some.vocab/predicate",
+      ),
     ).toEqual([42]);
   });
 
@@ -1785,11 +1800,11 @@ describe("getIntegerAll", () => {
     const thingWithInteger = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
-      "integer"
+      "integer",
     );
 
     expect(
-      getIntegerAll(thingWithInteger, "https://some-other.vocab/predicate")
+      getIntegerAll(thingWithInteger, "https://some-other.vocab/predicate"),
     ).toEqual([]);
   });
 
@@ -1797,8 +1812,8 @@ describe("getIntegerAll", () => {
     expect(() =>
       getIntegerAll(
         null as unknown as Thing,
-        "https://arbitrary.vocab/predicate"
-      )
+        "https://arbitrary.vocab/predicate",
+      ),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -1806,10 +1821,10 @@ describe("getIntegerAll", () => {
     expect(() =>
       getIntegerAll(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
-      )
+        "not-a-url",
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -1819,7 +1834,7 @@ describe("getIntegerAll", () => {
     try {
       getIntegerAll(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
+        "not-a-url",
       );
     } catch (e) {
       thrownError = e;
@@ -1843,7 +1858,7 @@ describe("getStringEnglish", () => {
     };
 
     expect(
-      getStringEnglish(thingWithLocaleString, "https://some.vocab/predicate")
+      getStringEnglish(thingWithLocaleString, "https://some.vocab/predicate"),
     ).toBe("Some value");
   });
 });
@@ -1893,8 +1908,8 @@ describe("getStringWithLocale", () => {
       getStringWithLocale(
         thingWithLocaleString,
         "https://some.vocab/predicate",
-        "nl-NL"
-      )
+        "nl-NL",
+      ),
     ).toBe("Some value");
   });
 
@@ -1915,8 +1930,8 @@ describe("getStringWithLocale", () => {
       getStringWithLocale(
         thingWithLocaleString,
         DataFactory.namedNode("https://some.vocab/predicate"),
-        "nl-NL"
-      )
+        "nl-NL",
+      ),
     ).toBe("Some value");
   });
 
@@ -1937,8 +1952,8 @@ describe("getStringWithLocale", () => {
       getStringWithLocale(
         thingWithLocaleString,
         "https://some.vocab/predicate",
-        "NL-nL"
-      )
+        "NL-nL",
+      ),
     ).toBe("Some value");
   });
 
@@ -1946,15 +1961,15 @@ describe("getStringWithLocale", () => {
     const thingWithoutStringNoLocale = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
-      "integer"
+      "integer",
     );
 
     expect(
       getStringWithLocale(
         thingWithoutStringNoLocale,
         "https://some.vocab/predicate",
-        "nl-NL"
-      )
+        "nl-NL",
+      ),
     ).toBeNull();
   });
 
@@ -1975,15 +1990,15 @@ describe("getStringWithLocale", () => {
       getStringWithLocale(
         thingWithDifferentLocaleString,
         "https://some.vocab/predicate",
-        "en-GB"
-      )
+        "en-GB",
+      ),
     ).toBeNull();
     expect(
       getStringWithLocale(
         thingWithDifferentLocaleString,
         "https://some.vocab/predicate",
-        "nl"
-      )
+        "nl",
+      ),
     ).toBeNull();
   });
 
@@ -1992,12 +2007,12 @@ describe("getStringWithLocale", () => {
     const quadWithLocaleString = DataFactory.quad(
       DataFactory.namedNode("https://arbitrary.vocab/subject"),
       DataFactory.namedNode("https://some.vocab/predicate"),
-      literalWithLocale
+      literalWithLocale,
     );
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
-      "integer"
+      "integer",
     );
     (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
       .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
@@ -2010,8 +2025,8 @@ describe("getStringWithLocale", () => {
       getStringWithLocale(
         thingWithDifferentDatatypes,
         "https://some.vocab/predicate",
-        "nl-NL"
-      )
+        "nl-NL",
+      ),
     ).toBe("Some value");
   });
 
@@ -2032,8 +2047,8 @@ describe("getStringWithLocale", () => {
       getStringWithLocale(
         thingWithLocaleString,
         "https://some-other.vocab/predicate",
-        "nl-NL"
-      )
+        "nl-NL",
+      ),
     ).toBeNull();
   });
 
@@ -2042,8 +2057,8 @@ describe("getStringWithLocale", () => {
       getStringWithLocale(
         null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
-        "nl-NL"
-      )
+        "nl-NL",
+      ),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -2052,10 +2067,10 @@ describe("getStringWithLocale", () => {
       getStringWithLocale(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "not-a-url",
-        "nl-NL"
-      )
+        "nl-NL",
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -2066,7 +2081,7 @@ describe("getStringWithLocale", () => {
       getStringWithLocale(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "not-a-url",
-        "nl-NL"
+        "nl-NL",
       );
     } catch (e) {
       thrownError = e;
@@ -2092,7 +2107,7 @@ describe("getStringByLocaleAll", () => {
     };
 
     expect(
-      Array.from(getStringByLocaleAll(thingWithLocaleStrings, PREDICATE))
+      Array.from(getStringByLocaleAll(thingWithLocaleStrings, PREDICATE)),
     ).toEqual([
       ["en", ["value 1", "value 2"]],
       ["fr", ["value 3"]],
@@ -2118,7 +2133,7 @@ describe("getStringByLocaleAll", () => {
     };
 
     expect(
-      Array.from(getStringByLocaleAll(thingWithLocaleStrings, PREDICATE))
+      Array.from(getStringByLocaleAll(thingWithLocaleStrings, PREDICATE)),
     ).toEqual([
       ["fr", ["value 1"]],
       ["es", ["value 3", "value 5"]],
@@ -2144,7 +2159,7 @@ describe("getStringByLocaleAll", () => {
     //  <SUBJECT> <PREDICATE> "chien"@fr .
     //  <SUBJECT> <PREDICATE> "dog"^^rdf:langString .
     expect(
-      Array.from(getStringByLocaleAll(thingWithLocaleStrings, PREDICATE))
+      Array.from(getStringByLocaleAll(thingWithLocaleStrings, PREDICATE)),
     ).toEqual([
       ["fr", ["chien"]],
       ["", ["dog"]],
@@ -2169,7 +2184,7 @@ describe("getStringByLocaleAll", () => {
     };
 
     expect(
-      Array.from(getStringByLocaleAll(thingWithLocaleStrings, PREDICATE))
+      Array.from(getStringByLocaleAll(thingWithLocaleStrings, PREDICATE)),
     ).toEqual([["fr", ["value 1"]]]);
   });
 
@@ -2188,7 +2203,7 @@ describe("getStringByLocaleAll", () => {
     };
 
     expect(
-      Array.from(getStringByLocaleAll(thingWithLocaleStrings, PREDICATE))
+      Array.from(getStringByLocaleAll(thingWithLocaleStrings, PREDICATE)),
     ).toEqual([]);
   });
 
@@ -2200,7 +2215,7 @@ describe("getStringByLocaleAll", () => {
     };
 
     expect(
-      Array.from(getStringByLocaleAll(thingWithLocaleStrings, PREDICATE))
+      Array.from(getStringByLocaleAll(thingWithLocaleStrings, PREDICATE)),
     ).toEqual([]);
   });
 
@@ -2208,8 +2223,8 @@ describe("getStringByLocaleAll", () => {
     expect(() =>
       getStringByLocaleAll(
         null as unknown as Thing,
-        "https://arbitrary.vocab/predicate"
-      )
+        "https://arbitrary.vocab/predicate",
+      ),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -2217,10 +2232,10 @@ describe("getStringByLocaleAll", () => {
     expect(() =>
       getStringByLocaleAll(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
-      )
+        "not-a-url",
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -2230,7 +2245,7 @@ describe("getStringByLocaleAll", () => {
     try {
       getStringByLocaleAll(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
+        "not-a-url",
       );
     } catch (e) {
       thrownError = e;
@@ -2262,7 +2277,7 @@ describe("getStringWithLocaleAll", () => {
     //  according to https://w3c.github.io/rdf-dir-literal/langString.html#literals
     //  it seems language tags *must* be non-empty...
     expect(
-      getStringWithLocaleAll(thingWithLocaleStrings, PREDICATE, "")
+      getStringWithLocaleAll(thingWithLocaleStrings, PREDICATE, ""),
     ).toEqual(["value 3"]);
   });
 
@@ -2283,8 +2298,8 @@ describe("getStringWithLocaleAll", () => {
       getStringWithLocaleAll(
         thingWithLocaleStrings,
         "https://some.vocab/predicate",
-        "nl-NL"
-      )
+        "nl-NL",
+      ),
     ).toEqual(["Some value 1", "Some value 2"]);
   });
 
@@ -2305,8 +2320,8 @@ describe("getStringWithLocaleAll", () => {
       getStringWithLocaleAll(
         thingWithLocaleStrings,
         DataFactory.namedNode("https://some.vocab/predicate"),
-        "nl-NL"
-      )
+        "nl-NL",
+      ),
     ).toEqual(["Some value 1", "Some value 2"]);
   });
 
@@ -2327,8 +2342,8 @@ describe("getStringWithLocaleAll", () => {
       getStringWithLocaleAll(
         thingWithLocaleString,
         "https://some.vocab/predicate",
-        "NL-nL"
-      )
+        "NL-nL",
+      ),
     ).toEqual(["Some value"]);
   });
 
@@ -2336,15 +2351,15 @@ describe("getStringWithLocaleAll", () => {
     const thingWithoutStringNoLocales = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
-      "integer"
+      "integer",
     );
 
     expect(
       getStringWithLocaleAll(
         thingWithoutStringNoLocales,
         "https://some.vocab/predicate",
-        "nl-NL"
-      )
+        "nl-NL",
+      ),
     ).toEqual([]);
   });
 
@@ -2365,15 +2380,15 @@ describe("getStringWithLocaleAll", () => {
       getStringWithLocaleAll(
         thingWithDifferentLocaleStrings,
         "https://some.vocab/predicate",
-        "en-GB"
-      )
+        "en-GB",
+      ),
     ).toEqual([]);
     expect(
       getStringWithLocaleAll(
         thingWithDifferentLocaleStrings,
         "https://some.vocab/predicate",
-        "nl"
-      )
+        "nl",
+      ),
     ).toEqual([]);
   });
 
@@ -2381,7 +2396,7 @@ describe("getStringWithLocaleAll", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
-      "integer"
+      "integer",
     );
     (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
       .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
@@ -2394,8 +2409,8 @@ describe("getStringWithLocaleAll", () => {
       getStringWithLocaleAll(
         thingWithDifferentDatatypes,
         "https://some.vocab/predicate",
-        "nl-NL"
-      )
+        "nl-NL",
+      ),
     ).toEqual(["Some value"]);
   });
 
@@ -2416,8 +2431,8 @@ describe("getStringWithLocaleAll", () => {
       getStringWithLocaleAll(
         thingWithLocaleString,
         "https://some-other.vocab/predicate",
-        "nl-NL"
-      )
+        "nl-NL",
+      ),
     ).toEqual([]);
   });
 
@@ -2426,8 +2441,8 @@ describe("getStringWithLocaleAll", () => {
       getStringWithLocaleAll(
         null as unknown as Thing,
         "https://arbitrary.vocab/predicate",
-        "nl-NL"
-      )
+        "nl-NL",
+      ),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -2436,10 +2451,10 @@ describe("getStringWithLocaleAll", () => {
       getStringWithLocaleAll(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "not-a-url",
-        "nl-NL"
-      )
+        "nl-NL",
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -2450,7 +2465,7 @@ describe("getStringWithLocaleAll", () => {
       getStringWithLocaleAll(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
         "not-a-url",
-        "nl-NL"
+        "nl-NL",
       );
     } catch (e) {
       thrownError = e;
@@ -2464,11 +2479,14 @@ describe("getStringNoLocale", () => {
     const thingWithStringNoLocale = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Some value",
-      "string"
+      "string",
     );
 
     expect(
-      getStringNoLocale(thingWithStringNoLocale, "https://some.vocab/predicate")
+      getStringNoLocale(
+        thingWithStringNoLocale,
+        "https://some.vocab/predicate",
+      ),
     ).toBe("Some value");
   });
 
@@ -2476,14 +2494,14 @@ describe("getStringNoLocale", () => {
     const thingWithStringNoLocale = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Some value",
-      "string"
+      "string",
     );
 
     expect(
       getStringNoLocale(
         thingWithStringNoLocale,
-        DataFactory.namedNode("https://some.vocab/predicate")
-      )
+        DataFactory.namedNode("https://some.vocab/predicate"),
+      ),
     ).toBe("Some value");
   });
 
@@ -2491,14 +2509,14 @@ describe("getStringNoLocale", () => {
     const thingWithoutStringNoLocale = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
-      "integer"
+      "integer",
     );
 
     expect(
       getStringNoLocale(
         thingWithoutStringNoLocale,
-        "https://some.vocab/predicate"
-      )
+        "https://some.vocab/predicate",
+      ),
     ).toBeNull();
   });
 
@@ -2506,7 +2524,7 @@ describe("getStringNoLocale", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
-      "integer"
+      "integer",
     );
     (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
       .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
@@ -2516,8 +2534,8 @@ describe("getStringNoLocale", () => {
     expect(
       getStringNoLocale(
         thingWithDifferentDatatypes,
-        "https://some.vocab/predicate"
-      )
+        "https://some.vocab/predicate",
+      ),
     ).toBe("Some value");
   });
 
@@ -2525,14 +2543,14 @@ describe("getStringNoLocale", () => {
     const thingWithStringNoLocale = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Arbitrary value",
-      "string"
+      "string",
     );
 
     expect(
       getStringNoLocale(
         thingWithStringNoLocale,
-        "https://some-other.vocab/predicate"
-      )
+        "https://some-other.vocab/predicate",
+      ),
     ).toBeNull();
   });
 
@@ -2540,8 +2558,8 @@ describe("getStringNoLocale", () => {
     expect(() =>
       getStringNoLocale(
         null as unknown as Thing,
-        "https://arbitrary.vocab/predicate"
-      )
+        "https://arbitrary.vocab/predicate",
+      ),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -2549,10 +2567,10 @@ describe("getStringNoLocale", () => {
     expect(() =>
       getStringNoLocale(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
-      )
+        "not-a-url",
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -2562,7 +2580,7 @@ describe("getStringNoLocale", () => {
     try {
       getStringNoLocale(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
+        "not-a-url",
       );
     } catch (e) {
       thrownError = e;
@@ -2577,14 +2595,14 @@ describe("getStringNoLocaleAll", () => {
       "https://some.vocab/predicate",
       "Some value 1",
       "Some value 2",
-      "string"
+      "string",
     );
 
     expect(
       getStringNoLocaleAll(
         thingWithStringNoLocales,
-        "https://some.vocab/predicate"
-      )
+        "https://some.vocab/predicate",
+      ),
     ).toEqual(["Some value 1", "Some value 2"]);
   });
 
@@ -2593,14 +2611,14 @@ describe("getStringNoLocaleAll", () => {
       "https://some.vocab/predicate",
       "Some value 1",
       "Some value 2",
-      "string"
+      "string",
     );
 
     expect(
       getStringNoLocaleAll(
         thingWithStringNoLocales,
-        DataFactory.namedNode("https://some.vocab/predicate")
-      )
+        DataFactory.namedNode("https://some.vocab/predicate"),
+      ),
     ).toEqual(["Some value 1", "Some value 2"]);
   });
 
@@ -2608,14 +2626,14 @@ describe("getStringNoLocaleAll", () => {
     const thingWithoutStringNoLocales = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
-      "integer"
+      "integer",
     );
 
     expect(
       getStringNoLocaleAll(
         thingWithoutStringNoLocales,
-        "https://some.vocab/predicate"
-      )
+        "https://some.vocab/predicate",
+      ),
     ).toEqual([]);
   });
 
@@ -2623,7 +2641,7 @@ describe("getStringNoLocaleAll", () => {
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",
-      "integer"
+      "integer",
     );
     (thingWithDifferentDatatypes.predicates["https://some.vocab/predicate"]
       .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
@@ -2633,8 +2651,8 @@ describe("getStringNoLocaleAll", () => {
     expect(
       getStringNoLocaleAll(
         thingWithDifferentDatatypes,
-        "https://some.vocab/predicate"
-      )
+        "https://some.vocab/predicate",
+      ),
     ).toEqual(["Some value"]);
   });
 
@@ -2642,14 +2660,14 @@ describe("getStringNoLocaleAll", () => {
     const thingWithStringNoLocale = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Arbitrary value",
-      "string"
+      "string",
     );
 
     expect(
       getStringNoLocaleAll(
         thingWithStringNoLocale,
-        "https://some-other.vocab/predicate"
-      )
+        "https://some-other.vocab/predicate",
+      ),
     ).toEqual([]);
   });
 
@@ -2657,8 +2675,8 @@ describe("getStringNoLocaleAll", () => {
     expect(() =>
       getStringNoLocaleAll(
         null as unknown as Thing,
-        "https://arbitrary.vocab/predicate"
-      )
+        "https://arbitrary.vocab/predicate",
+      ),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -2666,10 +2684,10 @@ describe("getStringNoLocaleAll", () => {
     expect(() =>
       getStringNoLocaleAll(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
-      )
+        "not-a-url",
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -2679,7 +2697,7 @@ describe("getStringNoLocaleAll", () => {
     try {
       getStringNoLocaleAll(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
+        "not-a-url",
       );
     } catch (e) {
       thrownError = e;
@@ -2693,12 +2711,12 @@ describe("getLiteral", () => {
     const thingWithLiteral = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Some string",
-      "string"
+      "string",
     );
 
     const foundLiteral = getLiteral(
       thingWithLiteral,
-      "https://some.vocab/predicate"
+      "https://some.vocab/predicate",
     );
     expect(foundLiteral).not.toBeNull();
     expect((foundLiteral as Literal).termType).toBe("Literal");
@@ -2721,7 +2739,7 @@ describe("getLiteral", () => {
 
     const foundLiteral = getLiteral(
       thingWithLocaleString,
-      "https://some.vocab/predicate"
+      "https://some.vocab/predicate",
     );
     expect(foundLiteral).not.toBeNull();
     expect((foundLiteral as Literal).termType).toBe("Literal");
@@ -2733,12 +2751,12 @@ describe("getLiteral", () => {
     const thingWithLiteral = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Some string",
-      "string"
+      "string",
     );
 
     const foundLiteral = getLiteral(
       thingWithLiteral,
-      DataFactory.namedNode("https://some.vocab/predicate")
+      DataFactory.namedNode("https://some.vocab/predicate"),
     );
     expect(foundLiteral).not.toBeNull();
     expect((foundLiteral as Literal).termType).toBe("Literal");
@@ -2762,7 +2780,7 @@ describe("getLiteral", () => {
     };
 
     expect(
-      getLiteral(thingWithoutLiteral, "https://some.vocab/predicate")
+      getLiteral(thingWithoutLiteral, "https://some.vocab/predicate"),
     ).toBeNull();
   });
 
@@ -2770,7 +2788,7 @@ describe("getLiteral", () => {
     const thingWithDifferentTermTypes = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Arbitrary string",
-      "string"
+      "string",
     );
     (thingWithDifferentTermTypes.predicates["https://some.vocab/predicate"]
       .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
@@ -2779,15 +2797,15 @@ describe("getLiteral", () => {
       (
         getLiteral(
           thingWithDifferentTermTypes,
-          "https://some.vocab/predicate"
+          "https://some.vocab/predicate",
         ) as Literal
-      ).termType
+      ).termType,
     ).toBe("Literal");
   });
 
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
-      getLiteral(null as unknown as Thing, "https://arbitrary.vocab/predicate")
+      getLiteral(null as unknown as Thing, "https://arbitrary.vocab/predicate"),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -2795,10 +2813,10 @@ describe("getLiteral", () => {
     expect(() =>
       getLiteral(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
-      )
+        "not-a-url",
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -2808,7 +2826,7 @@ describe("getLiteral", () => {
     try {
       getLiteral(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
+        "not-a-url",
       );
     } catch (e) {
       thrownError = e;
@@ -2823,12 +2841,12 @@ describe("getLiteralAll", () => {
       "https://some.vocab/predicate",
       "Some string 1",
       "Some string 2",
-      "string"
+      "string",
     );
 
     const foundLiterals = getLiteralAll(
       thingWithLiterals,
-      "https://some.vocab/predicate"
+      "https://some.vocab/predicate",
     );
     expect(foundLiterals).toHaveLength(2);
     expect(foundLiterals[0].termType).toBe("Literal");
@@ -2853,7 +2871,7 @@ describe("getLiteralAll", () => {
 
     const foundLiterals = getLiteralAll(
       thingWithLocaleString,
-      "https://some.vocab/predicate"
+      "https://some.vocab/predicate",
     );
     expect(foundLiterals).toHaveLength(1);
     expect(foundLiterals[0].termType).toBe("Literal");
@@ -2866,12 +2884,12 @@ describe("getLiteralAll", () => {
       "https://some.vocab/predicate",
       "Some string 1",
       "Some string 2",
-      "string"
+      "string",
     );
 
     const foundLiterals = getLiteralAll(
       thingWithLiterals,
-      DataFactory.namedNode("https://some.vocab/predicate")
+      DataFactory.namedNode("https://some.vocab/predicate"),
     );
     expect(foundLiterals).toHaveLength(2);
     expect(foundLiterals[0].termType).toBe("Literal");
@@ -2897,7 +2915,7 @@ describe("getLiteralAll", () => {
     };
 
     expect(
-      getLiteralAll(thingWithoutLiterals, "https://some.vocab/predicate")
+      getLiteralAll(thingWithoutLiterals, "https://some.vocab/predicate"),
     ).toEqual([]);
   });
 
@@ -2905,14 +2923,14 @@ describe("getLiteralAll", () => {
     const thingWithDifferentTermTypes = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Arbitrary string",
-      "string"
+      "string",
     );
     (thingWithDifferentTermTypes.predicates["https://some.vocab/predicate"]
       .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
 
     const foundLiterals = getLiteralAll(
       thingWithDifferentTermTypes,
-      "https://some.vocab/predicate"
+      "https://some.vocab/predicate",
     );
 
     expect(foundLiterals).toHaveLength(1);
@@ -2923,8 +2941,8 @@ describe("getLiteralAll", () => {
     expect(() =>
       getLiteralAll(
         null as unknown as Thing,
-        "https://arbitrary.vocab/predicate"
-      )
+        "https://arbitrary.vocab/predicate",
+      ),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -2932,10 +2950,10 @@ describe("getLiteralAll", () => {
     expect(() =>
       getLiteralAll(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
-      )
+        "not-a-url",
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -2945,7 +2963,7 @@ describe("getLiteralAll", () => {
     try {
       getLiteralAll(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
+        "not-a-url",
       );
     } catch (e) {
       thrownError = e;
@@ -2956,7 +2974,7 @@ describe("getLiteralAll", () => {
 
 function getMockThingWithNamedNode(
   predicate: IriString,
-  object: IriString
+  object: IriString,
 ): Thing {
   return {
     type: "Subject",
@@ -2971,7 +2989,7 @@ function getMockThingWithNamedNode(
 function getMockThingWithNamedNodes(
   predicate: IriString,
   object1: IriString,
-  object2: IriString
+  object2: IriString,
 ): Thing {
   return {
     type: "Subject",
@@ -2988,34 +3006,34 @@ describe("getNamedNode", () => {
   it("returns the Named Node for the given Predicate", () => {
     const thingWithNamedNode = getMockThingWithNamedNode(
       "https://some.vocab/predicate",
-      "https://some.vocab/object"
+      "https://some.vocab/object",
     );
 
     const foundNamedNode = getNamedNode(
       thingWithNamedNode,
-      "https://some.vocab/predicate"
+      "https://some.vocab/predicate",
     );
     expect(foundNamedNode).not.toBeNull();
     expect((foundNamedNode as NamedNode).termType).toBe("NamedNode");
     expect((foundNamedNode as NamedNode).value).toBe(
-      "https://some.vocab/object"
+      "https://some.vocab/object",
     );
   });
 
   it("accepts Properties as Named Nodes", () => {
     const thingWithNamedNode = getMockThingWithNamedNode(
       "https://some.vocab/predicate",
-      "https://some.vocab/object"
+      "https://some.vocab/object",
     );
 
     const foundNamedNode = getNamedNode(
       thingWithNamedNode,
-      DataFactory.namedNode("https://some.vocab/predicate")
+      DataFactory.namedNode("https://some.vocab/predicate"),
     );
     expect(foundNamedNode).not.toBeNull();
     expect((foundNamedNode as NamedNode).termType).toBe("NamedNode");
     expect((foundNamedNode as NamedNode).value).toBe(
-      "https://some.vocab/object"
+      "https://some.vocab/object",
     );
   });
 
@@ -3027,7 +3045,7 @@ describe("getNamedNode", () => {
     };
 
     expect(
-      getNamedNode(thingWithoutNamedNode, "https://some.vocab/predicate")
+      getNamedNode(thingWithoutNamedNode, "https://some.vocab/predicate"),
     ).toBeNull();
   });
 
@@ -3035,7 +3053,7 @@ describe("getNamedNode", () => {
     const thingWithDifferentTermTypes = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Arbitrary string",
-      "string"
+      "string",
     );
     (thingWithDifferentTermTypes.predicates["https://some.vocab/predicate"]
       .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
@@ -3044,9 +3062,9 @@ describe("getNamedNode", () => {
       (
         getNamedNode(
           thingWithDifferentTermTypes,
-          "https://some.vocab/predicate"
+          "https://some.vocab/predicate",
         ) as NamedNode
-      ).termType
+      ).termType,
     ).toBe("NamedNode");
   });
 
@@ -3054,8 +3072,8 @@ describe("getNamedNode", () => {
     expect(() =>
       getNamedNode(
         null as unknown as Thing,
-        "https://arbitrary.vocab/predicate"
-      )
+        "https://arbitrary.vocab/predicate",
+      ),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -3063,10 +3081,10 @@ describe("getNamedNode", () => {
     expect(() =>
       getNamedNode(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
-      )
+        "not-a-url",
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -3076,7 +3094,7 @@ describe("getNamedNode", () => {
     try {
       getNamedNode(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
+        "not-a-url",
       );
     } catch (e) {
       thrownError = e;
@@ -3090,12 +3108,12 @@ describe("getNamedNodeAll", () => {
     const thingWithNamedNodes = getMockThingWithNamedNodes(
       "https://some.vocab/predicate",
       "https://some.vocab/object1",
-      "https://some.vocab/object2"
+      "https://some.vocab/object2",
     );
 
     const foundNamedNodes = getNamedNodeAll(
       thingWithNamedNodes,
-      "https://some.vocab/predicate"
+      "https://some.vocab/predicate",
     );
     expect(foundNamedNodes).toHaveLength(2);
     expect(foundNamedNodes[0].termType).toBe("NamedNode");
@@ -3108,12 +3126,12 @@ describe("getNamedNodeAll", () => {
     const thingWithNamedNodes = getMockThingWithNamedNodes(
       "https://some.vocab/predicate",
       "https://some.vocab/object1",
-      "https://some.vocab/object2"
+      "https://some.vocab/object2",
     );
 
     const foundNamedNodes = getNamedNodeAll(
       thingWithNamedNodes,
-      DataFactory.namedNode("https://some.vocab/predicate")
+      DataFactory.namedNode("https://some.vocab/predicate"),
     );
     expect(foundNamedNodes).toHaveLength(2);
     expect(foundNamedNodes[0].termType).toBe("NamedNode");
@@ -3130,7 +3148,7 @@ describe("getNamedNodeAll", () => {
     };
 
     expect(
-      getNamedNodeAll(thingWithoutNamedNodes, "https://some.vocab/predicate")
+      getNamedNodeAll(thingWithoutNamedNodes, "https://some.vocab/predicate"),
     ).toEqual([]);
   });
 
@@ -3138,14 +3156,14 @@ describe("getNamedNodeAll", () => {
     const thingWithDifferentTermTypes = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Arbitrary string",
-      "string"
+      "string",
     );
     (thingWithDifferentTermTypes.predicates["https://some.vocab/predicate"]
       .namedNodes as UrlString[]) = ["https://arbitrary.vocab/object"];
 
     const foundNamedNodes = getNamedNodeAll(
       thingWithDifferentTermTypes,
-      "https://some.vocab/predicate"
+      "https://some.vocab/predicate",
     );
     expect(foundNamedNodes).toHaveLength(1);
     expect(foundNamedNodes[0].termType).toBe("NamedNode");
@@ -3155,8 +3173,8 @@ describe("getNamedNodeAll", () => {
     expect(() =>
       getNamedNodeAll(
         null as unknown as Thing,
-        "https://arbitrary.vocab/predicate"
-      )
+        "https://arbitrary.vocab/predicate",
+      ),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -3164,10 +3182,10 @@ describe("getNamedNodeAll", () => {
     expect(() =>
       getNamedNodeAll(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
-      )
+        "not-a-url",
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -3177,7 +3195,7 @@ describe("getNamedNodeAll", () => {
     try {
       getNamedNodeAll(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
+        "not-a-url",
       );
     } catch (e) {
       thrownError = e;
@@ -3190,12 +3208,12 @@ describe("getTerm", () => {
   it("returns the NamedNode for the given Predicate", () => {
     const thingWithNamedNode = getMockThingWithNamedNode(
       "https://some.vocab/predicate",
-      "https://some.vocab/object"
+      "https://some.vocab/object",
     );
 
     const foundTerm = getTerm(
       thingWithNamedNode,
-      "https://some.vocab/predicate"
+      "https://some.vocab/predicate",
     );
     expect(foundTerm).not.toBeNull();
     expect((foundTerm as NamedNode).termType).toBe("NamedNode");
@@ -3206,7 +3224,7 @@ describe("getTerm", () => {
     const thingWithLiteral = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Some string",
-      "string"
+      "string",
     );
 
     const foundTerm = getTerm(thingWithLiteral, "https://some.vocab/predicate");
@@ -3214,19 +3232,19 @@ describe("getTerm", () => {
     expect((foundTerm as Literal).termType).toBe("Literal");
     expect((foundTerm as Literal).value).toBe("Some string");
     expect((foundTerm as Literal).datatype.value).toBe(
-      "http://www.w3.org/2001/XMLSchema#string"
+      "http://www.w3.org/2001/XMLSchema#string",
     );
   });
 
   it("returns a NamedNode for a Local Node", () => {
     const thingWithNamedNode = getMockThingWithNamedNode(
       "https://some.vocab/predicate",
-      `${localNodeSkolemPrefix}local-node-name`
+      `${localNodeSkolemPrefix}local-node-name`,
     );
 
     const foundTerm = getTerm(
       thingWithNamedNode,
-      "https://some.vocab/predicate"
+      "https://some.vocab/predicate",
     );
     expect(foundTerm).not.toBeNull();
     expect((foundTerm as NamedNode).termType).toBe("NamedNode");
@@ -3246,7 +3264,7 @@ describe("getTerm", () => {
 
     const foundTerm = getTerm(
       thingWithBlankNode,
-      "https://some.vocab/predicate"
+      "https://some.vocab/predicate",
     );
     expect(foundTerm).not.toBeNull();
     expect((foundTerm as BlankNode).termType).toBe("BlankNode");
@@ -3272,7 +3290,7 @@ describe("getTerm", () => {
 
     const foundTerm = getTerm(
       thingWithBlankNode,
-      "https://some.vocab/predicate"
+      "https://some.vocab/predicate",
     );
     expect(foundTerm).not.toBeNull();
     expect((foundTerm as BlankNode).termType).toBe("BlankNode");
@@ -3281,12 +3299,12 @@ describe("getTerm", () => {
   it("accepts Properties as Named Nodes", () => {
     const thingWithNamedNode = getMockThingWithNamedNode(
       "https://some.vocab/predicate",
-      "https://some.vocab/object"
+      "https://some.vocab/object",
     );
 
     const foundTerm = getTerm(
       thingWithNamedNode,
-      DataFactory.namedNode("https://some.vocab/predicate")
+      DataFactory.namedNode("https://some.vocab/predicate"),
     );
     expect(foundTerm).not.toBeNull();
     expect((foundTerm as NamedNode).termType).toBe("NamedNode");
@@ -3301,13 +3319,13 @@ describe("getTerm", () => {
     };
 
     expect(
-      getTerm(thingWithoutTerm, "https://some.vocab/predicate")
+      getTerm(thingWithoutTerm, "https://some.vocab/predicate"),
     ).toBeNull();
   });
 
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
-      getTerm(null as unknown as Thing, "https://arbitrary.vocab/predicate")
+      getTerm(null as unknown as Thing, "https://arbitrary.vocab/predicate"),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -3315,10 +3333,10 @@ describe("getTerm", () => {
     expect(() =>
       getTerm(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
-      )
+        "not-a-url",
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -3328,7 +3346,7 @@ describe("getTerm", () => {
     try {
       getTerm(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
+        "not-a-url",
       );
     } catch (e) {
       thrownError = e;
@@ -3342,12 +3360,12 @@ describe("getTermAll", () => {
     const thingWithNamedNodes = getMockThingWithNamedNodes(
       "https://some.vocab/predicate",
       "https://some.vocab/object1",
-      "https://some.vocab/object2"
+      "https://some.vocab/object2",
     );
 
     const foundTerms = getTermAll(
       thingWithNamedNodes,
-      "https://some.vocab/predicate"
+      "https://some.vocab/predicate",
     );
     expect(foundTerms).toHaveLength(2);
     expect(foundTerms[0].termType).toBe("NamedNode");
@@ -3361,35 +3379,35 @@ describe("getTermAll", () => {
       "https://some.vocab/predicate",
       "Some string 1",
       "Some string 2",
-      "string"
+      "string",
     );
 
     const foundTerms = getTermAll(
       thingWithLiterals,
-      "https://some.vocab/predicate"
+      "https://some.vocab/predicate",
     );
     expect(foundTerms).toHaveLength(2);
     expect(foundTerms[0].termType).toBe("Literal");
     expect(foundTerms[0].value).toBe("Some string 1");
     expect((foundTerms[0] as Literal).datatype.value).toBe(
-      "http://www.w3.org/2001/XMLSchema#string"
+      "http://www.w3.org/2001/XMLSchema#string",
     );
     expect(foundTerms[1].termType).toBe("Literal");
     expect(foundTerms[1].value).toBe("Some string 2");
     expect((foundTerms[1] as Literal).datatype.value).toBe(
-      "http://www.w3.org/2001/XMLSchema#string"
+      "http://www.w3.org/2001/XMLSchema#string",
     );
   });
 
   it("returns NamedNodes for Local Nodes", () => {
     const thingWithNamedNode = getMockThingWithNamedNode(
       "https://some.vocab/predicate",
-      `${localNodeSkolemPrefix}local-node-name`
+      `${localNodeSkolemPrefix}local-node-name`,
     );
 
     const foundTerms = getTermAll(
       thingWithNamedNode,
-      "https://some.vocab/predicate"
+      "https://some.vocab/predicate",
     );
     expect(foundTerms).toHaveLength(1);
     expect(foundTerms[0].termType).toBe("NamedNode");
@@ -3409,7 +3427,7 @@ describe("getTermAll", () => {
 
     const foundTerms = getTermAll(
       thingWithBlankNode,
-      "https://some.vocab/predicate"
+      "https://some.vocab/predicate",
     );
     expect(foundTerms).toHaveLength(1);
     expect(foundTerms[0].termType).toBe("BlankNode");
@@ -3435,7 +3453,7 @@ describe("getTermAll", () => {
 
     const foundTerms = getTermAll(
       thingWithBlankNode,
-      "https://some.vocab/predicate"
+      "https://some.vocab/predicate",
     );
     expect(foundTerms).toHaveLength(1);
     expect(foundTerms[0].termType).toBe("BlankNode");
@@ -3445,14 +3463,14 @@ describe("getTermAll", () => {
     const thingWithMixedTerms = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "Some string",
-      "string"
+      "string",
     );
     (thingWithMixedTerms.predicates["https://some.vocab/predicate"]
       .namedNodes as UrlString[]) = ["https://some.vocab/object1"];
 
     const foundTerms = getTermAll(
       thingWithMixedTerms,
-      "https://some.vocab/predicate"
+      "https://some.vocab/predicate",
     );
     expect(foundTerms).toHaveLength(2);
     expect(foundTerms[0].termType).toBe("NamedNode");
@@ -3460,7 +3478,7 @@ describe("getTermAll", () => {
     expect(foundTerms[1].termType).toBe("Literal");
     expect(foundTerms[1].value).toBe("Some string");
     expect((foundTerms[1] as Literal).datatype.value).toBe(
-      "http://www.w3.org/2001/XMLSchema#string"
+      "http://www.w3.org/2001/XMLSchema#string",
     );
   });
 
@@ -3468,12 +3486,12 @@ describe("getTermAll", () => {
     const thingWithNamedNodes = getMockThingWithNamedNodes(
       "https://some.vocab/predicate",
       "https://some.vocab/object1",
-      "https://some.vocab/object2"
+      "https://some.vocab/object2",
     );
 
     const foundNamedNodes = getTermAll(
       thingWithNamedNodes,
-      DataFactory.namedNode("https://some.vocab/predicate")
+      DataFactory.namedNode("https://some.vocab/predicate"),
     );
     expect(foundNamedNodes).toHaveLength(2);
     expect(foundNamedNodes[0].termType).toBe("NamedNode");
@@ -3490,13 +3508,13 @@ describe("getTermAll", () => {
     };
 
     expect(
-      getTermAll(thingWithoutTerms, "https://some.vocab/predicate")
+      getTermAll(thingWithoutTerms, "https://some.vocab/predicate"),
     ).toEqual([]);
   });
 
   it("throws an error when passed something other than a Thing", () => {
     expect(() =>
-      getTermAll(null as unknown as Thing, "https://arbitrary.vocab/predicate")
+      getTermAll(null as unknown as Thing, "https://arbitrary.vocab/predicate"),
     ).toThrow("Expected a Thing, but received: [null].");
   });
 
@@ -3504,10 +3522,10 @@ describe("getTermAll", () => {
     expect(() =>
       getTermAll(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
-      )
+        "not-a-url",
+      ),
     ).toThrow(
-      "Expected a valid URL to identify a property, but received: [not-a-url]."
+      "Expected a valid URL to identify a property, but received: [not-a-url].",
     );
   });
 
@@ -3517,7 +3535,7 @@ describe("getTermAll", () => {
     try {
       getTermAll(
         mockThingFrom("https://arbitrary.pod/resource#thing"),
-        "not-a-url"
+        "not-a-url",
       );
     } catch (e) {
       thrownError = e;

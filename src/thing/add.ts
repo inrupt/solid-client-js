@@ -60,7 +60,7 @@ import { freeze, getBlankNodeId } from "../rdf.internal";
 export const addUrl: AddOfType<Url | UrlString | Thing> = (
   thing,
   property,
-  url
+  url,
 ) => {
   internal_throwIfNotThing(thing);
   if (!internal_isValidUrl(property)) {
@@ -86,7 +86,7 @@ export const addUrl: AddOfType<Url | UrlString | Thing> = (
     iriToAdd = asIri(url);
   }
   const updatedNamedNodes = freeze(
-    existingNamedNodes.concat(internal_toIriString(iriToAdd))
+    existingNamedNodes.concat(internal_toIriString(iriToAdd)),
   );
 
   const updatedPredicate = freeze({
@@ -125,7 +125,7 @@ export const addBoolean: AddOfType<boolean> = (thing, property, value) => {
     thing,
     property,
     serializeBoolean(value),
-    xmlSchemaTypes.boolean
+    xmlSchemaTypes.boolean,
   );
 };
 
@@ -147,7 +147,7 @@ export const addDatetime: AddOfType<Date> = (thing, property, value) => {
     thing,
     property,
     serializeDatetime(value),
-    xmlSchemaTypes.dateTime
+    xmlSchemaTypes.dateTime,
   );
 };
 
@@ -170,7 +170,7 @@ export const addDate: AddOfType<Date> = (thing, property, value) => {
     thing,
     property,
     serializeDate(value),
-    xmlSchemaTypes.date
+    xmlSchemaTypes.date,
   );
 };
 
@@ -193,7 +193,7 @@ export const addTime: AddOfType<Time> = (thing, property, value) => {
     thing,
     property,
     serializeTime(value),
-    xmlSchemaTypes.time
+    xmlSchemaTypes.time,
   );
 };
 
@@ -215,7 +215,7 @@ export const addDecimal: AddOfType<number> = (thing, property, value) => {
     thing,
     property,
     serializeDecimal(value),
-    xmlSchemaTypes.decimal
+    xmlSchemaTypes.decimal,
   );
 };
 
@@ -237,7 +237,7 @@ export const addInteger: AddOfType<number> = (thing, property, value) => {
     thing,
     property,
     serializeInteger(value),
-    xmlSchemaTypes.integer
+    xmlSchemaTypes.integer,
   );
 };
 
@@ -257,7 +257,7 @@ export const addInteger: AddOfType<number> = (thing, property, value) => {
 export function addStringEnglish<T extends Thing>(
   thing: T,
   property: Url | UrlString,
-  value: string
+  value: string,
 ): T {
   return addStringWithLocale(thing, property, value, "en");
 }
@@ -279,7 +279,7 @@ export function addStringWithLocale<T extends Thing>(
   thing: T,
   property: Url | UrlString,
   value: string,
-  locale: string
+  locale: string,
 ): T {
   internal_throwIfNotThing(thing);
   if (!internal_isValidUrl(property)) {
@@ -329,7 +329,7 @@ export function addStringWithLocale<T extends Thing>(
 export const addStringNoLocale: AddOfType<string> = (
   thing,
   property,
-  value
+  value,
 ) => {
   internal_throwIfNotThing(thing);
   return addLiteralOfType(thing, property, value, xmlSchemaTypes.string);
@@ -351,7 +351,7 @@ export const addStringNoLocale: AddOfType<string> = (
 export function addNamedNode<T extends Thing>(
   thing: T,
   property: Url | UrlString,
-  value: NamedNode
+  value: NamedNode,
 ): T {
   return addUrl(thing, property, value.value);
 }
@@ -372,7 +372,7 @@ export function addNamedNode<T extends Thing>(
 export function addLiteral<T extends Thing>(
   thing: T,
   property: Url | UrlString,
-  value: Literal
+  value: Literal,
 ): T {
   internal_throwIfNotThing(thing);
   if (!internal_isValidUrl(property)) {
@@ -403,7 +403,7 @@ export function addLiteral<T extends Thing>(
 export function addTerm<T extends Thing>(
   thing: T,
   property: Url | UrlString,
-  value: Quad_Object
+  value: Quad_Object,
 ): T {
   if (value.termType === "NamedNode") {
     return addNamedNode(thing, property, value);
@@ -424,7 +424,7 @@ export function addTerm<T extends Thing>(
     const existingBlankNodes = existingPredicate.blankNodes ?? [];
 
     const updatedBlankNodes = freeze(
-      existingBlankNodes.concat(getBlankNodeId(value))
+      existingBlankNodes.concat(getBlankNodeId(value)),
     );
     const updatedPredicate = freeze({
       ...existingPredicate,
@@ -443,7 +443,7 @@ export function addTerm<T extends Thing>(
   }
 
   throw new Error(
-    `Term type [${value.termType}] is not supported by @inrupt/solid-client.`
+    `Term type [${value.termType}] is not supported by @inrupt/solid-client.`,
   );
 }
 
@@ -451,7 +451,7 @@ function addLiteralOfType<T extends Thing>(
   thing: T,
   property: Url | UrlString,
   value: string,
-  type: XmlSchemaTypeIri | UrlString
+  type: XmlSchemaTypeIri | UrlString,
 ): T {
   internal_throwIfNotThing(thing);
   if (!internal_isValidUrl(property)) {
@@ -494,5 +494,5 @@ function addLiteralOfType<T extends Thing>(
 export type AddOfType<Type> = <T extends Thing>(
   thing: T,
   property: Url | UrlString,
-  value: Type
+  value: Type,
 ) => T;

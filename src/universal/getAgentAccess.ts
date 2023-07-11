@@ -53,7 +53,7 @@ import { getResourceAcr } from "../acp/util/getResourceAcr";
 export async function getAgentAccess(
   resourceUrl: UrlString,
   webId: WebId,
-  options?: DefaultOptions
+  options?: DefaultOptions,
 ): Promise<AccessModes | null> {
   const resourceInfo = await getResourceInfo(resourceUrl, options);
   const acr = await getResourceAcr(resourceInfo, options);

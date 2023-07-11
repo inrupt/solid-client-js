@@ -72,7 +72,7 @@ export async function getAccessFor(
   resourceUrl: UrlString,
   actorType: "agent" | "group",
   actor: UrlString | WebId,
-  options?: typeof internal_defaultFetchOptions
+  options?: typeof internal_defaultFetchOptions,
 ): Promise<Access | null>;
 /**
  * Get an overview of what access is defined for everyone.
@@ -106,13 +106,13 @@ export async function getAccessFor(
 export async function getAccessFor(
   resourceUrl: UrlString,
   actorType: "public",
-  options?: typeof internal_defaultFetchOptions
+  options?: typeof internal_defaultFetchOptions,
 ): Promise<Access | null>;
 export async function getAccessFor(
   resourceUrl: UrlString,
   actorType: Actor,
   actor?: WebId | UrlString | typeof internal_defaultFetchOptions,
-  options?: typeof internal_defaultFetchOptions
+  options?: typeof internal_defaultFetchOptions,
 ): Promise<Access | null>;
 export async function getAccessFor(
   resourceUrl: UrlString,
@@ -121,12 +121,12 @@ export async function getAccessFor(
     | WebId
     | UrlString
     | typeof internal_defaultFetchOptions = internal_defaultFetchOptions,
-  options = internal_defaultFetchOptions
+  options = internal_defaultFetchOptions,
 ): Promise<Access | null> {
   if (actorType === "agent") {
     if (typeof actor !== "string") {
       throw new Error(
-        "When reading Agent-specific access, the given agent cannot be left undefined."
+        "When reading Agent-specific access, the given agent cannot be left undefined.",
       );
     }
     return getAgentAccess(resourceUrl, actor, options);
@@ -134,7 +134,7 @@ export async function getAccessFor(
   if (actorType === "group") {
     if (typeof actor !== "string") {
       throw new Error(
-        "When reading Group-specific access, the given group cannot be left undefined."
+        "When reading Group-specific access, the given group cannot be left undefined.",
       );
     }
     return getGroupAccess(resourceUrl, actor, options);
@@ -142,7 +142,7 @@ export async function getAccessFor(
   if (actorType === "public") {
     if (typeof actor === "string") {
       throw new Error(
-        `When reading public access, no actor type should be specified (here [${actor}]).`
+        `When reading public access, no actor type should be specified (here [${actor}]).`,
       );
     }
     return getPublicAccess(resourceUrl, actor);
@@ -182,7 +182,7 @@ export async function getAccessFor(
 export async function getAccessForAll(
   resourceUrl: UrlString,
   actorType: Exclude<Actor, "public">,
-  options = internal_defaultFetchOptions
+  options = internal_defaultFetchOptions,
 ): Promise<Record<UrlString, Access> | null> {
   if (actorType === "agent") {
     return getAgentAccessAll(resourceUrl, options);
@@ -238,7 +238,7 @@ export async function setAccessFor(
   actorType: "agent" | "group",
   access: Partial<Access>,
   actor: UrlString | WebId,
-  options?: typeof internal_defaultFetchOptions
+  options?: typeof internal_defaultFetchOptions,
 ): Promise<Access | null>;
 /**
  * Set access to a Resource for everyone.
@@ -283,14 +283,14 @@ export async function setAccessFor(
   resourceUrl: UrlString,
   actorType: "public",
   access: Partial<Access>,
-  options?: typeof internal_defaultFetchOptions
+  options?: typeof internal_defaultFetchOptions,
 ): Promise<Access | null>;
 export async function setAccessFor(
   resourceUrl: UrlString,
   actorType: Actor,
   access: Partial<Access>,
   actor?: WebId | UrlString | typeof internal_defaultFetchOptions,
-  options?: typeof internal_defaultFetchOptions
+  options?: typeof internal_defaultFetchOptions,
 ): Promise<Access | null>;
 export async function setAccessFor(
   resourceUrl: UrlString,
@@ -300,12 +300,12 @@ export async function setAccessFor(
     | WebId
     | UrlString
     | typeof internal_defaultFetchOptions = internal_defaultFetchOptions,
-  options = internal_defaultFetchOptions
+  options = internal_defaultFetchOptions,
 ): Promise<Access | null> {
   if (actorType === "agent") {
     if (typeof actor !== "string") {
       throw new Error(
-        "When writing Agent-specific access, the given agent cannot be left undefined."
+        "When writing Agent-specific access, the given agent cannot be left undefined.",
       );
     }
     return setAgentAccess(resourceUrl, actor, access, options);
@@ -313,7 +313,7 @@ export async function setAccessFor(
   if (actorType === "group") {
     if (typeof actor !== "string") {
       throw new Error(
-        "When writing Group-specific access, the given group cannot be left undefined."
+        "When writing Group-specific access, the given group cannot be left undefined.",
       );
     }
     return setGroupAccess(resourceUrl, actor, access, options);
@@ -321,7 +321,7 @@ export async function setAccessFor(
   if (actorType === "public") {
     if (typeof actor === "string") {
       throw new Error(
-        `When writing public access, no actor type should be specified (here [${actor}]).`
+        `When writing public access, no actor type should be specified (here [${actor}]).`,
       );
     }
     return setPublicAccess(resourceUrl, access, actor);

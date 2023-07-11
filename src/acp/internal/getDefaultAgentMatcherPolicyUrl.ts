@@ -28,7 +28,7 @@ import { getDefaultAccessControlUrl } from "./getDefaultAccessControlUrl";
 export function getDefaultAgentMatcherPolicyUrl(
   resource: WithAccessibleAcr,
   name: DefaultAccessControlName,
-  mode: keyof AccessModes
+  mode: keyof AccessModes,
 ): string {
   return getDefaultAccessControlUrl(resource, name)
     .concat("AgentMatcher")

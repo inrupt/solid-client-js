@@ -60,7 +60,7 @@ import {
 export const setUrl: SetOfType<Url | UrlString | Thing> = (
   thing,
   property,
-  url
+  url,
 ) => {
   internal_throwIfNotThing(thing);
   if (!internal_isValidUrl(property)) {
@@ -196,7 +196,7 @@ export const setInteger: SetOfType<number> = (thing, property, value) => {
 export function setStringEnglish<T extends Thing>(
   thing: T,
   property: Url | UrlString,
-  value: string
+  value: string,
 ): T {
   return setStringWithLocale(thing, property, value, "en");
 }
@@ -218,14 +218,14 @@ export function setStringWithLocale<T extends Thing>(
   thing: T,
   property: Url | UrlString,
   value: string,
-  locale: string
+  locale: string,
 ): T {
   internal_throwIfNotThing(thing);
   return addStringWithLocale(
     removeAll(thing, property),
     property,
     value,
-    locale
+    locale,
   );
 }
 
@@ -244,7 +244,7 @@ export function setStringWithLocale<T extends Thing>(
 export const setStringNoLocale: SetOfType<string> = (
   thing,
   property,
-  value
+  value,
 ) => {
   internal_throwIfNotThing(thing);
   return addStringNoLocale(removeAll(thing, property), property, value);
@@ -266,7 +266,7 @@ export const setStringNoLocale: SetOfType<string> = (
 export function setNamedNode<T extends Thing>(
   thing: T,
   property: Url | UrlString,
-  value: NamedNode
+  value: NamedNode,
 ): T {
   internal_throwIfNotThing(thing);
   return addNamedNode(removeAll(thing, property), property, value);
@@ -288,7 +288,7 @@ export function setNamedNode<T extends Thing>(
 export function setLiteral<T extends Thing>(
   thing: T,
   property: Url | UrlString,
-  value: Literal
+  value: Literal,
 ): T {
   internal_throwIfNotThing(thing);
   return addLiteral(removeAll(thing, property), property, value);
@@ -311,7 +311,7 @@ export function setLiteral<T extends Thing>(
 export function setTerm<T extends Thing>(
   thing: T,
   property: Url | UrlString,
-  value: Quad_Object
+  value: Quad_Object,
 ): T {
   internal_throwIfNotThing(thing);
   if (!internal_isValidUrl(property)) {
@@ -334,5 +334,5 @@ export function setTerm<T extends Thing>(
 export type SetOfType<Type> = <T extends Thing>(
   thing: T,
   property: Url | UrlString,
-  value: Type
+  value: Type,
 ) => T;

@@ -40,11 +40,11 @@ import { getPolicyUrls } from "../internal/getPolicyUrls";
  * @since 1.16.1
  */
 export function getAcrPolicyUrlAll<T extends WithAccessibleAcr>(
-  resourceWithAcr: T
+  resourceWithAcr: T,
 ): UrlString[] {
   return getPolicyUrls(
     resourceWithAcr,
     getAccessControlUrlAll(resourceWithAcr),
-    ACP.access
+    ACP.access,
   );
 }

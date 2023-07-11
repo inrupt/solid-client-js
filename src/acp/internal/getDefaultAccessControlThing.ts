@@ -29,7 +29,7 @@ import { getDefaultAccessControlUrl } from "./getDefaultAccessControlUrl";
 /** @hidden */
 export function getDefaultAccessControlThing(
   resource: WithAccessibleAcr,
-  name: DefaultAccessControlName
+  name: DefaultAccessControlName,
 ): ThingPersisted {
   const acr = getAccessControlResource(resource);
   const defaultAccessControlUrl = getDefaultAccessControlUrl(resource, name);

@@ -34,13 +34,13 @@ import type { AccessControlResource, Control } from "./control";
 
 /** @hidden */
 export function internal_getAcr(
-  resource: WithAccessibleAcr
+  resource: WithAccessibleAcr,
 ): AccessControlResource {
   if (!hasAccessibleAcr(resource)) {
     throw new Error(
       `An Access Control Resource for [${getSourceUrl(
-        resource
-      )}] is not available. This could be because the current user is not allowed to see it, or because their Pod Server does not support Access Control Resources.`
+        resource,
+      )}] is not available. This could be because the current user is not allowed to see it, or because their Pod Server does not support Access Control Resources.`,
     );
   }
   return resource.internal_acp.acr;
@@ -49,7 +49,7 @@ export function internal_getAcr(
 /** @hidden */
 export function internal_setAcr<ResourceExt extends WithAcp>(
   resource: ResourceExt,
-  acr: AccessControlResource
+  acr: AccessControlResource,
 ): ResourceExt & WithAccessibleAcr {
   return Object.assign(internal_cloneResource(resource), {
     internal_acp: {
@@ -69,7 +69,7 @@ export function internal_setAcr<ResourceExt extends WithAcp>(
  * @deprecated
  */
 export function internal_createControl(
-  options?: Parameters<typeof createThing>[0]
+  options?: Parameters<typeof createThing>[0],
 ): Control {
   let control = createThing(options);
   control = setIri(control, rdf.type, acp.AccessControl);
@@ -89,7 +89,7 @@ export function internal_createControl(
 export function internal_getControl(
   withAccessControlResource: WithAccessibleAcr,
   url: Parameters<typeof getThing>[1],
-  options?: Parameters<typeof getThing>[2]
+  options?: Parameters<typeof getThing>[2],
 ): Control | null {
   const acr = internal_getAcr(withAccessControlResource);
   const foundThing = getThing(acr, url, options);
@@ -113,13 +113,13 @@ export function internal_getControl(
  */
 export function internal_getControlAll(
   withAccessControlResource: WithAccessibleAcr,
-  options?: Parameters<typeof getThingAll>[1]
+  options?: Parameters<typeof getThingAll>[1],
 ): Control[] {
   const acr = internal_getAcr(withAccessControlResource);
   const foundThings = getThingAll(acr, options);
 
   const explicitAccessControl = foundThings.filter((foundThing) =>
-    getIriAll(foundThing, rdf.type).includes(acp.AccessControl)
+    getIriAll(foundThing, rdf.type).includes(acp.AccessControl),
   );
 
   const implicitAccessControl = foundThings
@@ -128,7 +128,7 @@ export function internal_getControlAll(
       // The initial filter ensures that at least one AccessControl will be found.
       const controlIri = getIriAll(
         thingWithAccessControl,
-        acp.accessControl
+        acp.accessControl,
       )[0];
       // The found control is only an object in the current dataset, so we create the
       // associated thing in order to possibly make it a subject.
@@ -153,13 +153,13 @@ export function internal_getControlAll(
  */
 export function internal_setControl<ResourceExt extends WithAccessibleAcr>(
   withAccessControlResource: ResourceExt,
-  control: Control
+  control: Control,
 ): ResourceExt {
   const acr = internal_getAcr(withAccessControlResource);
   const updatedAcr = setThing(acr, control);
   const updatedResource = internal_setAcr(
     withAccessControlResource,
-    updatedAcr
+    updatedAcr,
   );
   return updatedResource;
 }
@@ -180,7 +180,7 @@ export function internal_setControl<ResourceExt extends WithAccessibleAcr>(
  */
 export function internal_addPolicyUrl(
   accessControl: Control,
-  policyUrl: Url | UrlString | ThingPersisted
+  policyUrl: Url | UrlString | ThingPersisted,
 ): Control {
   return addIri(accessControl, acp.apply, policyUrl);
 }
@@ -218,7 +218,7 @@ export function internal_getPolicyUrlAll(accessControl: Control): UrlString[] {
  */
 export function internal_removePolicyUrl(
   accessControl: Control,
-  policyUrl: Url | UrlString | ThingPersisted
+  policyUrl: Url | UrlString | ThingPersisted,
 ): Control {
   return removeIri(accessControl, acp.apply, policyUrl);
 }
@@ -256,7 +256,7 @@ export function internal_removePolicyUrlAll(accessControl: Control): Control {
  */
 export function internal_addMemberPolicyUrl(
   accessControl: Control,
-  policyUrl: Url | UrlString | ThingPersisted
+  policyUrl: Url | UrlString | ThingPersisted,
 ): Control {
   return addIri(accessControl, acp.applyMembers, policyUrl);
 }
@@ -275,7 +275,7 @@ export function internal_addMemberPolicyUrl(
  * @deprecated
  */
 export function internal_getMemberPolicyUrlAll(
-  accessControl: Control
+  accessControl: Control,
 ): UrlString[] {
   return getIriAll(accessControl, acp.applyMembers);
 }
@@ -296,7 +296,7 @@ export function internal_getMemberPolicyUrlAll(
  */
 export function internal_removeMemberPolicyUrl(
   accessControl: Control,
-  policyUrl: Url | UrlString | ThingPersisted
+  policyUrl: Url | UrlString | ThingPersisted,
 ): Control {
   return removeIri(accessControl, acp.applyMembers, policyUrl);
 }
@@ -315,13 +315,13 @@ export function internal_removeMemberPolicyUrl(
  * @deprecated
  */
 export function internal_removeMemberPolicyUrlAll(
-  accessControl: Control
+  accessControl: Control,
 ): Control {
   return removeAll(accessControl, acp.applyMembers);
 }
 
 export function internal_getInitialisedControl(
-  resourceWithAcr: WithAccessibleAcr
+  resourceWithAcr: WithAccessibleAcr,
 ): Control {
   const allControls = internal_getControlAll(resourceWithAcr);
   return allControls.length === 0 ? internal_createControl() : allControls[0];

@@ -37,7 +37,7 @@ describe("setAgentAccess()", () => {
 
     expect(
       (await setAgentAccess(resource, TEST_URL.defaultWebId, { read: true }))
-        .internal_acp.acr.graphs.default
+        .internal_acp.acr.graphs.default,
     ).toStrictEqual(
       createDatasetFromSubjects([
         [
@@ -62,7 +62,7 @@ describe("setAgentAccess()", () => {
           TEST_URL.defaultAccessControlAgentMatcherReadPolicyMatcher,
           [[ACP.agent, [TEST_URL.defaultWebId]]],
         ],
-      ]).graphs.default
+      ]).graphs.default,
     );
   });
 
@@ -73,7 +73,7 @@ describe("setAgentAccess()", () => {
 
     expect(
       (await setAgentAccess(resource, TEST_URL.defaultWebId, {})).internal_acp
-        .acr.graphs.default
+        .acr.graphs.default,
     ).toStrictEqual({});
   });
 
@@ -106,7 +106,7 @@ describe("setAgentAccess()", () => {
 
     expect(
       (await setAgentAccess(resource, TEST_URL.defaultWebId, { read: false }))
-        .internal_acp.acr.graphs.default
+        .internal_acp.acr.graphs.default,
     ).toStrictEqual({
       ...testDataset.graphs.default,
       [TEST_URL.defaultAccessControlAgentMatcherReadPolicyMatcher]: {
@@ -133,9 +133,9 @@ describe("setAgentAccess()", () => {
             write: true,
             controlRead: true,
             controlWrite: true,
-          }
+          },
         )
-      ).internal_acp.acr.graphs.default
+      ).internal_acp.acr.graphs.default,
     ).toStrictEqual({
       ...createDatasetFromSubjects([
         [
@@ -483,9 +483,9 @@ describe("setAgentAccess()", () => {
             write: false,
             controlRead: false,
             controlWrite: false,
-          }
+          },
         )
-      ).internal_acp.acr.graphs.default
+      ).internal_acp.acr.graphs.default,
     ).toStrictEqual({
       ...datasetWithoutDefaultWebId.graphs.default,
     });

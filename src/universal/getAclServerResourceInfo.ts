@@ -37,7 +37,7 @@ import { getResourceInfo } from "../resource/resource";
  */
 export async function getAclServerResourceInfo(
   resource: WithServerResourceInfo,
-  options?: DefaultOptions
+  options?: DefaultOptions,
 ): Promise<WithServerResourceInfo | null> {
   if (typeof resource.internal_resourceInfo.aclUrl === "string") {
     return getResourceInfo(resource.internal_resourceInfo.aclUrl, options);

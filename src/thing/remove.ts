@@ -55,7 +55,7 @@ import { freeze } from "../rdf.internal";
  */
 export function removeAll<T extends Thing>(
   thing: T,
-  property: Url | UrlString
+  property: Url | UrlString,
 ): T;
 export function removeAll(thing: Thing, property: Url | UrlString): Thing {
   internal_throwIfNotThing(thing);
@@ -85,7 +85,7 @@ export function removeAll(thing: Thing, property: Url | UrlString): Thing {
 export const removeUrl: RemoveOfType<Url | UrlString | ThingPersisted> = (
   thing,
   property,
-  value
+  value,
 ) => {
   internal_throwIfNotThing(thing);
 
@@ -104,8 +104,8 @@ export const removeUrl: RemoveOfType<Url | UrlString | ThingPersisted> = (
 
   const updatedNamedNodes = freeze(
     thing.predicates[predicateIri]?.namedNodes?.filter(
-      (namedNode) => namedNode.toLowerCase() !== iriToRemove.toLowerCase()
-    ) ?? []
+      (namedNode) => namedNode.toLowerCase() !== iriToRemove.toLowerCase(),
+    ) ?? [],
   );
 
   const updatedPredicate = freeze({
@@ -138,14 +138,14 @@ export const removeIri = removeUrl;
 export const removeBoolean: RemoveOfType<boolean> = (
   thing,
   property,
-  value
+  value,
 ) => {
   internal_throwIfNotThing(thing);
   return removeLiteralMatching(
     thing,
     property,
     xmlSchemaTypes.boolean,
-    (foundBoolean) => deserializeBoolean(foundBoolean) === value
+    (foundBoolean) => deserializeBoolean(foundBoolean) === value,
   );
 };
 
@@ -166,7 +166,7 @@ export const removeDatetime: RemoveOfType<Date> = (thing, property, value) => {
     property,
     xmlSchemaTypes.dateTime,
     (foundDatetime) =>
-      deserializeDatetime(foundDatetime)?.getTime() === value.getTime()
+      deserializeDatetime(foundDatetime)?.getTime() === value.getTime(),
   );
 };
 
@@ -197,7 +197,7 @@ export const removeDate: RemoveOfType<Date> = (thing, property, value) => {
         );
       }
       return false;
-    }
+    },
   );
 };
 
@@ -231,7 +231,7 @@ export const removeTime: RemoveOfType<Time> = (thing, property, value) => {
         );
       }
       return false;
-    }
+    },
   );
 };
 
@@ -251,7 +251,7 @@ export const removeDecimal: RemoveOfType<number> = (thing, property, value) => {
     thing,
     property,
     xmlSchemaTypes.decimal,
-    (foundDecimal) => deserializeDecimal(foundDecimal) === value
+    (foundDecimal) => deserializeDecimal(foundDecimal) === value,
   );
 };
 
@@ -271,7 +271,7 @@ export const removeInteger: RemoveOfType<number> = (thing, property, value) => {
     thing,
     property,
     xmlSchemaTypes.integer,
-    (foundInteger) => deserializeInteger(foundInteger) === value
+    (foundInteger) => deserializeInteger(foundInteger) === value,
   );
 };
 
@@ -289,7 +289,7 @@ export const removeInteger: RemoveOfType<number> = (thing, property, value) => {
 export function removeStringEnglish<T extends Thing>(
   thing: T,
   property: Url | UrlString,
-  value: string
+  value: string,
 ): T {
   return removeStringWithLocale(thing, property, value, "en");
 }
@@ -309,7 +309,7 @@ export function removeStringWithLocale<T extends Thing>(
   thing: T,
   property: Url | UrlString,
   value: string,
-  locale: string
+  locale: string,
 ): T {
   internal_throwIfNotThing(thing);
   if (!internal_isValidUrl(property)) {
@@ -323,7 +323,7 @@ export function removeStringWithLocale<T extends Thing>(
     (existingLocale) =>
       normalizeLocale(existingLocale) === normalizeLocale(locale) &&
       Array.isArray(existingLangStrings[existingLocale]) &&
-      existingLangStrings[existingLocale].length > 0
+      existingLangStrings[existingLocale].length > 0,
   );
 
   if (typeof matchingLocale !== "string") {
@@ -333,7 +333,9 @@ export function removeStringWithLocale<T extends Thing>(
   const existingStringsInLocale = existingLangStrings[matchingLocale];
 
   const updatedStringsInLocale = freeze(
-    existingStringsInLocale.filter((existingString) => existingString !== value)
+    existingStringsInLocale.filter(
+      (existingString) => existingString !== value,
+    ),
   );
   const updatedLangStrings = freeze({
     ...existingLangStrings,
@@ -368,14 +370,14 @@ export function removeStringWithLocale<T extends Thing>(
 export const removeStringNoLocale: RemoveOfType<string> = (
   thing,
   property,
-  value
+  value,
 ) => {
   internal_throwIfNotThing(thing);
   return removeLiteralMatching(
     thing,
     property,
     xmlSchemaTypes.string,
-    (foundString) => foundString === value
+    (foundString) => foundString === value,
   );
 };
 
@@ -389,7 +391,7 @@ export const removeStringNoLocale: RemoveOfType<string> = (
 export function removeNamedNode<T extends Thing>(
   thing: T,
   property: Url | UrlString,
-  value: NamedNode
+  value: NamedNode,
 ): T {
   return removeUrl(thing, property, value.value);
 }
@@ -404,7 +406,7 @@ export function removeNamedNode<T extends Thing>(
 export function removeLiteral<T extends Thing>(
   thing: T,
   property: Url | UrlString,
-  value: Literal
+  value: Literal,
 ): T {
   internal_throwIfNotThing(thing);
   if (!internal_isValidUrl(property)) {
@@ -424,8 +426,8 @@ export function removeLiteral<T extends Thing>(
 
   const updatedValues = freeze(
     existingValuesOfType.filter(
-      (existingValue) => existingValue !== value.value
-    )
+      (existingValue) => existingValue !== value.value,
+    ),
   );
   const updatedLiterals = freeze({
     ...existingLiterals,
@@ -457,7 +459,7 @@ function removeLiteralMatching<T extends Thing>(
   thing: T,
   property: Url | UrlString,
   type: XmlSchemaTypeIri,
-  matcher: (serialisedValue: string) => boolean
+  matcher: (serialisedValue: string) => boolean,
 ): T {
   if (!internal_isValidUrl(property)) {
     throw new ValidPropertyUrlExpectedError(property);
@@ -468,7 +470,7 @@ function removeLiteralMatching<T extends Thing>(
   const existingValuesOfType = existingLiterals[type] ?? [];
 
   const updatedValues = freeze(
-    existingValuesOfType.filter((existingValue) => !matcher(existingValue))
+    existingValuesOfType.filter((existingValue) => !matcher(existingValue)),
   );
   const updatedLiterals = freeze({
     ...existingLiterals,
@@ -499,5 +501,5 @@ function removeLiteralMatching<T extends Thing>(
 export type RemoveOfType<Type> = <T extends Thing>(
   thing: T,
   property: Url | UrlString,
-  value: Type
+  value: Type,
 ) => T;

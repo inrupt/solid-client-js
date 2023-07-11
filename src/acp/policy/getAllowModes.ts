@@ -38,7 +38,7 @@ import { getModes } from "../internal/getModes";
  * @since 1.16.1
  */
 export function getAllowModes<T extends ThingPersisted>(
-  policy: T
+  policy: T,
 ): AccessModes {
   return getModes(policy, ACP.allow);
 }

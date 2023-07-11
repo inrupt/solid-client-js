@@ -75,14 +75,14 @@ async function getParser(baseIri: IriString) {
  */
 export async function triplesToTurtle(
   quads: Quad[],
-  options?: Partial<{ prefixes: Record<string, string> }>
+  options?: Partial<{ prefixes: Record<string, string> }>,
 ): Promise<string> {
   const format = "text/turtle";
   const writer = new N3Writer({ format, prefixes: options?.prefixes });
   // Remove any potentially lingering references to Named Graphs in Quads;
   // they'll be determined by the URL the Turtle will be sent to:
   const triples = quads.map((quad) =>
-    DataFactory.quad(quad.subject, quad.predicate, quad.object, undefined)
+    DataFactory.quad(quad.subject, quad.predicate, quad.object, undefined),
   );
   writer.addQuads(triples);
   const writePromise = new Promise<string>((resolve, reject) => {

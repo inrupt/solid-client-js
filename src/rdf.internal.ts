@@ -70,7 +70,7 @@ export type ImmutableDataset = Readonly<{
 export const { freeze } = Object;
 
 export function isLocalNodeIri(
-  iri: LocalNodeIri | IriString
+  iri: LocalNodeIri | IriString,
 ): iri is LocalNodeIri {
   return (
     iri.substring(0, localNodeSkolemPrefix.length) === localNodeSkolemPrefix

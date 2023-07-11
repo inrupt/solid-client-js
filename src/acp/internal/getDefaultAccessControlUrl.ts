@@ -46,7 +46,7 @@ export const DEFAULT_MEMBER_ACR_ACCESS_CONTROL =
 /** @hidden */
 export function getDefaultAccessControlUrl(
   resource: WithAccessibleAcr,
-  name: DefaultAccessControlName
+  name: DefaultAccessControlName,
 ): string {
   const acr = getAccessControlResource(resource);
   const acrUrl = getSourceUrl(acr);

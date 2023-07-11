@@ -27,7 +27,7 @@ import { internal_getAcr as getAccessControlResource } from "../control.internal
 
 /** @hidden */
 export function getAccessControlResourceThing(
-  resource: WithAccessibleAcr
+  resource: WithAccessibleAcr,
 ): ThingPersisted | null {
   const acr = getAccessControlResource(resource);
   const acrUrl = getSourceUrl(acr);

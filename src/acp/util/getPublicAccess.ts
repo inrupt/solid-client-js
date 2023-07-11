@@ -31,7 +31,7 @@ import { getAgentAccess } from "./getAgentAccess";
  * @since 1.16.0
  */
 export async function getPublicAccess<T extends WithAccessibleAcr>(
-  resourceWithAcr: T
+  resourceWithAcr: T,
 ): Promise<AccessModes> {
   return getAgentAccess(resourceWithAcr, ACP.PublicAgent);
 }

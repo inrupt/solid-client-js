@@ -92,13 +92,13 @@ export interface Access {
 export async function getAgentAccess(
   resourceUrl: UrlString,
   webId: WebId,
-  options = internal_defaultFetchOptions
+  options = internal_defaultFetchOptions,
 ): Promise<Access | null> {
   const resourceInfo = await getResourceInfoWithAcr(resourceUrl, options);
   if (hasAccessibleAcr(resourceInfo)) {
     const acpData = await internal_getPoliciesAndMatchers(
       resourceInfo,
-      options
+      options,
     );
     return getAgentAccessAcp(acpData, webId);
   }
@@ -148,19 +148,19 @@ export async function setAgentAccess(
   resourceUrl: UrlString,
   webId: WebId,
   access: Partial<Access>,
-  options = internal_defaultFetchOptions
+  options = internal_defaultFetchOptions,
 ): Promise<Access | null> {
   const resourceInfo = await getResourceInfoWithAcr(resourceUrl, options);
   if (hasAccessibleAcr(resourceInfo)) {
     const acpData = await internal_getPoliciesAndMatchers(
       resourceInfo,
-      options
+      options,
     );
     const updatedResource = setAgentAccessAcp(
       resourceInfo,
       acpData,
       webId,
-      access
+      access,
     );
     if (updatedResource) {
       try {
@@ -176,8 +176,8 @@ export async function setAgentAccess(
     if (access.controlRead !== access.controlWrite) {
       throw new Error(
         `When setting access for a Resource in a Pod implementing Web Access Control (i.e. [${getSourceIri(
-          resourceInfo
-        )}]), \`controlRead\` and \`controlWrite\` should have the same value.`
+          resourceInfo,
+        )}]), \`controlRead\` and \`controlWrite\` should have the same value.`,
       );
     }
     const wacAccess = access as WacAccess;
@@ -216,13 +216,13 @@ export async function setAgentAccess(
  */
 export async function getAgentAccessAll(
   resourceUrl: UrlString,
-  options = internal_defaultFetchOptions
+  options = internal_defaultFetchOptions,
 ): Promise<Record<WebId, Access> | null> {
   const resourceInfo = await getResourceInfoWithAcr(resourceUrl, options);
   if (hasAccessibleAcr(resourceInfo)) {
     const acpData = await internal_getPoliciesAndMatchers(
       resourceInfo,
-      options
+      options,
     );
     return getAgentAccessAllAcp(acpData);
   }
@@ -259,13 +259,13 @@ export async function getAgentAccessAll(
  */
 export async function getPublicAccess(
   resourceUrl: UrlString,
-  options = internal_defaultFetchOptions
+  options = internal_defaultFetchOptions,
 ): Promise<Access | null> {
   const resourceInfo = await getResourceInfoWithAcr(resourceUrl, options);
   if (hasAccessibleAcr(resourceInfo)) {
     const acpData = await internal_getPoliciesAndMatchers(
       resourceInfo,
-      options
+      options,
     );
     return getPublicAccessAcp(acpData);
   }
@@ -313,13 +313,13 @@ export async function getPublicAccess(
 export async function setPublicAccess(
   resourceUrl: UrlString,
   access: Partial<Access>,
-  options = internal_defaultFetchOptions
+  options = internal_defaultFetchOptions,
 ): Promise<Access | null> {
   const resourceInfo = await getResourceInfoWithAcr(resourceUrl, options);
   if (hasAccessibleAcr(resourceInfo)) {
     const acpData = await internal_getPoliciesAndMatchers(
       resourceInfo,
-      options
+      options,
     );
     const updatedResource = setPublicAccessAcp(resourceInfo, acpData, access);
     if (updatedResource) {
@@ -336,8 +336,8 @@ export async function setPublicAccess(
     if (access.controlRead !== access.controlWrite) {
       throw new Error(
         `When setting access for a Resource in a Pod implementing Web Access Control (i.e. [${getSourceIri(
-          resourceInfo
-        )}]), \`controlRead\` and \`controlWrite\` should have the same value.`
+          resourceInfo,
+        )}]), \`controlRead\` and \`controlWrite\` should have the same value.`,
       );
     }
     const wacAccess = access as WacAccess;
