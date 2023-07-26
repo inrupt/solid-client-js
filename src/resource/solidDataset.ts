@@ -894,7 +894,7 @@ export function getContainedResourceUrlAll(
  * this function will always return true for containers fetched from the ESS.
  *
  * It is recommended that this function *always* be used before reading the containment triples
- * from a Pod  using {@link getContainedResourceUrlAll} in order to detect unexpected behaviour,
+ * from a Pod using {@link getContainedResourceUrlAll} in order to detect unexpected behaviour,
  * including malicious containment triples, when interacting with other Solid servers.
  *
  * @param solidDataset The container from which containment claims are validated.
