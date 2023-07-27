@@ -842,11 +842,9 @@ function isChildResource(a: string, b: string): boolean {
 
 /**
  * Given a [[SolidDataset]] representing a Container (see [[isContainer]]), fetch the URLs of all
- * contained resources.
+ * contained resources that respect [slash semantics](https://solidproject.org/TR/protocol#uri-slash-semantics)
+ * (see {@link validateContainedResourceAll}).
  * If the solidDataset given is not a container, or is missing resourceInfo, throw an error.
- * If the containment of some resources is invalid according to
- * [slash semantics](https://solidproject.org/TR/protocol#uri-slash-semantics)
- * (see {@link validateContainedResourceAll}), they are not included in the result.
  *
  * @param solidDataset The container from which to fetch all contained Resource URLs.
  * @returns A list of URLs, each of which points to a contained Resource of the given SolidDataset.
@@ -889,13 +887,13 @@ export function getContainedResourceUrlAll(
  * Resources for which containment is invalid are not included in the result set returned by
  * {@link getContainedResourceUrlAll}.
  *
- * The ESS will always include containment triples that respect
- * [slash semantics](https://solidproject.org/TR/protocol#uri-slash-semantics); and so
- * this function will always return true for containers fetched from the ESS.
+ * ESS, conforming to the Solid Protocol, respects
+ * [slash semantics](https://solidproject.org/TR/protocol#uri-slash-semantics) for its containment triples.
+ * As such, the function returns true for containers fetched from ESS.
  *
  * It is recommended that this function *always* be used before reading the containment triples
- * from a Pod using {@link getContainedResourceUrlAll} in order to detect unexpected behaviour,
- * including malicious containment triples, when interacting with other Solid servers.
+ * from a Pod using {@link getContainedResourceUrlAll}. This will allow detection of unexpected behaviour from servers,
+ * including malicious containment triples that could appear when interacting with other Solid servers.
  *
  * @param solidDataset The container from which containment claims are validated.
  * @returns A validation report, including the offending contained resources URL if any.
