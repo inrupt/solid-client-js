@@ -871,29 +871,28 @@ export function getContainedResourceUrlAll(
 
 /**
  * Given a {@link SolidDataset} representing a [Container](https://solidproject.org/TR/protocol#resource-containment)
- * (see {@link isContainer}), verify that all its containment claims are valid.
+ * (see {@link isContainer}), verify that all its containment claims are valid. Containment of a resource is valid if
+ * it respects [slash semantics](https://solidproject.org/TR/protocol#uri-slash-semantics).
  *
- * Containment of a resource is valid if it respects
- * [slash semantics](https://solidproject.org/TR/protocol#uri-slash-semantics). For the
- * container at https://example.org/container/, the following resources are valid:
- *  - https://example.org/container/resource
- *  - https://example.org/container/subcontainer/
+ * For the example, given a container at https://example.org/container/:
+ *  - The following resources are valid:
+ *    - https://example.org/container/resource
+ *    - https://example.org/container/subcontainer/
+ *  - The following resources are invalid:
+ *    - https://example.org/container/resource/invalid (not a direct child resource)
+ *    - https://example.org/container2 (not a child resource)
+ *    - https://domain2.example.org/container/resource (not a direct child resource)
  *
- * The following resources are invalid:
- *  - https://example.org/container/resource/invalid (not a direct child resource)
- *  - https://example.org/container2 (not a child resource)
- *  - https://domain2.example.org/container/resource (not a direct child resource)
+ * If a component claim is invalid, {@link validateContainedResourceAll} returns the invalid component's URL
+ * as part of its return object.
  *
- * Resources for which containment is invalid are not included in the result set returned by
- * {@link getContainedResourceUrlAll}.
- *
- * ESS, conforming to the Solid Protocol, respects
- * [slash semantics](https://solidproject.org/TR/protocol#uri-slash-semantics) for its containment triples.
- * As such, the function returns true for containers fetched from ESS.
- *
- * It is recommended that this function *always* be used before reading the containment triples
- * from a Pod using {@link getContainedResourceUrlAll}. This will allow detection of unexpected behaviour from servers,
- * including malicious containment triples that could appear when interacting with other Solid servers.
+ * Note: It is recommended that this function always be used before calling
+ * {@link getContainedResourceUrlAll} since {@link getContainedResourceUrlAll} does not
+ * return Resources for which containment is invalid. Using the function in conjunction
+ * with {@link getContainedResourceUrlAll} allows for the detection of unexpected behaviour from servers,
+ * including malicious containment triples that could appear. Because ESS conforms to the Solid Protocol,
+ * i.e., respects slash semantics for its containment triples, validateContainedResourceAll returns true for
+ * containers fetched from ESS.
  *
  * @param solidDataset The container from which containment claims are validated.
  * @returns A validation report, including the offending contained resources URL if any.
