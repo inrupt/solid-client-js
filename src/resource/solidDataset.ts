@@ -842,10 +842,9 @@ function isChildResource(a: string, b: string): boolean {
 
 /**
  * Given a [[SolidDataset]] representing a Container (see [[isContainer]]), fetch the URLs of all
- * contained resources.
+ * contained resources that respect [slash semantics](https://solidproject.org/TR/protocol#uri-slash-semantics)
+ * (see {@link validateContainedResourceAll}).
  * If the solidDataset given is not a container, or is missing resourceInfo, throw an error.
- * If the containment of some resources is invalid (see {@link validateContainedResourceAll}),
- * they are not included in the result.
  *
  * @param solidDataset The container from which to fetch all contained Resource URLs.
  * @returns A list of URLs, each of which points to a contained Resource of the given SolidDataset.
@@ -871,13 +870,29 @@ export function getContainedResourceUrlAll(
 }
 
 /**
- * Given a {@link SolidDataset} representing a Container (see {@link isContainer}), verify that
- * all its containùent claims are valid. Containment of a resource is invalid if it doesn't
- * respect slash semantics, see https://solidproject.org/TR/protocol#resource-containment for
- * more details.
+ * Given a {@link SolidDataset} representing a [Container](https://solidproject.org/TR/protocol#resource-containment)
+ * (see {@link isContainer}), verify that all its containment claims are valid. Containment of a resource is valid if
+ * it respects [slash semantics](https://solidproject.org/TR/protocol#uri-slash-semantics).
  *
- * Resources for which containment is invalid are not included in the result set returned by
- * {@link getContainedResourceUrlAll}.
+ * For the example, given a container at https://example.org/container/:
+ *  - The following resources are valid:
+ *    - https://example.org/container/resource
+ *    - https://example.org/container/subcontainer/
+ *  - The following resources are invalid:
+ *    - https://example.org/container/resource/invalid (not a direct child resource)
+ *    - https://example.org/container2 (not a child resource)
+ *    - https://domain2.example.org/container/resource (not a direct child resource)
+ *
+ * If a component claim is invalid, {@link validateContainedResourceAll} returns the invalid component's URL
+ * as part of its return object.
+ *
+ * Note: It is recommended that this function always be used before calling
+ * {@link getContainedResourceUrlAll} since {@link getContainedResourceUrlAll} does not
+ * return Resources for which containment is invalid. Using the function in conjunction
+ * with {@link getContainedResourceUrlAll} allows for the detection of unexpected behaviour from servers,
+ * including malicious containment triples that could appear. Because ESS conforms to the Solid Protocol,
+ * i.e., respects slash semantics for its containment triples, validateContainedResourceAll returns true for
+ * containers fetched from ESS.
  *
  * @param solidDataset The container from which containment claims are validated.
  * @returns A validation report, including the offending contained resources URL if any.
