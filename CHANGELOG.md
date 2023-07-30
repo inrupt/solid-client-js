@@ -14,20 +14,19 @@ The following changes are pending, and will be applied on the next major release
 
 ## [Unreleased]
 
+The following changes have been implemented but not released yet:
+
+## [1.30.0] - 2023-07-30
+
 ### New features
 
 - `validateContainedResourcesAll`: In addition to the change to `getContainedResourcesAll`
   described in the Bugfix section, a new function is added to the API to help detecting
   incorrect containment claims.
 
-### Patch
-
-The following changes have been implemented but not released yet:
+### Bugfixes
 
 - `getProfileAll` now also follows `rdfs:seeAlso` when discovering extended profiles.
-
-### Bugfix
-
 - When listing contained resources with `getContainedResourcesAll`, resources that
   are not direct child resources of the target container from a URL path semantics
   perspective are no longer returned. This means `https://pod.example.org/foo/bar/moo`
