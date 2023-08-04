@@ -46,13 +46,5 @@ export default {
       },
     }),
   ],
-  external: [
-    "@inrupt/universal-fetch",
-    "http-link-header",
-    "@rdfjs/dataset",
-    "@rdfjs/data-model",
-    "n3",
-    "jsonld-context-parser",
-    "jsonld-streaming-parser",
-  ],
+  external: Object.keys(pkg.dependencies),
 };
