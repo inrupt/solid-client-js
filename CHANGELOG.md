@@ -16,6 +16,13 @@ The following changes are pending, and will be applied on the next major release
 
 The following changes have been implemented but not released yet:
 
+### Patch
+
+- Add a non-regression test for containment relationship validation. The behavior
+  of the library was already correct in a specific edge case, but that was not
+  covered by any test. Thanks to [Otto-AA](https://github.com/Otto-AA) for noticing
+  the gap and implementing the missing test.
+
 ## [1.30.0] - 2023-07-30
 
 ### New features
