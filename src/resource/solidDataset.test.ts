@@ -3000,6 +3000,20 @@ describe("getContainedResourceUrlAll", () => {
       isValid: false,
       invalidContainedResources: ["http://example.org/a//"],
     });
+
+    expect(
+      getContainedResourceUrlAll(
+        mockContainer("http://example.org/a/", ["http://example.org/a/../"]),
+      ),
+    ).toHaveLength(0);
+    expect(
+      validateContainedResourceAll(
+        mockContainer("http://example.org/a/", ["http://example.org/a/../"]),
+      ),
+    ).toStrictEqual({
+      isValid: false,
+      invalidContainedResources: ["http://example.org/a/../"],
+    });
   });
 
   it("returns an empty array if the Container contains no Resources", () => {
