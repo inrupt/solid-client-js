@@ -343,24 +343,22 @@ describe("responseToSolidDataset", () => {
       :me vcard:fn [${getChainedBlankNode(0)}].
     `;
 
-    if (process.version.split(".")[0] !== "v14") {
-      // This test uses constructs native to Node 16.
-      const t0 = performance.now();
-      await responseToSolidDataset(
-        mockResponse(turtle, {
-          headers: {
-            "Content-Type": "text/turtle",
-          },
-        }),
-      );
-      const t1 = performance.now();
+    // This test uses constructs native to Node 16.
+    const t0 = performance.now();
+    await responseToSolidDataset(
+      mockResponse(turtle, {
+        headers: {
+          "Content-Type": "text/turtle",
+        },
+      }),
+    );
+    const t1 = performance.now();
 
-      // Parsing a document with over 1000 statements will always be somewhat slow
-      // (hence allowing it to take 1.5 seconds), but if it attempts to detect
-      // chains, it will take on the order of >20 seconds.
-      // eslint-disable-next-line jest/no-conditional-expect
-      expect(t1 - t0).toBeLessThan(1500);
-    }
+    // Parsing a document with over 1000 statements will always be somewhat slow
+    // (hence allowing it to take 1.5 seconds), but if it attempts to detect
+    // chains, it will take on the order of >20 seconds.
+    // eslint-disable-next-line jest/no-conditional-expect
+    expect(t1 - t0).toBeLessThan(1500);
 
     const solidDataset = await responseToSolidDataset(
       mockResponse(turtle, {
