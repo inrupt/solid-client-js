@@ -29,7 +29,6 @@ import {
 import { createDatasetFromSubjects } from "../mock/dataset";
 import { mockAccessControlledResource } from "../mock/mockAccessControlledResource";
 import { getVcAccess } from "./getVcAccess";
-import { setVcAccess } from "./setVcAccess";
 
 describe("getVcAccess", () => {
   it("returns the default access modes if the ACR is empty", () => {

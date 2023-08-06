@@ -42,7 +42,7 @@ module.exports = {
     // the property of it's object as partial, though it may not be:
     "@typescript-eslint/no-non-null-assertion": "off",
     "@typescript-eslint/ban-ts-comment": "error",
-    "@typescript-eslint/no-use-before-define": "warn",
+    "@typescript-eslint/no-use-before-define": "off",
     "@typescript-eslint/no-explicit-any": "error",
   },
   overrides: [
@@ -50,10 +50,12 @@ module.exports = {
       files: "*.test.ts",
       rules: {
         "no-nested-ternary": "warn",
-        "@typescript-eslint/no-explicit-any": "warn",
+        "@typescript-eslint/no-explicit-any": "off",
 
         // TODO: Refactor to https://github.com/SamVerschueren/tsd
         "@typescript-eslint/ban-ts-comment": "off",
+        "no-param-reassign": "off",
+        "no-shadow": "off"
       },
     },
   ],

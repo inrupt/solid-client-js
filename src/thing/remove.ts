@@ -23,7 +23,6 @@ import type { Literal, NamedNode } from "@rdfjs/types";
 import type { Url, UrlString, Thing, ThingPersisted } from "../interfaces";
 import type { XmlSchemaTypeIri, Time } from "../datatypes";
 import {
-  isNamedNode,
   normalizeLocale,
   xmlSchemaTypes,
   deserializeBoolean,

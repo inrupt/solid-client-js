@@ -2003,12 +2003,6 @@ describe("getStringWithLocale", () => {
   });
 
   it("does not return non-locale-string values", () => {
-    const literalWithLocale = DataFactory.literal("Some value", "nl-NL");
-    const quadWithLocaleString = DataFactory.quad(
-      DataFactory.namedNode("https://arbitrary.vocab/subject"),
-      DataFactory.namedNode("https://some.vocab/predicate"),
-      literalWithLocale,
-    );
     const thingWithDifferentDatatypes = getMockThingWithLiteralFor(
       "https://some.vocab/predicate",
       "42",

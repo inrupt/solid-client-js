@@ -39,7 +39,6 @@ import { getDefaultAccessControlThing } from "../internal/getDefaultAccessContro
 import { getModes } from "../internal/getModes";
 import { setAcr } from "../internal/setAcr";
 import { setModes } from "../internal/setModes";
-import { AccessControlResource } from "../type/AccessControlResource";
 import type { AccessModes } from "../../interfaces";
 
 export const DEFAULT_VC_POLICY_NAME = "defaultVcPolicy";

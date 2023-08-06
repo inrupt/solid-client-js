@@ -191,6 +191,8 @@ describe("Thing Builder API", () => {
     // We're only going to check for expected TypeScript errors:
     expect.assertions(0);
 
+    /* eslint-disable @typescript-eslint/no-unused-vars, no-underscore-dangle */
+
     // @ts-expect-error Since we're passing the `url` option, `buildThing`
     // should return a ThingPersisted, which should cause an error when
     // assigning to a ThingLocal variable:
@@ -215,6 +217,8 @@ describe("Thing Builder API", () => {
     const _thingLocal: ThingLocal = buildThing(
       createThing({ name: "thing" }),
     ).build();
+
+    /* eslint-enable @typescript-eslint/no-unused-vars, no-underscore-dangle */
   });
 
   it("has equivalents for every adder", () => {

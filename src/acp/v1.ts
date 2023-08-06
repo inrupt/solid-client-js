@@ -68,12 +68,9 @@ import {
   removeRule,
   ruleAsMarkdown,
   setAgent,
-  setAuthenticated,
-  setCreator,
   setNoneOfRuleUrl,
   setGroup,
   setAnyOfRuleUrl,
-  setPublic,
   setAllOfRuleUrl,
   setRule,
 } from "./rule";

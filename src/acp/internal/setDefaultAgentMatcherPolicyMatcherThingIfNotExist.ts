@@ -21,13 +21,7 @@
 
 import type { WithAccessibleAcr } from "../acp";
 import type { AccessModes } from "../../interfaces";
-import {
-  buildThing,
-  createThing,
-  getIriAll,
-  getThing,
-  ThingPersisted,
-} from "../..";
+import { buildThing, createThing, getIriAll, getThing } from "../..";
 import { ACP } from "../constants";
 import { internal_getAcr as getAccessControlResource } from "../control.internal";
 import type { DefaultAccessControlName } from "./getDefaultAccessControlUrl";

@@ -160,7 +160,7 @@ describe("getFile", () => {
         ),
       );
 
-    const response = await getFile("https://some.url", {
+    await getFile("https://some.url", {
       init: {
         headers: new Headers({ Accept: "text/turtle" }),
       },

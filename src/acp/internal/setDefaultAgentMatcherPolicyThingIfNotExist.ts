@@ -23,8 +23,6 @@ import type { WithAccessibleAcr } from "../acp";
 import type { AccessModes } from "../../interfaces";
 import type { DefaultAccessControlName } from "./getDefaultAccessControlUrl";
 import { getDefaultAgentMatcherPolicyUrl } from "./getDefaultAgentMatcherPolicyUrl";
-import { addMemberAcrPolicyUrl } from "../policy/addMemberAcrPolicyUrl";
-import { addMemberPolicyUrl } from "../policy/addMemberPolicyUrl";
 import { addAcrPolicyUrl } from "../policy/addAcrPolicyUrl";
 import { addPolicyUrl } from "../policy/addPolicyUrl";
 

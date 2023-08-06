@@ -291,7 +291,7 @@ export function serializeDate(value: Date): string {
   const year = value.getFullYear();
   const month = value.getMonth() + 1;
   const day = value.getDate();
-  const [_, timezone] = splitTimeFromTimezone(value.toISOString());
+  const [, timezone] = splitTimeFromTimezone(value.toISOString());
 
   return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(
     2,
@@ -504,8 +504,8 @@ export function internal_isValidUrl(iri: Iri | IriString): iri is Iri {
     return true;
   }
   try {
-    // const here is needed to avoid a "no-new" warning:
-    const url = new URL(iriString);
+    // eslint-disable-next-line no-new
+    new URL(iriString);
     return true;
   } catch {
     return false;
