@@ -57,7 +57,7 @@ import type {
   WithServerResourceInfo,
 } from "../interfaces";
 import type { Access } from "./universal";
-import { getIri, getIriAll } from "../thing/get";
+import { getIriAll } from "../thing/get";
 import { addIri } from "../thing/add";
 import { setIri } from "../thing/set";
 import { getSolidDataset } from "../resource/solidDataset";

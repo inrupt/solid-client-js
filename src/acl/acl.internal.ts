@@ -398,9 +398,6 @@ export const internal_accessModeIriStrings = {
   write: "http://www.w3.org/ns/auth/acl#Write",
   control: "http://www.w3.org/ns/auth/acl#Control",
 } as const;
-/** @internal */
-type AccessModeIriString =
-  (typeof internal_accessModeIriStrings)[keyof typeof internal_accessModeIriStrings];
 
 /** @internal
  * This function finds, among a set of ACL rules, the ones granting access to a given entity (the target)
