@@ -360,7 +360,6 @@ describe("fromRdfJsDataset", () => {
   });
 
   it("does not trip over blank nodes that appear as the object for different subjects", () => {
-    const namedNode = DataFactory.namedNode("https://example.com/namedNode");
     const blankNode1 = DataFactory.blankNode();
     const blankNode2 = DataFactory.blankNode();
     const blankNode3 = DataFactory.blankNode();

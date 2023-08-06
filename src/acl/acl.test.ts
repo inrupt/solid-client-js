@@ -928,7 +928,7 @@ describe("getFileWithAcl", () => {
         ),
       );
 
-    const response = await getFileWithAcl("https://some.url", {
+    await getFileWithAcl("https://some.url", {
       fetch: mockFetch,
     });
 
@@ -1113,7 +1113,7 @@ describe("getFileWithAcl", () => {
         ),
       );
 
-    const response = await getFile("https://some.url", {
+    await getFile("https://some.url", {
       init: {
         headers: new Headers({ Accept: "text/turtle" }),
       },

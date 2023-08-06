@@ -19,13 +19,8 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import { it, describe, expect } from "@jest/globals";
-import { rdf } from "../../constants";
-import { ACL, ACP, VC_ACCESS_GRANT } from "../constants";
-import {
-  DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
-  TEST_URL,
-} from "../mock/constants";
+import { describe, expect, it } from "@jest/globals";
+import { ACP } from "../constants";
 import { createDatasetFromSubjects } from "../mock/dataset";
 import { mockAccessControlledResource } from "../mock/mockAccessControlledResource";
 import { getAgentUrlAll } from "./getAgentUrlAll";
