@@ -34,13 +34,7 @@ import { getSourceUrl } from "../resource/resource";
 import { addIri } from "../thing/add";
 import { getIriAll } from "../thing/get";
 import { removeAll, removeIri } from "../thing/remove";
-import {
-  createThing,
-  getThing,
-  getThingAll,
-  removeThing,
-  setThing,
-} from "../thing/thing";
+import { createThing, getThing, setThing } from "../thing/thing";
 import type { WithAccessibleAcr } from "./acp";
 import {
   internal_addMemberPolicyUrl,

@@ -19,7 +19,7 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import { jest, describe, it, expect } from "@jest/globals";
+import { describe, it, expect } from "@jest/globals";
 import { ACP } from "../constants";
 import {
   DEFAULT_ACCESS_CONTROL_RESOURCE_URL,
