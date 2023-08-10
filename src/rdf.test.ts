@@ -105,7 +105,7 @@ describe("fromRdfJsDataset", () => {
     .map(([subject, predicate, object, graph]) =>
       DataFactory.quad(subject, predicate, object, graph),
     );
-  const fcDatasetWithReusedBlankNodes = fc.set(fcQuad).map((quads) => {
+  const fcDatasetWithReusedBlankNodes = fc.uniqueArray(fcQuad).map((quads) => {
     const reusedBlankNode = DataFactory.blankNode();
     function maybeReplaceBlankNode(node: RdfJs.BlankNode): RdfJs.BlankNode {
       return Math.random() < 0.5 ? node : reusedBlankNode;
@@ -713,20 +713,20 @@ describe("toRdfJsDataset", () => {
   const fcLiterals = fc
     .dictionary(
       fc.webUrl({ withFragments: true }),
-      fc.set(fc.string(), { minLength: 1 }),
+      fc.uniqueArray(fc.string(), { minLength: 1 }),
     )
     .filter(isNotEmpty);
   const fcLangStrings = fc
     .dictionary(
       fc.hexaString({ minLength: 1 }).map((str) => str.toLowerCase()),
-      fc.set(fc.string(), { minLength: 1 }),
+      fc.uniqueArray(fc.string(), { minLength: 1 }),
     )
     .filter(isNotEmpty);
   const fcLocalNodeIri = fc.webUrl({ withFragments: true }).map((url) => {
     const originalUrl = new URL(url);
     return `https://inrupt.com/.well-known/sdk-local-node/${originalUrl.hash}`;
   });
-  const fcNamedNodes = fc.set(
+  const fcNamedNodes = fc.uniqueArray(
     fc.oneof(
       fcLocalNodeIri,
       fc.webUrl({ withFragments: true, withQueryParameters: true }),

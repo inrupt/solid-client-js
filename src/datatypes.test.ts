@@ -82,14 +82,18 @@ describe("stress-testing serialisations", () => {
     expect(fcResult.failed).toBe(false);
   });
 
+  it("should always return the input value when serialising -0, then deserialing to 0", () => {
+    expect(deserializeDecimal(serializeDecimal(-0))).toBe(0);
+  });
+
   it("should always return the input value when serialising, then deserialing a decimal", () => {
     const runs = 100;
     expect.assertions(runs + 2);
 
     const fcResult = fc.check(
-      fc.property(fc.float(), (inputDecimal) => {
+      fc.property(fc.float({ noNaN: true }), (inputDecimal) => {
         expect(deserializeDecimal(serializeDecimal(inputDecimal))).toBe(
-          inputDecimal,
+          inputDecimal === 0 ? 0 : inputDecimal,
         );
       }),
       { numRuns: runs },
