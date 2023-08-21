@@ -19,8 +19,8 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import { jest, describe, it, expect } from "@jest/globals";
 import { Buffer as NodeBuffer } from "buffer";
+import { jest, describe, it, expect } from "@jest/globals";
 import { Headers, Response } from "@inrupt/universal-fetch";
 
 import {

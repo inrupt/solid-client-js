@@ -20,6 +20,11 @@
 //
 
 import {
+  Buffer as NodeBuffer,
+  File as NodeFile,
+  Blob as NodeBlob,
+} from "buffer";
+import {
   afterEach,
   beforeEach,
   describe,
@@ -39,11 +44,6 @@ import {
   getPodRoot,
   createFetch,
 } from "@inrupt/internal-test-env";
-import {
-  Buffer as NodeBuffer,
-  File as NodeFile,
-  Blob as NodeBlob,
-} from "buffer";
 import {
   getSolidDataset,
   setThing,
