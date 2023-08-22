@@ -183,6 +183,7 @@
     "@types/http-link-header": "^1.0.1",
     "@types/jest": "^29.2.3",
     "@types/n3": "^1.10.4",
+    "@types/uuid": "^9.0.2",
     "dotenv-flow": "^3.2.0",
     "eslint": "^8.18.0",
     "eslint-config-next": "^13.0.6",
