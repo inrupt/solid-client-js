@@ -1,30 +1,13 @@
 version: 2
 updates:
-  # Enable daily version updates for prod dependencies
   - package-ecosystem: "npm"
     directory: "/"
-    # Check the npm registry for updates every day (weekdays)
     schedule:
       interval: "weekly"
     labels:
       - "dependencies"
       - "npm"
-      - "production"
-    allow:
-      - dependency-type: production
-  # Enable weekly version updates for dev dependencies
-  - package-ecosystem: "npm"
-    directory: "/"
-    # Check the npm registry for updates once a week
-    schedule:
-      interval: "weekly"
-    labels:
-      - "dependencies"
-      - "npm"
-      - "development"
-    allow:
-      - dependency-type: development
-
+  
   # Enable version updates for the website tooling
   - package-ecosystem: "pip"
     directory: "/docs"
