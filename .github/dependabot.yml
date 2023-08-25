@@ -7,7 +7,7 @@ updates:
     labels:
       - "dependencies"
       - "npm"
-  
+
   # Enable version updates for the website tooling
   - package-ecosystem: "pip"
     directory: "/docs"
