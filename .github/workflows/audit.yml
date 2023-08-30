@@ -19,13 +19,37 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      ### Temporary block: install a vulnerable dependency to exercise the report generation
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+      - run: npm install semver@6.0.0
       - name: Download CLI tool 
         shell: bash
         run: |
+          # Figure out the latest release number using Github CLI.
           latest=$(gh release list --repo https://github.com/jeremylong/DependencyCheck/ --limit  1 | grep -o 'Latest.v[0-9]\+.[0-9]\+.[0-9]\+' | sed "s/Latest.v//")
+          # Download the latest version of the CLI tool.
           wget "https://github.com/jeremylong/DependencyCheck/releases/download/v$latest/dependency-check-$latest-release.zip"
           unzip dependency-check-$latest-release.zip
+          # Run the scan on the current repository, outputting a SARIF report.
           bash dependency-check/bin/dependency-check.sh --project "solid-client-authn" --scan . --format SARIF --disableYarnAudit --disableAssembly
-          cat dependency-check-report.sarif
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Parse report
+        shell: bash
+        run: |
+          mkdir -p reports
+          cp --backup=numbered .dependency-check-report.* reports
+          rules=$(jq -s 'flatten | unique | map("* "+.+"\n") | add' < <(jq '.runs[].results[].ruleId' reports/*.sarif))
+
+          echo "SARIF_RULES_LENGTH=${#rules}" >> $GITHUB_ENV
+          echo "SARIF_RULES_TEXT=$rules" >> $GITHUB_ENV
+
+      - name: Upload reports
+        uses: actions/upload-artifact@v3
+        if: ${{ env.SARIF_RULES_LENGTH > 2 }}
+        with:
+          name: owasp-report
+          path: reports/
