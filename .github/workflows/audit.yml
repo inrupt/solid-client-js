@@ -25,7 +25,7 @@ jobs:
           latest=$(gh release list --repo https://github.com/jeremylong/DependencyCheck/ --limit  1 | grep -o 'Latest.v[0-9]\+.[0-9]\+.[0-9]\+' | sed "s/Latest.v//")
           wget "https://github.com/jeremylong/DependencyCheck/releases/download/v$latest/dependency-check-$latest-release.zip"
           unzip dependency-check-$latest-release.zip
-          bash dependency-check/bin/dependency-check.sh --project "solid-client-authn" --scan dev/inrupt/sdk/solid-client-js --format SARIF --disableYarnAudit --disableAssembly
+          bash dependency-check/bin/dependency-check.sh --project "solid-client-authn" --scan . --format SARIF --disableYarnAudit --disableAssembly
           cat dependency-check-report.sarif
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
