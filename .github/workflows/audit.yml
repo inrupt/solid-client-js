@@ -41,7 +41,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p reports
-          cp --backup=numbered .dependency-check-report.* reports
+          cp --backup=numbered dependency-check-report.* reports
           rules=$(jq -s 'flatten | unique | map("* "+.+"\n") | add' < <(jq '.runs[].results[].ruleId' reports/*.sarif))
 
           echo "SARIF_RULES_LENGTH=${#rules}" >> $GITHUB_ENV
