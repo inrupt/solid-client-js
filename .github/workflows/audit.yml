@@ -27,3 +27,5 @@ jobs:
           unzip dependency-check-$latest-release.zip
           bash dependency-check/bin/dependency-check.sh --project "solid-client-authn" --scan dev/inrupt/sdk/solid-client-js --format SARIF --disableYarnAudit --disableAssembly
           cat dependency-check-report.sarif
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
