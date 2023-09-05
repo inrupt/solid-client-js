@@ -18,7 +18,7 @@ jobs:
         os: [ubuntu-latest, windows-latest]
         node-version: ["20.x", "18.x", "16.x"]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
@@ -41,7 +41,7 @@ jobs:
     needs: [unit-tests]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           # Sonar analysis needs the full history for features like automatic assignment of bugs. If the following step
           # is not included the project will show a warning about incomplete information.
