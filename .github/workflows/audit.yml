@@ -12,6 +12,6 @@ concurrency:
   cancel-in-progress: true
 jobs:
   audit:
-    uses: inrupt/typescript-sdk-tools/.github/workflows/reusable-audit.yml@v2.1.3
+    uses: inrupt/typescript-sdk-tools/.github/workflows/reusable-audit.yml@v2.2.0
     secrets:
       WEBHOOK_E2E_FAILURE: ${{ secrets.WEBHOOK_E2E_FAILURE }}
