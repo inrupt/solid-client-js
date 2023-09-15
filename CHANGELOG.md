@@ -16,7 +16,7 @@ The following changes are pending, and will be applied on the next major release
 
 The following changes have been implemented but not released yet:
 
-## [1.30.1] - 2023-08-10
+## [1.30.1] - 2023-09-15
 
 ### Patch
 
