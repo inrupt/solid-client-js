@@ -24,7 +24,7 @@ The following changes have been implemented but not released yet:
   of the library was already correct in a specific edge case, but that was not
   covered by any test. Thanks to [Otto-AA](https://github.com/Otto-AA) for noticing
   the gap and implementing the missing test.
-- Transitive dependencies upgrades
+- Build system (bundler and TypeScript) updates. This should be transparent to dependants.
 
 ## [1.30.0] - 2023-07-30
 
