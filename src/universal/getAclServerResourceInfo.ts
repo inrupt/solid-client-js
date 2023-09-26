@@ -39,8 +39,18 @@ export async function getAclServerResourceInfo(
   resource: WithServerResourceInfo,
   options?: DefaultOptions,
 ): Promise<WithServerResourceInfo | null> {
-  if (typeof resource.internal_resourceInfo.aclUrl === "string") {
-    return getResourceInfo(resource.internal_resourceInfo.aclUrl, options);
+  if (typeof resource.internal_resourceInfo.aclUrl !== "string") {
+    return null;
   }
-  return null;
+  try {
+    return await getResourceInfo(
+      resource.internal_resourceInfo.aclUrl,
+      options,
+    );
+  } catch {
+    // A WAC-governed resource may have a link to a non-existant ACL (by design).
+    // The absence of an ACL at the target URL is a useful information that is
+    // used by the universal API to pick between ACR and WAC.
+    return null;
+  }
 }
