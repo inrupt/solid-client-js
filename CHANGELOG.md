@@ -16,6 +16,8 @@ The following changes are pending, and will be applied on the next major release
 
 The following changes have been implemented but not released yet:
 
+## [1.30.2] - 2023-09-26
+
 ### Bugfixes
 
 - [1549](https://github.com/inrupt/solid-client-js/issues/1549): The universal API had a bug preventing it from handling correctly resources with a missing ACL. This is now resolved, and it correctly proceeds to creating the target ACL if required.
