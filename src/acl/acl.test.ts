@@ -120,8 +120,8 @@ describe("fetchAcl", () => {
         url === "https://some.pod/resource"
           ? { Link: '<resource.acl>; rel="acl"' }
           : url === "https://some.pod/"
-          ? { Link: "" }
-          : { "Content-Type": "text/turtle" };
+            ? { Link: "" }
+            : { "Content-Type": "text/turtle" };
       return Promise.resolve(
         mockResponse(
           undefined,
@@ -223,8 +223,8 @@ describe("fetchAcl", () => {
         url === "https://some.pod/resource"
           ? { Link: '<resource.acl>; rel="acl"' }
           : url === "https://some.pod/"
-          ? { Link: '<.acl>; rel="acl"' }
-          : { "Content-Type": "text/turtle" };
+            ? { Link: '<.acl>; rel="acl"' }
+            : { "Content-Type": "text/turtle" };
       return Promise.resolve(
         mockResponse(
           undefined,
@@ -725,8 +725,8 @@ describe("getSolidDatasetWithAcl", () => {
         url === "https://some.pod/resource"
           ? { Link: '<resource.acl>; rel="acl"', "Content-Type": "text/turtle" }
           : url === "https://some.pod/"
-          ? { Link: '<.acl>; rel="acl"' }
-          : { "Content-Type": "text/turtle" };
+            ? { Link: '<.acl>; rel="acl"' }
+            : { "Content-Type": "text/turtle" };
       return Promise.resolve(
         mockResponse(
           undefined,
@@ -766,8 +766,8 @@ describe("getSolidDatasetWithAcl", () => {
         url === "https://some.pod/resource"
           ? { Link: '<resource.acl>; rel="acl"', "Content-Type": "text/turtle" }
           : url === "https://some.pod/"
-          ? { Link: '<.acl>; rel="acl"' }
-          : { "Content-Type": "text/turtle" };
+            ? { Link: '<.acl>; rel="acl"' }
+            : { "Content-Type": "text/turtle" };
       return Promise.resolve(
         mockResponse(
           undefined,
@@ -966,8 +966,8 @@ describe("getFileWithAcl", () => {
         url === "https://some.pod/resource"
           ? { Link: '<resource.acl>; rel="acl"' }
           : url === "https://some.pod/"
-          ? { Link: '<.acl>; rel="acl"' }
-          : { "Content-Type": "text/turtle" };
+            ? { Link: '<.acl>; rel="acl"' }
+            : { "Content-Type": "text/turtle" };
       const response = mockResponse(undefined, { headers }, url as string);
       return Promise.resolve(response);
     });
@@ -1000,8 +1000,8 @@ describe("getFileWithAcl", () => {
         url === "https://some.pod/resource"
           ? { Link: '<resource.acl>; rel="acl"' }
           : url === "https://some.pod/"
-          ? { Link: '<.acl>; rel="acl"' }
-          : { "Content-Type": "text/turtle" };
+            ? { Link: '<.acl>; rel="acl"' }
+            : { "Content-Type": "text/turtle" };
       const response = mockResponse(undefined, { headers }, url as string);
       return Promise.resolve(response);
     });
@@ -1155,8 +1155,8 @@ describe("getResourceInfoWithAcl", () => {
         url === "https://some.pod/resource"
           ? { Link: '<resource.acl>; rel="acl"' }
           : url === "https://some.pod/"
-          ? { Link: '<.acl>; rel="acl"' }
-          : { "Content-Type": "text/turtle" };
+            ? { Link: '<.acl>; rel="acl"' }
+            : { "Content-Type": "text/turtle" };
       return Promise.resolve(
         mockResponse(
           undefined,
@@ -1196,8 +1196,8 @@ describe("getResourceInfoWithAcl", () => {
         url === "https://some.pod/resource"
           ? { Link: '<resource.acl>; rel="acl"' }
           : url === "https://some.pod/"
-          ? { Link: '<.acl>; rel="acl"' }
-          : { "Content-Type": "text/turtle" };
+            ? { Link: '<.acl>; rel="acl"' }
+            : { "Content-Type": "text/turtle" };
       return Promise.resolve(
         mockResponse(
           undefined,
