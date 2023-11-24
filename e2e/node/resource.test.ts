@@ -360,4 +360,21 @@ describe("Authenticated end-to-end", () => {
     // environments it reliably succeeds:
     await expect(getWellKnownSolid(sessionResource)).resolves.not.toThrow();
   });
+
+  it("can customize the fetch to access HTTP headers", async () => {
+    let headers: Headers = new Headers();
+    const customFetch: typeof fetch = async (
+      info: Parameters<typeof fetch>[0],
+      init?: Parameters<typeof fetch>[1],
+    ) => {
+      const response = await fetchOptions.fetch(info, init);
+      if (info.toString() === sessionResource) {
+        headers = response.headers;
+      }
+      return response;
+    };
+    await getSolidDataset(sessionResource, { fetch: customFetch });
+
+    expect(headers.get("Content-Type")).toContain("text/turtle");
+  });
 });
