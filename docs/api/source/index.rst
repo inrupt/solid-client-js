@@ -50,10 +50,6 @@ through a tool like `Babel <https://babeljs.io>`__, and to add polyfills for
 e.g. ``Map``, ``Set``, ``Promise``, ``Headers``, ``Array.prototype.includes``,
 ``Object.entries`` and ``String.prototype.endsWith``.
 
-Additionally, when using this package in an environment other than Node.js, you
-will need `a polyfill for Node's buffer module
-<https://www.npmjs.com/package/buffer>`__.
-
 Node.js Support
 ^^^^^^^^^^^^^^^
 
