@@ -25,6 +25,7 @@ import {
   Blob as NodeBlob,
 } from "buffer";
 import {
+  jest,
   afterEach,
   beforeEach,
   describe,
@@ -359,5 +360,36 @@ describe("Authenticated end-to-end", () => {
     // We don't really care for what the resulting dataset is, just that across
     // environments it reliably succeeds:
     await expect(getWellKnownSolid(sessionResource)).resolves.not.toThrow();
+  });
+
+  it("can customize the fetch to get and set HTTP headers", async () => {
+    let headers: Headers = new Headers();
+    const customFetch: typeof fetch = async (
+      info: Parameters<typeof fetch>[0],
+      init?: Parameters<typeof fetch>[1],
+    ) => {
+      const response = await fetchOptions.fetch(info, {
+        ...init,
+        headers: {
+          ...init?.headers,
+          "User-Agent": "some-user-agent",
+        },
+      });
+      if (info.toString() === sessionResource) {
+        headers = response.headers;
+      }
+      return response;
+    };
+    const spiedFetch = jest.spyOn(fetchOptions, "fetch");
+    await getSolidDataset(sessionResource, { fetch: customFetch });
+    expect(spiedFetch).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          "User-Agent": "some-user-agent",
+        }),
+      }),
+    );
+    expect(headers.get("Content-Type")).toContain("text/turtle");
   });
 });
