@@ -23,7 +23,7 @@ jobs:
         # NSS node-based end-to-end tests are only running for unauthenticated operations,
         # because NSS doesn't support static client registration. Therefore, they run
         # against an environment that has manually been pre-provisioned.
-        environment-name: ["ESS PodSpaces", "NSS"]
+        environment-name: ["ESS PodSpaces", "ESS Dev-2-1", "NSS"]
         experimental: [false]
         include:
           - environment-name: "ESS Dev-2-2"
