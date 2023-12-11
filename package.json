@@ -173,7 +173,7 @@
   "devDependencies": {
     "@inrupt/eslint-config-lib": "^2.0.0",
     "@inrupt/internal-playwright-helpers": "^2.0.4",
-    "@inrupt/internal-test-env": "^2.0.4",
+    "@inrupt/internal-test-env": "^2.6.0",
     "@inrupt/jest-jsdom-polyfills": "^2.0.4",
     "@inrupt/solid-client-authn-node": "^1.12.3",
     "@playwright/test": "^1.28.1",
