@@ -21,8 +21,6 @@
 
 import { Buffer as NodeBuffer } from "buffer";
 import { jest, describe, it, expect } from "@jest/globals";
-import { Headers, Response } from "@inrupt/universal-fetch";
-
 import {
   getFile,
   deleteFile,
@@ -31,16 +29,6 @@ import {
   flattenHeaders,
 } from "./file";
 import type { WithResourceInfo } from "../interfaces";
-
-jest.mock("../fetcher", () => ({
-  fetch: jest
-    .fn()
-    .mockImplementation(() =>
-      Promise.resolve(
-        new Response("Some data", { status: 200, statusText: "OK" }),
-      ),
-    ),
-}));
 
 describe("flattenHeaders", () => {
   it("returns an empty object for undefined headers", () => {
@@ -366,13 +354,13 @@ describe("Write non-RDF data into a folder", () => {
   const mockBuffer = Buffer.from("mock blob data");
   const mockNodeBuffer = NodeBuffer.from("mock blob data");
   function setMockOnFetch(
-    fetch: jest.Mocked<typeof window.fetch>,
+    fetch: jest.Mocked<typeof fetch>,
     saveResponse = new Response(undefined, {
       status: 201,
       statusText: "Created",
       headers: { Location: "someFileName" },
     }),
-  ): jest.Mocked<typeof window.fetch> {
+  ): jest.Mocked<typeof fetch> {
     fetch.mockResolvedValueOnce(saveResponse);
     return fetch;
   }
@@ -384,7 +372,7 @@ describe("Write non-RDF data into a folder", () => {
   ])("support for %s raw data source", (_, data) => {
     it("should default to the included fetcher if no other is available", async () => {
       const fetcher = jest.requireMock("../fetcher") as {
-        fetch: jest.Mocked<typeof window.fetch>;
+        fetch: jest.Mocked<typeof fetch>;
       };
 
       fetcher.fetch = setMockOnFetch(fetcher.fetch);
@@ -396,7 +384,7 @@ describe("Write non-RDF data into a folder", () => {
 
     it("should POST to a remote resource using the included fetcher, and return the saved file", async () => {
       const fetcher = jest.requireMock("../fetcher") as {
-        fetch: jest.Mocked<typeof window.fetch>;
+        fetch: jest.Mocked<typeof fetch>;
       };
 
       fetcher.fetch = setMockOnFetch(fetcher.fetch);
@@ -534,7 +522,7 @@ describe("Write non-RDF data into a folder", () => {
 
   it("sets the correct Content Type on the returned file, if available", async () => {
     const fetcher = jest.requireMock("../fetcher") as {
-      fetch: jest.Mocked<typeof window.fetch>;
+      fetch: jest.Mocked<typeof fetch>;
     };
 
     fetcher.fetch = setMockOnFetch(fetcher.fetch);
@@ -553,7 +541,7 @@ describe("Write non-RDF data into a folder", () => {
 
   it("sets the given Content Type on the returned file, if any was given", async () => {
     const fetcher = jest.requireMock("../fetcher") as {
-      fetch: jest.Mocked<typeof window.fetch>;
+      fetch: jest.Mocked<typeof fetch>;
     };
 
     fetcher.fetch = setMockOnFetch(fetcher.fetch);
@@ -575,7 +563,7 @@ describe("Write non-RDF data into a folder", () => {
 
   it("defaults the Content Type to `application/octet-stream` if none is known", async () => {
     const fetcher = jest.requireMock("../fetcher") as {
-      fetch: jest.Mocked<typeof window.fetch>;
+      fetch: jest.Mocked<typeof fetch>;
     };
 
     fetcher.fetch = setMockOnFetch(fetcher.fetch);

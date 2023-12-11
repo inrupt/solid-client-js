@@ -20,7 +20,6 @@
 //
 
 import { jest, describe, it, expect } from "@jest/globals";
-import { Response } from "@inrupt/universal-fetch";
 import type {
   IriString,
   SolidDataset,
@@ -51,14 +50,8 @@ import { getPublicResourceAccess } from "../acl/class";
 import { toRdfJsQuads } from "../rdfjs.internal";
 import { mockResponse } from "../tests.internal";
 
-jest.mock("../fetcher.ts", () => ({
-  fetch: jest.fn().mockImplementation(() =>
-    Promise.resolve(
-      new Response(undefined, {
-        headers: { Location: "https://arbitrary.pod/resource" },
-      }),
-    ),
-  ),
+const spyFetch = jest.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response(undefined, {
+  headers: { Location: "https://arbitrary.pod/resource" },
 }));
 
 function getMockDataset(
@@ -72,85 +65,47 @@ function getMockDataset(
   return setMockAclUrl(result, aclIri);
 }
 
+const resource = getMockDataset(
+  "https://some.pod/resource",
+  "https://some.pod/resource.acl",
+);
+
 describe("getAgentAccess", () => {
   it("calls the included fetcher by default", async () => {
-    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mocked<typeof fetch>;
-    };
-
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
     await getAgentAccess(resource, "https://some.pod/profile#agent");
-
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
+    expect(fetch).toHaveBeenCalledWith(
       "https://some.pod/resource.acl",
+      expect.anything(),
     );
   });
 
   it("returns null if no ACL is accessible", async () => {
-    const mockFetch = jest
-      .fn<typeof fetch>()
-      // No resource ACL available...
-      .mockResolvedValueOnce(
-        mockResponse(
-          "",
-          {
-            status: 404,
-          },
-          "https://some.pod/resource.acl",
-        ),
-      )
-      // Link to the fallback ACL...
-      .mockResolvedValueOnce(
-        mockResponse(
-          "",
-          {
-            status: 200,
-            headers: {
-              Link: '<.acl>; rel="acl"',
-            },
-          },
-          "https://some.pod/",
-        ),
-      )
-      // Get the fallback ACL
-      .mockResolvedValueOnce(
-        mockResponse(
-          "",
-          {
-            status: 404,
-          },
-          "https://some.pod/.acl",
-        ),
-      );
-
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
     const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
-      fetch: mockFetch,
+      fetch: async url => {
+        switch (url.toString()) {
+          case "https://some.pod/resource.acl":
+          case "https://some.pod/.acl":
+            return new Response('', { status: 404 });
+          case "https://some.pod/":
+            return new Response( '<.acl>; rel="acl"', { status: 200 });
+        }
+        throw new Error('Unepxected URL');
+      },
     });
 
     await expect(result).resolves.toBeNull();
   });
 
   it("returns null if no ACL is advertised by the target resource", async () => {
-    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
-      mockResponse(
-        "ACL not found",
-        {
-          status: 404,
-        },
-        "https://some.pod/resource.acl",
-      ),
-    );
-
     const resource = getMockDataset("https://some.pod/resource");
     const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
-      fetch: mockFetch,
+      fetch: async url => {
+        switch (url.toString()) {
+          case "https://some.pod/resource.acl":
+            return new Response('ACL not found', { status: 404 });
+        }
+        throw new Error('Unepxected URL');
+      },
     });
 
     await expect(result).resolves.toBeNull();
@@ -165,23 +120,17 @@ describe("getAgentAccess", () => {
       "resource",
     );
 
-    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
-      mockResponse(
-        await triplesToTurtle(toRdfJsQuads(aclResource)),
-        {
-          status: 200,
-          headers: { "Content-Type": "text/turtle" },
-        },
-        "https://some.pod/resource.acl",
-      ),
-    );
-
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
     const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
-      fetch: mockFetch,
+      fetch: async url => {
+        switch (url.toString()) {
+          case "https://some.pod/resource.acl":
+            return new Response(await triplesToTurtle(toRdfJsQuads(aclResource)), {
+              status: 200,
+              headers: { "Content-Type": "text/turtle" },
+            });
+        }
+        throw new Error('Unepxected URL');
+      },
     });
 
     await expect(result).resolves.toStrictEqual({
@@ -201,50 +150,24 @@ describe("getAgentAccess", () => {
       { read: true, append: false, write: false, control: false },
       "default",
     );
-
-    const mockFetch = jest
-      .fn<typeof fetch>()
-      // No resource ACL available...
-      .mockResolvedValueOnce(
-        mockResponse(
-          "",
-          {
-            status: 404,
-          },
-          "https://some.pod/resource.acl",
-        ),
-      )
-      // Link to the fallback ACL...
-      .mockResolvedValueOnce(
-        mockResponse(
-          "",
-          {
-            status: 200,
-            headers: {
-              Link: '<.acl>; rel="acl"',
-            },
-          },
-          "https://some.pod/",
-        ),
-      )
-      // Get the fallback ACL
-      .mockResolvedValueOnce(
-        mockResponse(
-          await triplesToTurtle(toRdfJsQuads(aclResource)),
-          {
-            status: 200,
-            headers: { "Content-Type": "text/turtle" },
-          },
-          "https://some.pod/.acl",
-        ),
-      );
-
+    
     const resource = getMockDataset(
       "https://some.pod/resource",
       "https://some.pod/resource.acl",
     );
     const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
-      fetch: mockFetch,
+      fetch: async url => {
+        switch (url.toString()) {
+          case "https://some.pod/resource.acl":
+            return new Response('', { status: 404 });
+          case "https://some.pod/.acl":
+            return new Response(await triplesToTurtle(toRdfJsQuads(aclResource)), { status: 200,
+              headers: { "Content-Type": "text/turtle" }, });
+          case "https://some.pod/":
+            return new Response( '<.acl>; rel="acl"', { status: 200 });
+        }
+        throw new Error('Unepxected URL');
+      },
     });
     await expect(result).resolves.toStrictEqual({
       read: true,
@@ -272,50 +195,24 @@ describe("getAgentAccess", () => {
       "resource",
     );
 
-    const mockFetch = jest
-      .fn<typeof fetch>()
-      // The resource ACL is available...
-      .mockResolvedValueOnce(
-        mockResponse(
-          await triplesToTurtle(toRdfJsQuads(aclResource)),
-          {
-            status: 200,
-            headers: { "Content-Type": "text/turtle" },
-          },
-          "https://some.pod/resource.acl",
-        ),
-      )
-      // Link to the fallback ACL...
-      .mockResolvedValueOnce(
-        mockResponse(
-          "",
-          {
-            status: 200,
-            headers: {
-              Link: '<.acl>; rel="acl"',
-            },
-          },
-          "https://some.pod/",
-        ),
-      )
-      // Get the fallback ACL
-      .mockResolvedValueOnce(
-        mockResponse(
-          await triplesToTurtle(toRdfJsQuads(fallbackAclResource)),
-          {
-            status: 200,
-            headers: { "Content-Type": "text/turtle" },
-          },
-          "https://some.pod/.acl",
-        ),
-      );
-
-    const resource = getMockDataset(
+      const resource = getMockDataset(
       "https://some.pod/resource",
       "https://some.pod/resource.acl",
-    );
+      )
     const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
-      fetch: mockFetch,
+      fetch: async url => {
+        switch (url.toString()) {
+          case "https://some.pod/resource.acl":
+            return new Response(await triplesToTurtle(toRdfJsQuads(aclResource)), { status: 200,
+              headers: { "Content-Type": "text/turtle" }, });
+          case "https://some.pod/.acl":
+            return new Response(await triplesToTurtle(toRdfJsQuads(fallbackAclResource)), { status: 200,
+              headers: { "Content-Type": "text/turtle" }, });
+          case "https://some.pod/":
+            return new Response( '<.acl>; rel="acl"', { status: 200 });
+        }
+        throw new Error('Unepxected URL');
+      },
     });
     await expect(result).resolves.toStrictEqual({
       append: false,
@@ -346,10 +243,6 @@ describe("getAgentAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
     const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
       fetch: mockFetch,
     });
@@ -383,10 +276,6 @@ describe("getAgentAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
     const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
       fetch: mockFetch,
     });
@@ -420,10 +309,7 @@ describe("getAgentAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
       fetch: mockFetch,
     });
@@ -457,10 +343,6 @@ describe("getAgentAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
     const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
       fetch: mockFetch,
     });
@@ -496,10 +378,7 @@ describe("getAgentAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
       fetch: mockFetch,
     });
@@ -535,10 +414,7 @@ describe("getAgentAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
       fetch: mockFetch,
     });
@@ -574,10 +450,7 @@ describe("getAgentAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
       fetch: mockFetch,
     });
@@ -594,18 +467,11 @@ describe("getAgentAccess", () => {
 
 describe("getGroupAccess", () => {
   it("calls the included fetcher by default", async () => {
-    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mocked<typeof fetch>;
-    };
-
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
     await getGroupAccess(resource, "https://some.pod/groups#group");
 
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
+    expect(fetch).toHaveBeenCalledWith(
       "https://some.pod/resource.acl",
+      expect.anything(),
     );
   });
 
@@ -646,10 +512,7 @@ describe("getGroupAccess", () => {
         ),
       );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     const result = getGroupAccess(resource, "https://some.pod/groups#group", {
       fetch: mockFetch,
     });
@@ -698,10 +561,7 @@ describe("getGroupAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     const result = getGroupAccess(resource, "https://some.pod/groups#group", {
       fetch: mockFetch,
     });
@@ -763,10 +623,7 @@ describe("getGroupAccess", () => {
         ),
       );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     const result = getGroupAccess(resource, "https://some.pod/groups#group", {
       fetch: mockFetch,
     });
@@ -838,10 +695,7 @@ describe("getGroupAccess", () => {
         ),
       );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     const result = getGroupAccess(resource, "https://some.pod/groups#group", {
       fetch: mockFetch,
     });
@@ -876,10 +730,7 @@ describe("getGroupAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     const result = getGroupAccess(resource, "https://some.pod/groups#group", {
       fetch: mockFetch,
     });
@@ -915,10 +766,7 @@ describe("getGroupAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     const result = getGroupAccess(resource, "https://some.pod/groups#group", {
       fetch: mockFetch,
     });
@@ -954,10 +802,7 @@ describe("getGroupAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     const result = getGroupAccess(resource, "https://some.pod/groups#group", {
       fetch: mockFetch,
     });
@@ -993,10 +838,7 @@ describe("getGroupAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     const result = getGroupAccess(resource, "https://some.pod/groups#group", {
       fetch: mockFetch,
     });
@@ -1013,18 +855,11 @@ describe("getGroupAccess", () => {
 
 describe("getPublicAccess", () => {
   it("calls the included fetcher by default", async () => {
-    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mocked<typeof fetch>;
-    };
-
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
     await getPublicAccess(resource);
 
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
+    expect(fetch).toHaveBeenCalledWith(
       "https://some.pod/resource.acl",
+      expect.anything(),
     );
   });
 
@@ -1065,10 +900,7 @@ describe("getPublicAccess", () => {
         ),
       );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     const result = getPublicAccess(resource, {
       fetch: mockFetch,
     });
@@ -1117,10 +949,7 @@ describe("getPublicAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     const result = getPublicAccess(resource, {
       fetch: mockFetch,
     });
@@ -1182,10 +1011,7 @@ describe("getPublicAccess", () => {
         ),
       );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     const result = getPublicAccess(resource, {
       fetch: mockFetch,
     });
@@ -1257,10 +1083,7 @@ describe("getPublicAccess", () => {
         ),
       );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     const result = getPublicAccess(resource, {
       fetch: mockFetch,
     });
@@ -1295,10 +1118,7 @@ describe("getPublicAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     const result = getPublicAccess(resource, {
       fetch: mockFetch,
     });
@@ -1334,10 +1154,7 @@ describe("getPublicAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     const result = getPublicAccess(resource, {
       fetch: mockFetch,
     });
@@ -1373,10 +1190,7 @@ describe("getPublicAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     const result = getPublicAccess(resource, {
       fetch: mockFetch,
     });
@@ -1412,10 +1226,7 @@ describe("getPublicAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     const result = getPublicAccess(resource, {
       fetch: mockFetch,
     });
@@ -1432,18 +1243,11 @@ describe("getPublicAccess", () => {
 
 describe("getAgentAccessAll", () => {
   it("uses the default fetcher if none is provided", async () => {
-    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mocked<typeof fetch>;
-    };
-
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
     await getAgentAccessAll(resource);
 
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
+    expect(fetch).toHaveBeenCalledWith(
       "https://some.pod/resource.acl",
+      expect.anything()
     );
   });
 
@@ -1484,10 +1288,7 @@ describe("getAgentAccessAll", () => {
         ),
       );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     const result = getAgentAccessAll(resource, {
       fetch: mockFetch,
     });
@@ -1530,10 +1331,7 @@ describe("getAgentAccessAll", () => {
     };
     const getAgentAccessAllWac = jest.spyOn(wacModule, "getAgentAccessAll");
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     await getAgentAccessAll(resource, {
       fetch: mockFetch,
     });
@@ -1552,10 +1350,7 @@ describe("getAgentAccessAll", () => {
         "https://some.pod/resource.acl",
       ),
     );
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     await expect(
       getAgentAccessAll(resource, {
         fetch: mockFetch,
@@ -1590,10 +1385,7 @@ describe("getAgentAccessAll", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     await expect(
       getAgentAccessAll(resource, {
         fetch: mockFetch,
@@ -1636,10 +1428,7 @@ describe("getAgentAccessAll", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     const result = getAgentAccessAll(resource, {
       fetch: mockFetch,
     });
@@ -1658,18 +1447,11 @@ describe("getAgentAccessAll", () => {
 
 describe("getGroupAccessAll", () => {
   it("uses the default fetcher if none is provided", async () => {
-    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mocked<typeof fetch>;
-    };
-
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
     await getGroupAccessAll(resource);
 
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
+    expect(fetch).toHaveBeenCalledWith(
       "https://some.pod/resource.acl",
+      expect.anything()
     );
   });
 
@@ -1710,10 +1492,7 @@ describe("getGroupAccessAll", () => {
         ),
       );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     const result = getGroupAccessAll(resource, {
       fetch: mockFetch,
     });
@@ -1756,10 +1535,7 @@ describe("getGroupAccessAll", () => {
     };
     const getGroupAccessAllWac = jest.spyOn(wacModule, "getGroupAccessAll");
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     await getGroupAccessAll(resource, {
       fetch: mockFetch,
     });
@@ -1778,10 +1554,7 @@ describe("getGroupAccessAll", () => {
         "https://some.pod/resource.acl",
       ),
     );
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     await expect(
       getGroupAccessAll(resource, {
         fetch: mockFetch,
@@ -1820,10 +1593,7 @@ describe("getGroupAccessAll", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     await expect(
       getGroupAccessAll(resource, {
         fetch: mockFetch,
@@ -1868,10 +1638,7 @@ describe("getGroupAccessAll", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     const result = getGroupAccessAll(resource, {
       fetch: mockFetch,
     });
@@ -1890,14 +1657,6 @@ describe("getGroupAccessAll", () => {
 
 describe("setAgentAccess", () => {
   it("calls the included fetcher by default", async () => {
-    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mocked<typeof fetch>;
-    };
-
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
     await setAgentResourceAccess(resource, "https://some.pod/profile#agent", {
       read: true,
       append: undefined,
@@ -1906,8 +1665,9 @@ describe("setAgentAccess", () => {
       controlWrite: undefined,
     });
 
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
+    expect(fetch).toHaveBeenCalledWith(
       "https://some.pod/resource.acl",
+      expect.anything()
     );
   });
 
@@ -1948,10 +1708,7 @@ describe("setAgentAccess", () => {
         ),
       );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     const result = setAgentResourceAccess(
       resource,
       "https://some.pod/profile#agent",
@@ -2020,10 +1777,7 @@ describe("setAgentAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
 
     const result = await setAgentResourceAccess(
       resource,
@@ -2069,10 +1823,7 @@ describe("setAgentAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
 
     const result = await setAgentResourceAccess(
       resource,
@@ -2118,10 +1869,7 @@ describe("setAgentAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
 
     const result = await setAgentResourceAccess(
       resource,
@@ -2167,10 +1915,7 @@ describe("setAgentAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
 
     const result = await setAgentResourceAccess(
       resource,
@@ -2218,10 +1963,7 @@ describe("setAgentAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
 
     const result = await setAgentResourceAccess(
       resource,
@@ -2267,10 +2009,7 @@ describe("setAgentAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
 
     const result = await setAgentResourceAccess(
       resource,
@@ -2315,11 +2054,6 @@ describe("setAgentAccess", () => {
         },
         "https://some.pod/resource.acl",
       ),
-    );
-
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
     );
 
     const result = await setAgentResourceAccess(
@@ -2406,11 +2140,6 @@ describe("setAgentAccess", () => {
         ),
       );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
-
     const result = await setAgentResourceAccess(
       resource,
       "https://some.pod/profile#agent",
@@ -2490,10 +2219,6 @@ describe("setAgentAccess", () => {
         ),
       );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
     const result = await setAgentResourceAccess(
       resource,
       "https://some.pod/profile#agent",
@@ -2538,11 +2263,6 @@ describe("setAgentAccess", () => {
         },
         "https://some.pod/resource.acl",
       ),
-    );
-
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
     );
 
     await expect(
@@ -2595,10 +2315,7 @@ describe("setAgentAccess", () => {
         ),
       );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
 
     const result = await setAgentResourceAccess(
       resource,
@@ -2641,10 +2358,7 @@ describe("setAgentAccess", () => {
     );
     const saveAclForWac = jest.spyOn(aclModule, "saveAclFor");
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     await setAgentResourceAccess(
       resource,
       "https://some.pod/profile#agent",
@@ -2666,20 +2380,13 @@ describe("setAgentAccess", () => {
 
 describe("setGroupResourceAccess", () => {
   it("calls the included fetcher by default", async () => {
-    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mocked<typeof fetch>;
-    };
-
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
     await setGroupResourceAccess(resource, "https://some.pod/groups#group", {
       read: true,
     });
 
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
+    expect(fetch).toHaveBeenCalledWith(
       "https://some.pod/resource.acl",
+      expect.anything()
     );
   });
 
@@ -2720,10 +2427,7 @@ describe("setGroupResourceAccess", () => {
         ),
       );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     const result = setGroupResourceAccess(
       resource,
       "https://some.pod/groups#group",
@@ -2786,10 +2490,7 @@ describe("setGroupResourceAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
 
     const result = await setGroupResourceAccess(
       resource,
@@ -2837,10 +2538,7 @@ describe("setGroupResourceAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
 
     const result = await setGroupResourceAccess(
       resource,
@@ -2888,10 +2586,7 @@ describe("setGroupResourceAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
 
     const result = await setGroupResourceAccess(
       resource,
@@ -2939,10 +2634,7 @@ describe("setGroupResourceAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
 
     const result = await setGroupResourceAccess(
       resource,
@@ -2992,10 +2684,7 @@ describe("setGroupResourceAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
 
     const result = await setGroupResourceAccess(
       resource,
@@ -3043,10 +2732,7 @@ describe("setGroupResourceAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
 
     const result = await setGroupResourceAccess(
       resource,
@@ -3094,10 +2780,7 @@ describe("setGroupResourceAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
 
     const result = await setGroupResourceAccess(
       resource,
@@ -3185,10 +2868,7 @@ describe("setGroupResourceAccess", () => {
         ),
       );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
 
     const result = await setGroupResourceAccess(
       resource,
@@ -3273,10 +2953,7 @@ describe("setGroupResourceAccess", () => {
         ),
       );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     const result = await setGroupResourceAccess(
       resource,
       "https://some.pod/groups#group",
@@ -3325,10 +3002,7 @@ describe("setGroupResourceAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
 
     await expect(
       setAgentResourceAccess(
@@ -3382,10 +3056,7 @@ describe("setGroupResourceAccess", () => {
         ),
       );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
 
     const result = await setGroupResourceAccess(
       resource,
@@ -3428,10 +3099,7 @@ describe("setGroupResourceAccess", () => {
     );
     const saveAclForWac = jest.spyOn(aclModule, "saveAclFor");
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     await setGroupResourceAccess(
       resource,
       "https://some.pod/groups#group",
@@ -3453,20 +3121,13 @@ describe("setGroupResourceAccess", () => {
 
 describe("setPublicResourceAccess", () => {
   it("calls the included fetcher by default", async () => {
-    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mocked<typeof fetch>;
-    };
-
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
     await setPublicResourceAccess(resource, {
       read: true,
     });
 
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
+    expect(fetch).toHaveBeenCalledWith(
       "https://some.pod/resource.acl",
+      expect.anything()
     );
   });
 
@@ -3507,10 +3168,7 @@ describe("setPublicResourceAccess", () => {
         ),
       );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     const result = setPublicResourceAccess(
       resource,
       {
@@ -3571,10 +3229,7 @@ describe("setPublicResourceAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
 
     const result = await setPublicResourceAccess(
       resource,
@@ -3618,10 +3273,7 @@ describe("setPublicResourceAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
 
     const result = await setPublicResourceAccess(
       resource,
@@ -3665,10 +3317,7 @@ describe("setPublicResourceAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
 
     const result = await setPublicResourceAccess(
       resource,
@@ -3712,10 +3361,7 @@ describe("setPublicResourceAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
 
     const result = await setPublicResourceAccess(
       resource,
@@ -3760,10 +3406,7 @@ describe("setPublicResourceAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
 
     const result = await setPublicResourceAccess(
       resource,
@@ -3807,10 +3450,7 @@ describe("setPublicResourceAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
 
     const result = await setPublicResourceAccess(
       resource,
@@ -3854,10 +3494,7 @@ describe("setPublicResourceAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
 
     const result = await setPublicResourceAccess(
       resource,
@@ -3941,10 +3578,7 @@ describe("setPublicResourceAccess", () => {
         ),
       );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
 
     const result = await setPublicResourceAccess(
       resource,
@@ -4025,10 +3659,7 @@ describe("setPublicResourceAccess", () => {
         ),
       );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     const result = await setPublicResourceAccess(
       resource,
       {
@@ -4074,10 +3705,7 @@ describe("setPublicResourceAccess", () => {
       ),
     );
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
 
     await expect(
       setPublicResourceAccess(
@@ -4119,10 +3747,7 @@ describe("setPublicResourceAccess", () => {
     );
     const saveAclForWac = jest.spyOn(aclModule, "saveAclFor");
 
-    const resource = getMockDataset(
-      "https://some.pod/resource",
-      "https://some.pod/resource.acl",
-    );
+
     await setPublicResourceAccess(
       resource,
       {

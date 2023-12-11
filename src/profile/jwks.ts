@@ -34,7 +34,6 @@ import type {
 import { overwriteFile } from "../resource/file";
 import {
   getSourceUrl,
-  internal_defaultFetchOptions,
 } from "../resource/resource";
 import { getSolidDataset } from "../resource/solidDataset";
 import { getUrl } from "../thing/get";
@@ -114,15 +113,9 @@ const isJwks = (jwksDocument: Jwks | unknown): jwksDocument is Jwks => {
 export async function addJwkToJwks(
   jwk: Jwk,
   jwksIri: IriString,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<Jwks> {
-  const config = {
-    ...internal_defaultFetchOptions,
-    ...options,
-  };
-  const jwksResponse = await config.fetch(jwksIri);
+  const jwksResponse = await (options?.fetch ?? fetch)(jwksIri);
   if (!jwksResponse.ok) {
     throw new Error(
       `Fetching [${jwksIri}] returned an error: ${jwksResponse.status} ${jwksResponse.statusText}`,
@@ -160,13 +153,9 @@ export async function addJwkToJwks(
 export async function addPublicKeyToProfileJwks(
   publicKey: Jwk,
   webId: WebId,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<Blob & WithResourceInfo> {
-  const profileDataset = await getSolidDataset(webId, {
-    fetch: options.fetch,
-  });
+  const profileDataset = await getSolidDataset(webId, options);
   if (profileDataset === null) {
     throw new Error(
       `The profile document associated with WebID [${webId}] could not be retrieved.`,
@@ -185,6 +174,6 @@ export async function addPublicKeyToProfileJwks(
 
   return overwriteFile(jwksIri, new Blob([JSON.stringify(updatedJwks)]), {
     contentType: "application/json",
-    fetch: options.fetch,
+    fetch: options?.fetch,
   });
 }

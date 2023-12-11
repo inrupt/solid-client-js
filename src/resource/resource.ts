@@ -35,18 +35,12 @@ import {
   SolidClientError,
 } from "../interfaces";
 import { internal_toIriString } from "../interfaces.internal";
-import { fetch } from "../fetcher";
 import {
   internal_isAuthenticationFailureResponse,
   internal_isUnsuccessfulResponse,
   internal_parseResourceInfo,
 } from "./resource.internal";
 import { acp } from "../constants";
-
-/** @ignore For internal use only. */
-export const internal_defaultFetchOptions = {
-  fetch,
-};
 
 /**
  * Retrieve the information about a resource (e.g. access permissions) without
@@ -59,20 +53,14 @@ export const internal_defaultFetchOptions = {
  */
 export async function getResourceInfo(
   url: UrlString,
-  options: Partial<
-    typeof internal_defaultFetchOptions & {
-      ignoreAuthenticationErrors: boolean;
-    }
-  > = { ...internal_defaultFetchOptions, ignoreAuthenticationErrors: false },
+  options?: {
+    fetch?: typeof fetch;
+    ignoreAuthenticationErrors?: boolean;
+  },
 ): Promise<WithServerResourceInfo> {
-  const config = {
-    ...internal_defaultFetchOptions,
-    ...options,
-  };
-
-  const response = await config.fetch(url, { method: "HEAD" });
+  const response = await (options?.fetch ?? fetch)(url, { method: "HEAD" });
   return responseToResourceInfo(response, {
-    ignoreAuthenticationErrors: options.ignoreAuthenticationErrors ?? false,
+    ignoreAuthenticationErrors: options?.ignoreAuthenticationErrors ?? false,
   });
 }
 

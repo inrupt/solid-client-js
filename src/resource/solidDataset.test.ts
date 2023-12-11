@@ -20,8 +20,6 @@
 //
 
 import { beforeAll, jest, describe, it, expect } from "@jest/globals";
-
-import { Response } from "@inrupt/universal-fetch";
 import { DataFactory } from "n3";
 import type * as RDF from "@rdfjs/types";
 import type { Parser } from "./solidDataset";
@@ -2129,7 +2127,7 @@ describe("createContainerAt", () => {
 
 describe("saveSolidDatasetInContainer", () => {
   function setMockOnFetch(
-    fetch: jest.Mocked<typeof window.fetch>,
+    fetch: jest.Mocked<typeof fetch>,
     saveResponse = mockResponse(
       undefined,
       {
@@ -2139,14 +2137,14 @@ describe("saveSolidDatasetInContainer", () => {
       },
       "https://some.pod/container/",
     ),
-  ): jest.Mocked<typeof window.fetch> {
+  ): jest.Mocked<typeof fetch> {
     fetch.mockResolvedValueOnce(saveResponse);
     return fetch;
   }
 
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mocked<typeof window.fetch>;
+      fetch: jest.Mocked<typeof fetch>;
     };
 
     await saveSolidDatasetInContainer(
@@ -2454,38 +2452,51 @@ describe("saveSolidDatasetInContainer", () => {
   });
 });
 
-describe("createContainerInContainer", () => {
-  function setMockOnFetch(
-    fetch: jest.Mocked<typeof window.fetch>,
-    saveResponse = mockResponse(
-      undefined,
-      {
-        status: 201,
-        statusText: "Created",
-        headers: { Location: "child" },
-      },
-      "https://some.pod/",
-    ),
-  ): jest.Mocked<typeof window.fetch> {
-    fetch.mockResolvedValueOnce(saveResponse);
-    return fetch;
+const mockFetchImplementation = async (url) => {
+  if (url.toString() === "https://some.pod/") {
+    throw new Error('Unexpected URL');
   }
 
-  it("calls the included fetcher by default", async () => {
-    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mocked<typeof window.fetch>;
-    };
-    mockedFetcher.fetch = setMockOnFetch(mockedFetcher.fetch);
+  return new Response(undefined, {
+    status: 201,
+    statusText: "Created",
+    headers: { Location: "child" },
+  });
+}
 
+describe("createContainerInContainer", () => {
+  let spyFetch: jest.SpiedFunction<typeof fetch>;
+
+  beforeEach(() => {
+    spyFetch = jest.spyOn(globalThis, "fetch")
+      .mockImplementationOnce(mockFetchImplementation);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it("calls the included fetcher by default", async () => {
     await createContainerInContainer("https://some.pod/parent-container/");
 
     // Two calls expected: one to store the dataset, one to retrieve its details
     // (e.g. Linked Resources).
-    expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
+    expect(spyFetch).toHaveBeenCalledTimes(2);
+    expect(spyFetch).toHaveBeenCalledWith(
+      "https://some.pod/parent-container/",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/turtle",
+          Link: '<http://www.w3.org/ns/ldp#BasicContainer>; rel="type"',
+          slug: undefined
+        },
+      }
+    );
   });
 
   it("uses the given fetcher if provided", async () => {
-    const mockFetch = setMockOnFetch(jest.fn<typeof fetch>());
+    const mockFetch = jest.fn<typeof fetch>(mockFetchImplementation);
 
     await createContainerInContainer("https://some.pod/parent-container/", {
       fetch: mockFetch,
@@ -2493,26 +2504,17 @@ describe("createContainerInContainer", () => {
 
     // Two calls expected: one to store the dataset, one to retrieve its details
     // (e.g. Linked Resources).
-    expect(mockFetch.mock.calls).toHaveLength(1);
+    expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 
   it("returns a meaningful error when the server returns a 403", async () => {
-    const mockFetch = setMockOnFetch(
-      jest.fn<typeof fetch>(),
-      mockResponse(
-        "Not allowed",
-        {
-          status: 403,
-          statusText: "Forbidden",
-        },
-        "https://some.pod/parent-container/",
-      ),
-    );
-
     const fetchPromise = createContainerInContainer(
       "https://some.pod/parent-container/",
       {
-        fetch: mockFetch,
+        fetch: async () => new Response("Not allowed", {
+          status: 403,
+          statusText: "Forbidden",
+        }),
       },
     );
 
@@ -2522,22 +2524,13 @@ describe("createContainerInContainer", () => {
   });
 
   it("returns a meaningful error when the server returns a 404", async () => {
-    const mockFetch = setMockOnFetch(
-      jest.fn<typeof fetch>(),
-      mockResponse(
-        "Not found",
-        {
-          status: 404,
-          statusText: "Not Found",
-        },
-        "https://some.pod/parent-container/",
-      ),
-    );
-
     const fetchPromise = createContainerInContainer(
       "https://some.pod/parent-container/",
       {
-        fetch: mockFetch,
+        fetch: async () => new Response("Not found", {
+          status: 404,
+          statusText: "Not Found",
+        }),
       },
     );
 
@@ -2547,15 +2540,10 @@ describe("createContainerInContainer", () => {
   });
 
   it("returns a meaningful error when the server does not return the new Container's location", async () => {
-    const mockFetch = setMockOnFetch(
-      jest.fn<typeof fetch>(),
-      mockResponse(null, {}, "https://arbitrary.pod/parent-container/"),
-    );
-
     const fetchPromise = createContainerInContainer(
       "https://arbitrary.pod/parent-container/",
       {
-        fetch: mockFetch,
+        fetch: async () => new Response(),
       },
     );
 
@@ -2567,22 +2555,13 @@ describe("createContainerInContainer", () => {
   });
 
   it("includes the status code, status message and response body when a request failed", async () => {
-    const mockFetch = setMockOnFetch(
-      jest.fn<typeof fetch>(),
-      mockResponse(
-        "Teapots don't make coffee",
-        {
-          status: 418,
-          statusText: "I'm a teapot!",
-        },
-        "https://arbitrary.pod/parent-container/",
-      ),
-    );
-
     const fetchPromise = createContainerInContainer(
       "https://arbitrary.pod/parent-container/",
       {
-        fetch: mockFetch,
+        fetch: async () => new Response("Teapots don't make coffee", {
+          status: 418,
+          statusText: "I'm a teapot!",
+        }),
       },
     );
 
@@ -2593,29 +2572,8 @@ describe("createContainerInContainer", () => {
     });
   });
 
-  it("sends the right headers to create a Container", async () => {
-    const mockFetch = setMockOnFetch(jest.fn<typeof fetch>());
-
-    await createContainerInContainer("https://some.pod/parent-container/", {
-      fetch: mockFetch,
-    });
-
-    expect(mockFetch.mock.calls[0][0]).toBe(
-      "https://some.pod/parent-container/",
-    );
-    expect(mockFetch.mock.calls[0][1]?.method).toBe("POST");
-    expect(mockFetch.mock.calls[0][1]?.headers).toHaveProperty(
-      "Content-Type",
-      "text/turtle",
-    );
-    expect(mockFetch.mock.calls[0][1]?.headers).toHaveProperty(
-      "Link",
-      '<http://www.w3.org/ns/ldp#BasicContainer>; rel="type"',
-    );
-  });
-
   it("sends the suggested slug to the Pod", async () => {
-    const mockFetch = setMockOnFetch(jest.fn<typeof fetch>());
+    const mockFetch = jest.fn<typeof fetch>();
 
     await createContainerInContainer("https://some.pod/parent-container/", {
       fetch: mockFetch,
@@ -2627,36 +2585,16 @@ describe("createContainerInContainer", () => {
     });
   });
 
-  it("does not send a suggested slug if none was provided", async () => {
-    const mockFetch = setMockOnFetch(jest.fn<typeof fetch>());
-
-    await createContainerInContainer("https://some.pod/parent-container/", {
-      fetch: mockFetch,
-    });
-
-    expect(
-      (mockFetch.mock.calls[0][1]?.headers as Record<string, string>).slug,
-    ).toBeUndefined();
-  });
-
   it("includes the final slug with the return value", async () => {
-    const mockFetch = setMockOnFetch(
-      jest.fn<typeof fetch>(),
-      mockResponse(
-        "Arbitrary response",
+    const savedSolidDataset = await createContainerInContainer(
+      "https://some.pod/parent-container/",
+      {
+        fetch: async () => new Response("Arbitrary response",
         {
           headers: {
             Location: "https://some.pod/parent-container/child-container/",
           },
-        },
-        "https://some.pod/parent-container/",
-      ),
-    );
-
-    const savedSolidDataset = await createContainerInContainer(
-      "https://some.pod/parent-container/",
-      {
-        fetch: mockFetch,
+        }),
       },
     );
 
@@ -2851,15 +2789,11 @@ describe("deleteContainer", () => {
   });
 
   it("should throw an error on a failed request", async () => {
-    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
-      new Response(undefined, {
+    const deletionPromise = deleteContainer("https://some.pod/container/", {
+      fetch: async () => new Response(undefined, {
         status: 400,
         statusText: "Bad request",
       }),
-    );
-
-    const deletionPromise = deleteContainer("https://some.pod/container/", {
-      fetch: mockFetch,
     });
 
     await expect(deletionPromise).rejects.toThrow(
@@ -2868,17 +2802,13 @@ describe("deleteContainer", () => {
   });
 
   it("includes the status code, status message and response body when a request failed", async () => {
-    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
-      new Response("Teapots don't make coffee", {
-        status: 418,
-        statusText: "I'm a teapot!",
-      }),
-    );
-
     const deletionPromise = deleteContainer(
       "https://arbitrary.pod/container/",
       {
-        fetch: mockFetch,
+        fetch: async () => new Response("Teapots don't make coffee", {
+          status: 418,
+          statusText: "I'm a teapot!",
+        }),
       },
     );
 
@@ -3455,7 +3385,7 @@ describe("getWellKnownSolid", () => {
   const podUrl = "https://example.org/pod/";
   const resourceUrl = "https://example.org/pod/resource";
   const wellKnownSolid = ".well-known/solid";
-  let mockedFetcher: { fetch: jest.Mocked<typeof window.fetch> };
+  let mockedFetcher: { fetch: jest.Mocked<typeof fetch> };
 
   const mockESS20 = () =>
     mockedFetcher.fetch.mockResolvedValueOnce(
@@ -3522,7 +3452,7 @@ describe("getWellKnownSolid", () => {
 
   beforeAll(() => {
     mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mocked<typeof window.fetch>;
+      fetch: jest.Mocked<typeof fetch>;
     };
   });
 

@@ -20,7 +20,6 @@
 //
 
 import type { Buffer, File as NodeFile } from "buffer";
-import { fetch } from "../fetcher";
 import type {
   File,
   UploadRequestInit,
@@ -43,18 +42,14 @@ import {
  *
  * Available options:
  * - `fetch`: A custom `fetch` function with the same signature as
- *   [`window.fetch`](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch).
+ *   [`fetch`](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch).
  *   This will be used to execute the actual requests. This option can be used to, for example,
  *   attach credentials to requests that need authentication.
  */
 export type GetFileOptions = {
-  fetch: typeof window.fetch;
+  fetch: typeof fetch;
   /** @internal */
   init: UploadRequestInit;
-};
-
-const defaultGetFileOptions = {
-  fetch,
 };
 
 const RESERVED_HEADERS = ["Slug", "If-None-Match", "Content-Type"];
@@ -84,14 +79,10 @@ function containsReserved(header: Record<string, string>): boolean {
  */
 export async function getFile(
   fileUrl: Url | UrlString,
-  options: Partial<GetFileOptions> = defaultGetFileOptions,
+  options?: Partial<GetFileOptions>,
 ): Promise<File & WithServerResourceInfo> {
-  const config = {
-    ...defaultGetFileOptions,
-    ...options,
-  };
   const url = internal_toIriString(fileUrl);
-  const response = await config.fetch(url, config.init);
+  const response = await (options?.fetch ?? fetch)(url, options?.init);
   if (internal_isUnsuccessfulResponse(response)) {
     throw new FetchError(
       `Fetching the File failed: [${response.status}] [${
@@ -128,17 +119,13 @@ export async function getFile(
  */
 export async function deleteFile(
   file: Url | UrlString | WithResourceInfo,
-  options: Partial<GetFileOptions> = defaultGetFileOptions,
+  options?: Partial<GetFileOptions>,
 ): Promise<void> {
-  const config = {
-    ...defaultGetFileOptions,
-    ...options,
-  };
   const url = hasResourceInfo(file)
     ? internal_toIriString(getSourceIri(file))
     : internal_toIriString(file);
-  const response = await config.fetch(url, {
-    ...config.init,
+  const response = await (options?.fetch ?? fetch)(url, {
+    ...options?.init,
     method: "DELETE",
   });
 
@@ -233,7 +220,7 @@ export async function saveFileInContainer<
 >(
   folderUrl: Url | UrlString,
   file: FileExt,
-  options: Partial<SaveFileOptions> = defaultGetFileOptions,
+  options?: Partial<SaveFileOptions>,
 ): Promise<FileExt & WithResourceInfo> {
   const folderUrlString = internal_toIriString(folderUrl);
   const response = await writeFile(folderUrlString, file, "POST", options);
@@ -262,7 +249,7 @@ export async function saveFileInContainer<
     internal_resourceInfo: {
       isRawData: true,
       sourceIri: fileIri,
-      contentType: getContentType(file, options.contentType),
+      contentType: getContentType(file, options?.contentType),
     },
   };
 
@@ -333,7 +320,7 @@ export async function overwriteFile<FileExt extends File | NodeFile | Buffer>(
 export async function overwriteFile<FileExt extends File | NodeFile | Buffer>(
   fileUrl: Url | UrlString,
   file: FileExt,
-  options: Partial<WriteFileOptions> = defaultGetFileOptions,
+  options?: Partial<WriteFileOptions>,
 ): Promise<FileExt & WithResourceInfo> {
   const fileUrlString = internal_toIriString(fileUrl);
   const response = await writeFile(fileUrlString, file, "PUT", options);
@@ -422,7 +409,7 @@ async function writeFile<T extends File | NodeFile>(
   targetUrl: UrlString,
   file: T,
   method: "PUT" | "POST",
-  options: Partial<SaveFileOptions>,
+  options?: Partial<SaveFileOptions>,
 ): Promise<Response>;
 /**
  * @deprecated `writeFile` should only have `File` input
@@ -431,19 +418,15 @@ async function writeFile<T extends File | NodeFile | Buffer>(
   targetUrl: UrlString,
   file: T,
   method: "PUT" | "POST",
-  options: Partial<SaveFileOptions>,
+  options?: Partial<SaveFileOptions>,
 ): Promise<Response>;
 async function writeFile<T extends File | NodeFile | Buffer>(
   targetUrl: UrlString,
   file: T,
   method: "PUT" | "POST",
-  options: Partial<SaveFileOptions>,
+  options: Partial<SaveFileOptions> = {},
 ): Promise<Response> {
-  const config = {
-    ...defaultGetFileOptions,
-    ...options,
-  };
-  const headers = flattenHeaders(config.init?.headers ?? {});
+  const headers = flattenHeaders(options.init?.headers ?? {});
   if (containsReserved(headers)) {
     throw new Error(
       `No reserved header (${RESERVED_HEADERS.join(
@@ -453,15 +436,10 @@ async function writeFile<T extends File | NodeFile | Buffer>(
   }
 
   // If a slug is in the parameters, set the request headers accordingly
-  if (config.slug !== undefined) {
-    headers.Slug = config.slug;
-  }
-  headers["Content-Type"] = getContentType(file, options.contentType);
-
   const targetUrlString = internal_toIriString(targetUrl);
 
-  return config.fetch(targetUrlString, {
-    ...config.init,
+  return (options.fetch ?? fetch)(targetUrlString, {
+    ...options.init,
     headers,
     method,
     body: file as File | Buffer,

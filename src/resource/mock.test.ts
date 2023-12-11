@@ -20,9 +20,6 @@
 //
 
 import { describe, it, expect } from "@jest/globals";
-
-import * as crossFetch from "@inrupt/universal-fetch";
-
 import {
   mockSolidDatasetFrom,
   mockFileFrom,
@@ -35,8 +32,6 @@ import {
   isContainer,
   getContentType,
 } from "./resource";
-
-const { Response } = crossFetch;
 
 describe("mockSolidDatasetFrom", () => {
   it("is linked to the given source URL", async () => {

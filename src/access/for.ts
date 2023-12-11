@@ -20,7 +20,6 @@
 //
 
 import type { UrlString, WebId } from "../interfaces";
-import { internal_defaultFetchOptions } from "../resource/resource";
 import type { Access } from "./universal";
 import {
   getAgentAccess,
@@ -72,7 +71,7 @@ export async function getAccessFor(
   resourceUrl: UrlString,
   actorType: "agent" | "group",
   actor: UrlString | WebId,
-  options?: typeof internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<Access | null>;
 /**
  * Get an overview of what access is defined for everyone.
@@ -106,22 +105,22 @@ export async function getAccessFor(
 export async function getAccessFor(
   resourceUrl: UrlString,
   actorType: "public",
-  options?: typeof internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<Access | null>;
 export async function getAccessFor(
   resourceUrl: UrlString,
   actorType: Actor,
-  actor?: WebId | UrlString | typeof internal_defaultFetchOptions,
-  options?: typeof internal_defaultFetchOptions,
+  actor?: WebId | UrlString | { fetch?: typeof fetch },
+  options?: { fetch?: typeof fetch },
 ): Promise<Access | null>;
 export async function getAccessFor(
   resourceUrl: UrlString,
   actorType: Actor,
-  actor:
+  actor?:
     | WebId
     | UrlString
-    | typeof internal_defaultFetchOptions = internal_defaultFetchOptions,
-  options = internal_defaultFetchOptions,
+    | { fetch?: typeof fetch },
+  options?: { fetch?: typeof fetch },
 ): Promise<Access | null> {
   if (actorType === "agent") {
     if (typeof actor !== "string") {
@@ -182,7 +181,7 @@ export async function getAccessFor(
 export async function getAccessForAll(
   resourceUrl: UrlString,
   actorType: Exclude<Actor, "public">,
-  options = internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<Record<UrlString, Access> | null> {
   if (actorType === "agent") {
     return getAgentAccessAll(resourceUrl, options);
@@ -238,7 +237,7 @@ export async function setAccessFor(
   actorType: "agent" | "group",
   access: Partial<Access>,
   actor: UrlString | WebId,
-  options?: typeof internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<Access | null>;
 /**
  * Set access to a Resource for everyone.
@@ -283,24 +282,24 @@ export async function setAccessFor(
   resourceUrl: UrlString,
   actorType: "public",
   access: Partial<Access>,
-  options?: typeof internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<Access | null>;
 export async function setAccessFor(
   resourceUrl: UrlString,
   actorType: Actor,
   access: Partial<Access>,
-  actor?: WebId | UrlString | typeof internal_defaultFetchOptions,
-  options?: typeof internal_defaultFetchOptions,
+  actor?: WebId | UrlString | { fetch?: typeof fetch },
+  options?: { fetch?: typeof fetch },
 ): Promise<Access | null>;
 export async function setAccessFor(
   resourceUrl: UrlString,
   actorType: Actor,
   access: Partial<Access>,
-  actor:
+  actor?:
     | WebId
     | UrlString
-    | typeof internal_defaultFetchOptions = internal_defaultFetchOptions,
-  options = internal_defaultFetchOptions,
+    | { fetch?: typeof fetch },
+  options?: { fetch?: typeof fetch },
 ): Promise<Access | null> {
   if (actorType === "agent") {
     if (typeof actor !== "string") {
@@ -326,5 +325,5 @@ export async function setAccessFor(
     }
     return setPublicAccess(resourceUrl, access, actor);
   }
-  return null as never;
+  return null;
 }

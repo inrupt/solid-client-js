@@ -20,7 +20,6 @@
 //
 import { v4 as uuidv4 } from "uuid";
 import { acp } from "../constants";
-import { internal_defaultFetchOptions } from "../resource/resource";
 import { asIri, getThing } from "../thing/thing";
 import type { WithAccessibleAcr, WithAcp } from "../acp/acp";
 import { hasAccessibleAcr } from "../acp/acp";
@@ -969,7 +968,7 @@ export type internal_AcpData = {
 
 export async function internal_getPoliciesAndMatchers(
   resource: WithResourceInfo & WithAccessibleAcr,
-  options = internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<internal_AcpData> {
   const acrPolicyUrls = getAcrPolicyUrlAll(resource);
   const policyUrls = getPolicyUrlAll(resource);
@@ -1053,7 +1052,7 @@ function getResourceUrls(thingUrls: UrlString[]): UrlString[] {
 
 async function getResources(
   resourceUrls: UrlString[],
-  options: typeof internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<Record<UrlString, (SolidDataset & WithServerResourceInfo) | null>> {
   const uniqueResourceUrls = Array.from(new Set(resourceUrls));
   const resources: Record<

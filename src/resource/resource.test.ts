@@ -20,8 +20,6 @@
 //
 
 import { jest, describe, it, expect } from "@jest/globals";
-
-import { Response } from "@inrupt/universal-fetch";
 import {
   getResourceInfo,
   getSourceIri,
@@ -57,7 +55,7 @@ jest.mock("../fetcher.ts", () => ({
 describe("getResourceInfo", () => {
   it("calls the included fetcher by default", async () => {
     const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mocked<typeof window.fetch>;
+      fetch: jest.Mocked<typeof fetch>;
     };
 
     await getResourceInfo("https://some.pod/resource");

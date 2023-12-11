@@ -21,7 +21,6 @@
 
 import { jest, describe, it, expect } from "@jest/globals";
 import * as fc from "fast-check";
-import { Response } from "@inrupt/universal-fetch";
 import type { WithAccessibleAcr } from "../acp/acp";
 import type { AccessControlResource } from "../acp/control";
 import {
@@ -8454,12 +8453,12 @@ describe("getPoliciesAndRules", () => {
     expect(solidDatasetModule.getSolidDataset).toHaveBeenNthCalledWith(
       1,
       "https://some.pod/policy-resource",
-      expect.anything(),
+      undefined
     );
     expect(solidDatasetModule.getSolidDataset).toHaveBeenNthCalledWith(
       2,
       "https://some.pod/rule-resource",
-      expect.anything(),
+      undefined
     );
   });
 

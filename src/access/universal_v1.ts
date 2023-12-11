@@ -28,7 +28,6 @@ import {
 import type { UrlString, WebId } from "../interfaces";
 import {
   getSourceIri,
-  internal_defaultFetchOptions,
 } from "../resource/resource";
 import {
   internal_getAgentAccess as getAgentAccessAcp,
@@ -98,7 +97,7 @@ export interface Access {
 export async function getAgentAccess(
   resourceUrl: UrlString,
   webId: WebId,
-  options = internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<Access | null> {
   const resourceInfo = await getResourceInfoWithAcr(resourceUrl, options);
   if (hasAccessibleAcr(resourceInfo)) {
@@ -151,7 +150,7 @@ export async function setAgentAccess(
   resourceUrl: UrlString,
   webId: WebId,
   access: Partial<Access>,
-  options = internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<Access | null> {
   const resourceInfo = await getResourceInfoWithAcr(resourceUrl, options);
   if (hasAccessibleAcr(resourceInfo)) {
@@ -216,7 +215,7 @@ export async function setAgentAccess(
  */
 export async function getAgentAccessAll(
   resourceUrl: UrlString,
-  options = internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<Record<WebId, Access> | null> {
   const resourceInfo = await getResourceInfoWithAcr(resourceUrl, options);
   if (hasAccessibleAcr(resourceInfo)) {
@@ -258,7 +257,7 @@ export async function getAgentAccessAll(
 export async function getGroupAccess(
   resourceUrl: UrlString,
   webId: WebId,
-  options = internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<Access | null> {
   const resourceInfo = await getResourceInfoWithAcr(resourceUrl, options);
   if (hasAccessibleAcr(resourceInfo)) {
@@ -300,7 +299,7 @@ export async function getGroupAccess(
  */
 export async function getGroupAccessAll(
   resourceUrl: UrlString,
-  options = internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<Record<UrlString, Access> | null> {
   const resourceInfo = await getResourceInfoWithAcr(resourceUrl, options);
   if (hasAccessibleAcr(resourceInfo)) {
@@ -353,7 +352,7 @@ export async function setGroupAccess(
   resourceUrl: UrlString,
   groupUrl: UrlString,
   access: Partial<Access>,
-  options = internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<Access | null> {
   const resourceInfo = await getResourceInfoWithAcr(resourceUrl, options);
   if (hasAccessibleAcr(resourceInfo)) {
@@ -417,7 +416,7 @@ export async function setGroupAccess(
  */
 export async function getPublicAccess(
   resourceUrl: UrlString,
-  options = internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<Access | null> {
   const resourceInfo = await getResourceInfoWithAcr(resourceUrl, options);
   if (hasAccessibleAcr(resourceInfo)) {
@@ -469,7 +468,7 @@ export async function getPublicAccess(
 export async function setPublicAccess(
   resourceUrl: UrlString,
   access: Partial<Access>,
-  options = internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<Access | null> {
   const resourceInfo = await getResourceInfoWithAcr(resourceUrl, options);
   if (hasAccessibleAcr(resourceInfo)) {

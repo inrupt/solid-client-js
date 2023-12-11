@@ -29,7 +29,6 @@ import type {
 } from "../interfaces";
 import {
   getSourceUrl,
-  internal_defaultFetchOptions,
   getResourceInfo,
   getSourceIri,
 } from "../resource/resource";
@@ -69,9 +68,7 @@ import { isAcr } from "../acp/acp.internal";
  */
 export async function internal_fetchAcl(
   resourceInfo: WithServerResourceInfo,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<WithAcl["internal_acl"]> {
   if (!hasAccessibleAcl(resourceInfo)) {
     return {
@@ -107,9 +104,7 @@ export async function internal_fetchAcl(
 /** @internal */
 export async function internal_fetchResourceAcl(
   dataset: WithServerResourceInfo,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<AclDataset | null> {
   if (!hasAccessibleAcl(dataset)) {
     return null;
@@ -141,9 +136,7 @@ export async function internal_fetchResourceAcl(
 /** @internal */
 export async function internal_fetchFallbackAcl(
   resource: WithAccessibleAcl,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<AclDataset | null> {
   const resourceUrl = new URL(getSourceUrl(resource));
   const resourcePath = resourceUrl.pathname;

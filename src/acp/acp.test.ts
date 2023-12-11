@@ -20,8 +20,6 @@
 //
 
 import { jest, describe, it, expect } from "@jest/globals";
-
-import { Response } from "@inrupt/universal-fetch";
 import { acp, rdf } from "../constants";
 import * as SolidDatasetModule from "../resource/solidDataset";
 import * as FileModule from "../resource/file";
@@ -48,15 +46,13 @@ import { mockSolidDatasetFrom } from "../resource/mock";
 import { addMockAcrTo } from "./mock";
 import { mockResponse } from "../tests.internal";
 
-jest.mock("../fetcher.ts", () => ({
-  fetch: jest.fn<typeof fetch>().mockImplementation(() =>
+ const spyFetch = jest.spyOn(globalThis, 'fetch').mockImplementation(() =>
     Promise.resolve(
       new Response(undefined, {
         headers: { Location: "https://arbitrary.pod/resource" },
       }),
     ),
-  ),
-}));
+  );
 
 const defaultMockPolicies = {
   policies: ["https://some.pod/policies#policy"],
@@ -95,18 +91,15 @@ function mockAcr(accessTo: UrlString, policies = defaultMockPolicies) {
 
 describe("getSolidDatasetWithAcr", () => {
   it("calls the included fetcher by default", async () => {
-    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mocked<typeof fetch>;
-    };
-
     getSolidDatasetWithAcr("https://some.pod/resource").catch(() => {
       // We're just checking that this is called,
       // so we can ignore the error about not being able to parse
       // the mock Response.
     });
 
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
+    expect(fetch).toHaveBeenCalledWith(
       "https://some.pod/resource",
+      {"headers": {"Accept": "text/turtle"}}
     );
   });
 
@@ -245,14 +238,11 @@ describe("getSolidDatasetWithAcr", () => {
 
 describe("getFileWithAcr", () => {
   it("calls the included fetcher by default", async () => {
-    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mocked<typeof fetch>;
-    };
-
     await getFileWithAcr("https://some.pod/resource");
 
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
+    expect(fetch).toHaveBeenCalledWith(
       "https://some.pod/resource",
+      undefined
     );
   });
 
@@ -326,14 +316,10 @@ describe("getFileWithAcr", () => {
 
 describe("getResourceInfoWithAcr", () => {
   it("calls the included fetcher by default", async () => {
-    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mocked<typeof fetch>;
-    };
-
     await getResourceInfoWithAcr("https://some.pod/resource");
-
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
+    expect(fetch).toHaveBeenCalledWith(
       "https://some.pod/resource",
+      {"method": "HEAD"}
     );
   });
 
@@ -524,7 +510,7 @@ describe("getSolidDatasetWithAccessDatasets", () => {
     expect(mockedGetSolidDataset).toHaveBeenCalledTimes(1);
     expect(mockedGetSolidDataset).toHaveBeenLastCalledWith(
       "https://some.pod/resource",
-      expect.anything(),
+      undefined,
     );
   });
 
@@ -545,7 +531,7 @@ describe("getSolidDatasetWithAccessDatasets", () => {
     expect(mockedGetSolidDataset).toHaveBeenCalledTimes(2);
     expect(mockedGetSolidDataset).toHaveBeenLastCalledWith(
       "https://some.pod/resource.acl",
-      expect.anything(),
+      undefined,
     );
   });
 
@@ -565,7 +551,7 @@ describe("getSolidDatasetWithAccessDatasets", () => {
     expect(mockedGetSolidDataset).toHaveBeenCalledTimes(2);
     expect(mockedGetSolidDataset).toHaveBeenLastCalledWith(
       "https://some.pod/resource?ext=acr",
-      expect.anything(),
+      undefined,
     );
   });
 
@@ -655,7 +641,7 @@ describe("getFileWithAccessDatasets", () => {
     expect(mockedGetFile).toHaveBeenCalledTimes(1);
     expect(mockedGetFile).toHaveBeenLastCalledWith(
       "https://some.pod/resource",
-      expect.anything(),
+      undefined,
     );
   });
 
@@ -681,7 +667,7 @@ describe("getFileWithAccessDatasets", () => {
     expect(mockedGetSolidDataset).toHaveBeenCalledTimes(1);
     expect(mockedGetSolidDataset).toHaveBeenLastCalledWith(
       "https://some.pod/resource.acl",
-      expect.anything(),
+      undefined,
     );
   });
 
@@ -707,7 +693,7 @@ describe("getFileWithAccessDatasets", () => {
     expect(mockedGetSolidDataset).toHaveBeenCalledTimes(1);
     expect(mockedGetSolidDataset).toHaveBeenLastCalledWith(
       "https://some.pod/resource?ext=acr",
-      expect.anything(),
+      undefined,
     );
   });
 
@@ -812,7 +798,7 @@ describe("getResourceInfoWithAccessDatasets", () => {
     expect(mockedGetResourceInfo).toHaveBeenCalledTimes(1);
     expect(mockedGetResourceInfo).toHaveBeenLastCalledWith(
       "https://some.pod/resource",
-      expect.anything(),
+      undefined,
     );
   });
 
@@ -837,7 +823,7 @@ describe("getResourceInfoWithAccessDatasets", () => {
     expect(mockedGetSolidDataset).toHaveBeenCalledTimes(1);
     expect(mockedGetSolidDataset).toHaveBeenLastCalledWith(
       "https://some.pod/resource.acl",
-      expect.anything(),
+      undefined,
     );
   });
 
@@ -863,7 +849,7 @@ describe("getResourceInfoWithAccessDatasets", () => {
     expect(mockedGetSolidDataset).toHaveBeenCalledTimes(1);
     expect(mockedGetSolidDataset).toHaveBeenLastCalledWith(
       "https://some.pod/resource?ext=acr",
-      expect.anything(),
+      undefined,
     );
   });
 
@@ -964,11 +950,7 @@ describe("getResourceInfoWithAccessDatasets", () => {
 
 describe("saveAcrFor", () => {
   it("calls the included fetcher by default", async () => {
-    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mocked<typeof fetch>;
-    };
-
-    mockedFetcher.fetch.mockResolvedValue(
+    spyFetch.mockResolvedValue(
       mockResponse(undefined, undefined, "https://arbitrary.pod/resource"),
     );
 
@@ -980,7 +962,7 @@ describe("saveAcrFor", () => {
 
     await saveAcrFor(mockedResource);
 
-    expect(mockedFetcher.fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledTimes(1);
   });
 
   it("uses the given fetcher if provided", async () => {

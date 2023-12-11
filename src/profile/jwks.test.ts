@@ -20,7 +20,6 @@
 //
 
 import { describe, it, jest, expect } from "@jest/globals";
-import { Response } from "@inrupt/universal-fetch";
 import { rdf, security } from "../constants";
 import { mockSolidDatasetFrom } from "../resource/mock";
 import { buildThing } from "../thing/build";
@@ -33,6 +32,10 @@ import {
   getProfileJwksIri,
   setProfileJwks,
 } from "./jwks";
+
+jest.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response(JSON.stringify({ keys: [] }), {
+  headers: { Location: "https://arbitrary.pod/resource" },
+}));
 
 jest.mock("../resource/solidDataset", () => {
   const actualResourceModule = jest.requireActual(
@@ -52,16 +55,6 @@ jest.mock("../resource/file", () => {
     getFile: jest.fn(),
   };
 });
-
-jest.mock("../fetcher.ts", () => ({
-  fetch: jest.fn().mockImplementation(() =>
-    Promise.resolve(
-      new Response(JSON.stringify({ keys: [] }), {
-        headers: { Location: "https://arbitrary.pod/resource" },
-      }),
-    ),
-  ),
-}));
 
 describe("setProfileJwks", () => {
   it("overwrites an existing JWKS IRI value", () => {

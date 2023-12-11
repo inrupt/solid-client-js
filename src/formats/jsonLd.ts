@@ -22,7 +22,6 @@ import { JsonLdParser } from "jsonld-streaming-parser";
 import { FetchDocumentLoader } from "jsonld-context-parser";
 import { getSourceUrl } from "../resource/resource";
 import type { Parser } from "../resource/solidDataset";
-import { fetch } from "../fetcher";
 
 /**
  * ```{note} This function is still experimental and subject to change, even
@@ -55,7 +54,7 @@ export const getJsonLdParser = (): Parser => {
       new Promise((res) => {
         const parser = new JsonLdParser({
           baseIRI: getSourceUrl(resourceInfo),
-          documentLoader: new FetchDocumentLoader(fetch),
+          documentLoader: new FetchDocumentLoader((...args) => fetch(...args)),
         });
 
         let endCalled = false;

@@ -34,7 +34,6 @@ import { getFile } from "../resource/file";
 import {
   getResourceInfo,
   getSourceUrl,
-  internal_defaultFetchOptions,
 } from "../resource/resource";
 import type { WithAcl } from "../acl/acl";
 import { hasAccessibleAcl } from "../acl/acl";
@@ -66,18 +65,11 @@ import { isAcr } from "./acp.internal";
  */
 export async function getSolidDatasetWithAcr(
   url: Url | UrlString,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<SolidDataset & WithServerResourceInfo & WithAcp> {
   const urlString = internal_toIriString(url);
-  const config = {
-    ...internal_defaultFetchOptions,
-    ...options,
-  };
-
-  const solidDataset = await getSolidDataset(urlString, config);
-  const acp = await fetchAcr(solidDataset, config);
+  const solidDataset = await getSolidDataset(urlString, options);
+  const acp = await fetchAcr(solidDataset, options);
   return { ...solidDataset, ...acp };
 }
 
@@ -95,18 +87,12 @@ export async function getSolidDatasetWithAcr(
  */
 export async function getFileWithAcr(
   url: Url | UrlString,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions,
+  options?: { fetch: typeof fetch },
 ): Promise<File & WithAcp> {
   const urlString = internal_toIriString(url);
-  const config = {
-    ...internal_defaultFetchOptions,
-    ...options,
-  };
 
-  const file = await getFile(urlString, config);
-  const acp = await fetchAcr(file, config);
+  const file = await getFile(urlString, options);
+  const acp = await fetchAcr(file, options);
   return Object.assign(file, acp);
 }
 
@@ -125,18 +111,11 @@ export async function getFileWithAcr(
  */
 export async function getResourceInfoWithAcr(
   url: Url | UrlString,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<WithServerResourceInfo & WithAcp> {
   const urlString = internal_toIriString(url);
-  const config = {
-    ...internal_defaultFetchOptions,
-    ...options,
-  };
-
-  const resourceInfo = await getResourceInfo(urlString, config);
-  const acp = await fetchAcr(resourceInfo, config);
+  const resourceInfo = await getResourceInfo(urlString, options);
+  const acp = await fetchAcr(resourceInfo, options);
   return { ...resourceInfo, ...acp };
 }
 
@@ -159,22 +138,15 @@ export async function getResourceInfoWithAcr(
  */
 export async function getSolidDatasetWithAccessDatasets(
   url: Url | UrlString,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<SolidDataset & (WithAcp | WithAcl)> {
   const urlString = internal_toIriString(url);
-  const config = {
-    ...internal_defaultFetchOptions,
-    ...options,
-  };
-
-  const solidDataset = await getSolidDataset(urlString, config);
+  const solidDataset = await getSolidDataset(urlString, options);
   if (hasAccessibleAcl(solidDataset)) {
-    const acl = await internal_fetchAcl(solidDataset, config);
+    const acl = await internal_fetchAcl(solidDataset, options);
     return internal_setAcl(solidDataset, acl);
   }
-  const acr = await fetchAcr(solidDataset, config);
+  const acr = await fetchAcr(solidDataset, options);
   return { ...solidDataset, ...acr };
 }
 
@@ -197,22 +169,15 @@ export async function getSolidDatasetWithAccessDatasets(
  */
 export async function getFileWithAccessDatasets(
   url: Url | UrlString,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<File & (WithAcp | WithAcl)> {
   const urlString = internal_toIriString(url);
-  const config = {
-    ...internal_defaultFetchOptions,
-    ...options,
-  };
-
-  const file = await getFile(urlString, config);
+  const file = await getFile(urlString, options);
   if (hasAccessibleAcl(file)) {
-    const acl = await internal_fetchAcl(file, config);
+    const acl = await internal_fetchAcl(file, options);
     return internal_setAcl(file, acl);
   }
-  const acr = await fetchAcr(file, config);
+  const acr = await fetchAcr(file, options);
   return Object.assign(file, acr);
 }
 
@@ -235,22 +200,15 @@ export async function getFileWithAccessDatasets(
  */
 export async function getResourceInfoWithAccessDatasets(
   url: Url | UrlString,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<WithServerResourceInfo & (WithAcp | WithAcl)> {
   const urlString = internal_toIriString(url);
-  const config = {
-    ...internal_defaultFetchOptions,
-    ...options,
-  };
-
-  const resourceInfo = await getResourceInfo(urlString, config);
+  const resourceInfo = await getResourceInfo(urlString, options);
   if (hasAccessibleAcl(resourceInfo)) {
-    const acl = await internal_fetchAcl(resourceInfo, config);
+    const acl = await internal_fetchAcl(resourceInfo, options);
     return internal_setAcl(resourceInfo, acl);
   }
-  const acr = await fetchAcr(resourceInfo, config);
+  const acr = await fetchAcr(resourceInfo, options);
   return { ...resourceInfo, ...acr };
 }
 
@@ -267,18 +225,10 @@ export async function getResourceInfoWithAccessDatasets(
  */
 export async function saveAcrFor<ResourceExt extends WithAccessibleAcr>(
   resource: ResourceExt,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<ResourceExt> {
   const acr = internal_getAcr(resource);
-  const config = {
-    ...internal_defaultFetchOptions,
-    ...options,
-  };
-
-  const savedAcr = await saveSolidDatasetAt(getSourceUrl(acr), acr, config);
-
+  const savedAcr = await saveSolidDatasetAt(getSourceUrl(acr), acr, options);
   return internal_setAcr(resource, savedAcr);
 }
 
@@ -319,7 +269,7 @@ export function hasAccessibleAcr(
 
 async function fetchAcr(
   resource: WithServerResourceInfo,
-  options: Partial<typeof internal_defaultFetchOptions>,
+  options?: { fetch?: typeof fetch },
 ): Promise<WithAcp> {
   let acrUrl: UrlString | undefined;
   if (hasLinkedAcr(resource)) {
@@ -423,18 +373,11 @@ export function getReferencedPolicyUrlAll(
  */
 export async function isAcpControlled(
   resource: Url | UrlString,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<boolean> {
   const urlString = internal_toIriString(resource);
-  const config = {
-    ...internal_defaultFetchOptions,
-    ...options,
-  };
-
-  const resourceInfo = await getResourceInfo(urlString, config);
-  return hasAccessibleAcr(await fetchAcr(resourceInfo, config));
+  const resourceInfo = await getResourceInfo(urlString, options);
+  return hasAccessibleAcr(await fetchAcr(resourceInfo, options));
 }
 
 /**

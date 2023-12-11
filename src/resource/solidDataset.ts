@@ -45,7 +45,6 @@ import type {
 import { hasResourceInfo, hasChangelog } from "../interfaces";
 import { internal_toIriString } from "../interfaces.internal";
 import {
-  internal_defaultFetchOptions,
   getSourceUrl,
   getResourceInfo,
   isContainer,
@@ -66,7 +65,6 @@ import {
 import { getIriAll } from "../thing/get";
 import { normalizeServerSideIri } from "./iri.internal";
 import { freeze, getLocalNodeName, isLocalNodeIri } from "../rdf.internal";
-import { fetch as defaultFetch } from "../fetcher";
 
 /**
  * Initialise a new [[SolidDataset]] in memory.
@@ -292,21 +290,17 @@ export async function responseToSolidDataset(
  */
 export async function getSolidDataset(
   url: UrlString | Url,
-  options: Partial<
-    typeof internal_defaultFetchOptions & ParseOptions
-  > = internal_defaultFetchOptions,
+  options?: Partial<
+    { fetch: typeof fetch } & ParseOptions
+  >,
 ): Promise<SolidDataset & WithServerResourceInfo> {
   url = internal_toIriString(url);
-  const config = {
-    ...internal_defaultFetchOptions,
-    ...options,
-  };
-  const parserContentTypes = Object.keys(options.parsers ?? {});
+  const parserContentTypes = Object.keys(options?.parsers ?? {});
   const acceptedContentTypes =
     parserContentTypes.length > 0
       ? parserContentTypes.join(", ")
       : "text/turtle";
-  const response = await config.fetch(url, {
+  const response = await (options?.fetch ?? fetch)(url, {
     headers: {
       Accept: acceptedContentTypes,
     },
@@ -419,23 +413,18 @@ async function prepareSolidDatasetCreation(
 export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
   url: UrlString | Url,
   solidDataset: Dataset,
-  options: Partial<
-    typeof internal_defaultFetchOptions & { prefixes: Record<string, string> }
-  > = internal_defaultFetchOptions,
+  options?: Partial<
+    { fetch?: typeof fetch } & { prefixes: Record<string, string> }
+  >,
 ): Promise<Dataset & WithServerResourceInfo & WithChangeLog> {
   url = internal_toIriString(url);
-  const config = {
-    ...internal_defaultFetchOptions,
-    ...options,
-  };
-
   const datasetWithChangelog = internal_withChangeLog(solidDataset);
 
   const requestInit = isUpdate(datasetWithChangelog, url)
     ? await prepareSolidDatasetUpdate(datasetWithChangelog)
     : await prepareSolidDatasetCreation(datasetWithChangelog, options);
 
-  const response = await config.fetch(url, requestInit);
+  const response = await (options?.fetch ?? fetch)(url, requestInit);
 
   if (internal_isUnsuccessfulResponse(response)) {
     const diagnostics = isUpdate(datasetWithChangelog, url)
@@ -480,18 +469,12 @@ export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
  */
 export async function deleteSolidDataset(
   solidDataset: Url | UrlString | WithResourceInfo,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<void> {
-  const config = {
-    ...internal_defaultFetchOptions,
-    ...options,
-  };
   const url = hasResourceInfo(solidDataset)
     ? internal_toIriString(getSourceUrl(solidDataset))
     : internal_toIriString(solidDataset);
-  const response = await config.fetch(url, { method: "DELETE" });
+  const response = await (options?.fetch ?? fetch)(url, { method: "DELETE" });
 
   if (internal_isUnsuccessfulResponse(response)) {
     throw new FetchError(
@@ -521,24 +504,17 @@ export async function deleteSolidDataset(
  */
 export async function createContainerAt(
   url: UrlString | Url,
-  options: Partial<
-    typeof internal_defaultFetchOptions & {
-      initialContent: SolidDataset;
-    }
-  > = internal_defaultFetchOptions,
-): Promise<SolidDataset & WithServerResourceInfo> {
+  options?: {
+    fetch?: typeof fetch;
+    initialContent?: SolidDataset;
+  }): Promise<SolidDataset & WithServerResourceInfo> {
   url = internal_toIriString(url);
   url = url.endsWith("/") ? url : `${url}/`;
-  const config = {
-    ...internal_defaultFetchOptions,
-    ...options,
-  };
-
-  const response = await config.fetch(url, {
+  const response = await (options?.fetch ?? fetch)(url, {
     method: "PUT",
-    body: config.initialContent
+    body: options?.initialContent
       ? await triplesToTurtle(
-          toRdfJsQuads(config.initialContent).map(getNamedNodesForLocalNodes),
+          toRdfJsQuads(options.initialContent).map(getNamedNodesForLocalNodes),
         )
       : undefined,
     headers: {
@@ -553,7 +529,7 @@ export async function createContainerAt(
 
   if (internal_isUnsuccessfulResponse(response)) {
     const containerType =
-      config.initialContent === undefined ? "empty" : "non-empty";
+      options?.initialContent === undefined ? "empty" : "non-empty";
     throw new FetchError(
       `Creating the ${containerType} Container at [${url}] failed: [${
         response.status
@@ -566,7 +542,7 @@ export async function createContainerAt(
   const containerDataset: SolidDataset &
     WithChangeLog &
     WithServerResourceInfo = freeze({
-    ...(options.initialContent ?? createSolidDataset()),
+    ...(options?.initialContent ?? createSolidDataset()),
     internal_changeLog: { additions: [], deletions: [] },
     internal_resourceInfo: resourceInfo,
   });
@@ -596,11 +572,11 @@ function isUpdate(
   );
 }
 
-type SaveInContainerOptions = Partial<
-  typeof internal_defaultFetchOptions & {
-    slugSuggestion: string;
-  }
->;
+type SaveInContainerOptions = {
+  fetch?: typeof fetch;
+  slugSuggestion?: string;
+}
+
 /**
  * Given a SolidDataset, store it in a Solid Pod in a new Resource inside a Container.
  *
@@ -626,12 +602,8 @@ type SaveInContainerOptions = Partial<
 export async function saveSolidDatasetInContainer(
   containerUrl: UrlString | Url,
   solidDataset: SolidDataset,
-  options: SaveInContainerOptions = internal_defaultFetchOptions,
+  options?: SaveInContainerOptions,
 ): Promise<SolidDataset & WithResourceInfo> {
-  const config = {
-    ...internal_defaultFetchOptions,
-    ...options,
-  };
   containerUrl = internal_toIriString(containerUrl);
 
   const rawTurtle = await triplesToTurtle(
@@ -641,10 +613,10 @@ export async function saveSolidDatasetInContainer(
     "Content-Type": "text/turtle",
     Link: `<${ldp.Resource}>; rel="type"`,
   };
-  if (options.slugSuggestion) {
+  if (options?.slugSuggestion) {
     headers.slug = options.slugSuggestion;
   }
-  const response = await config.fetch(containerUrl, {
+  const response = await (options?.fetch ?? fetch)(containerUrl, {
     method: "POST",
     body: rawTurtle,
     headers,
@@ -730,22 +702,17 @@ export async function saveSolidDatasetInContainer(
  */
 export async function createContainerInContainer(
   containerUrl: UrlString | Url,
-  options: SaveInContainerOptions = internal_defaultFetchOptions,
+  options?: SaveInContainerOptions,
 ): Promise<SolidDataset & WithResourceInfo> {
   containerUrl = internal_toIriString(containerUrl);
-  const config = {
-    ...internal_defaultFetchOptions,
-    ...options,
-  };
-
   const headers: RequestInit["headers"] = {
     "Content-Type": "text/turtle",
     Link: `<${ldp.BasicContainer}>; rel="type"`,
   };
-  if (options.slugSuggestion) {
+  if (options?.slugSuggestion) {
     headers.slug = options.slugSuggestion;
   }
-  const response = await config.fetch(containerUrl, {
+  const response = await (options?.fetch ?? fetch)(containerUrl, {
     method: "POST",
     headers,
   });
@@ -798,9 +765,7 @@ export async function createContainerInContainer(
  */
 export async function deleteContainer(
   container: Url | UrlString | WithResourceInfo,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<void> {
   const url = hasResourceInfo(container)
     ? internal_toIriString(getSourceUrl(container))
@@ -811,11 +776,7 @@ export async function deleteContainer(
     );
   }
 
-  const config = {
-    ...internal_defaultFetchOptions,
-    ...options,
-  };
-  const response = await config.fetch(url, { method: "DELETE" });
+  const response = await (options?.fetch ?? fetch)(url, { method: "DELETE" });
 
   if (internal_isUnsuccessfulResponse(response)) {
     throw new FetchError(
@@ -1219,9 +1180,9 @@ function resolveLocalIrisInThing(
  */
 export async function getWellKnownSolid(
   url: UrlString | Url,
-  options: Partial<
-    typeof internal_defaultFetchOptions & ParseOptions
-  > = internal_defaultFetchOptions,
+  options?: Partial<
+    { fetch?: typeof fetch } & ParseOptions
+  >,
 ): Promise<SolidDataset & WithServerResourceInfo> {
   const urlString = internal_toIriString(url);
 
@@ -1232,9 +1193,7 @@ export async function getWellKnownSolid(
       new URL(urlString).origin,
     ).href;
 
-    return await getSolidDataset(wellKnownSolidUrl, {
-      fetch: defaultFetch,
-    });
+    return await getSolidDataset(wellKnownSolidUrl);
   } catch (e) {
     // In case of error, do nothing and try to discover the .well-known
     // at the pod's root.
@@ -1242,7 +1201,7 @@ export async function getWellKnownSolid(
 
   // 1.1s implementation:
   const resourceMetadata = await getResourceInfo(urlString, {
-    fetch: options.fetch,
+    fetch: options?.fetch,
     // Discovering the .well-known/solid document is useful even for resources
     // we don't have access to.
     ignoreAuthenticationErrors: true,
