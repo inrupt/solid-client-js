@@ -37,10 +37,7 @@ import type {
 import { setThing } from "../thing/thing";
 import { removeAll } from "../thing/remove";
 import { setIri } from "../thing/set";
-import {
-  getResourceInfo,
-  getSourceUrl,
-} from "../resource/resource";
+import { getResourceInfo, getSourceUrl } from "../resource/resource";
 import { getFile } from "../resource/file";
 import { internal_cloneResource } from "../resource/resource.internal";
 import {
@@ -384,9 +381,12 @@ export async function deleteAclFor<
   resource: Resource,
   options?: { fetch?: typeof fetch },
 ): Promise<Resource & { acl: { resourceAcl: null } }> {
-  const response = await (options?.fetch ?? fetch)(resource.internal_resourceInfo.aclUrl, {
-    method: "DELETE",
-  });
+  const response = await (options?.fetch ?? fetch)(
+    resource.internal_resourceInfo.aclUrl,
+    {
+      method: "DELETE",
+    },
+  );
 
   if (!response.ok) {
     throw new Error(

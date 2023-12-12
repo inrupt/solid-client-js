@@ -46,13 +46,13 @@ import { mockSolidDatasetFrom } from "../resource/mock";
 import { addMockAcrTo } from "./mock";
 import { mockResponse } from "../tests.internal";
 
- const spyFetch = jest.spyOn(globalThis, 'fetch').mockImplementation(() =>
-    Promise.resolve(
-      new Response(undefined, {
-        headers: { Location: "https://arbitrary.pod/resource" },
-      }),
-    ),
-  );
+const spyFetch = jest.spyOn(globalThis, "fetch").mockImplementation(() =>
+  Promise.resolve(
+    new Response(undefined, {
+      headers: { Location: "https://arbitrary.pod/resource" },
+    }),
+  ),
+);
 
 const defaultMockPolicies = {
   policies: ["https://some.pod/policies#policy"],
@@ -97,10 +97,9 @@ describe("getSolidDatasetWithAcr", () => {
       // the mock Response.
     });
 
-    expect(fetch).toHaveBeenCalledWith(
-      "https://some.pod/resource",
-      {"headers": {"Accept": "text/turtle"}}
-    );
+    expect(fetch).toHaveBeenCalledWith("https://some.pod/resource", {
+      headers: { Accept: "text/turtle" },
+    });
   });
 
   it("uses the given fetcher if provided", async () => {
@@ -240,10 +239,7 @@ describe("getFileWithAcr", () => {
   it("calls the included fetcher by default", async () => {
     await getFileWithAcr("https://some.pod/resource");
 
-    expect(fetch).toHaveBeenCalledWith(
-      "https://some.pod/resource",
-      undefined
-    );
+    expect(fetch).toHaveBeenCalledWith("https://some.pod/resource", undefined);
   });
 
   it("uses the given fetcher if provided", async () => {
@@ -317,10 +313,9 @@ describe("getFileWithAcr", () => {
 describe("getResourceInfoWithAcr", () => {
   it("calls the included fetcher by default", async () => {
     await getResourceInfoWithAcr("https://some.pod/resource");
-    expect(fetch).toHaveBeenCalledWith(
-      "https://some.pod/resource",
-      {"method": "HEAD"}
-    );
+    expect(fetch).toHaveBeenCalledWith("https://some.pod/resource", {
+      method: "HEAD",
+    });
   });
 
   it("uses the given fetcher if provided", async () => {

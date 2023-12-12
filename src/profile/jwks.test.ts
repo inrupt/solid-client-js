@@ -33,9 +33,12 @@ import {
   setProfileJwks,
 } from "./jwks";
 
-jest.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response(JSON.stringify({ keys: [] }), {
-  headers: { Location: "https://arbitrary.pod/resource" },
-}));
+jest.spyOn(globalThis, "fetch").mockImplementation(
+  async () =>
+    new Response(JSON.stringify({ keys: [] }), {
+      headers: { Location: "https://arbitrary.pod/resource" },
+    }),
+);
 
 jest.mock("../resource/solidDataset", () => {
   const actualResourceModule = jest.requireActual(
@@ -111,16 +114,10 @@ describe("addJwkToJwks", () => {
   });
 
   it("uses the default fetch if none is provided", async () => {
-    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mocked<typeof fetch>;
-    };
-
     await addJwkToJwks({ kid: "..." }, "https://example.org/jwks");
 
-    expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
-      "https://example.org/jwks",
-    );
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith("https://example.org/jwks");
   });
 
   it("throws if the given IRI does not resolve to a JWKS", async () => {

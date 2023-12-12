@@ -50,9 +50,12 @@ import { getPublicResourceAccess } from "../acl/class";
 import { toRdfJsQuads } from "../rdfjs.internal";
 import { mockResponse } from "../tests.internal";
 
-const spyFetch = jest.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response(undefined, {
-  headers: { Location: "https://arbitrary.pod/resource" },
-}));
+const spyFetch = jest.spyOn(globalThis, "fetch").mockImplementation(
+  async () =>
+    new Response(undefined, {
+      headers: { Location: "https://arbitrary.pod/resource" },
+    }),
+);
 
 function getMockDataset(
   sourceIri: IriString,
@@ -81,15 +84,15 @@ describe("getAgentAccess", () => {
 
   it("returns null if no ACL is accessible", async () => {
     const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
-      fetch: async url => {
+      fetch: async (url) => {
         switch (url.toString()) {
           case "https://some.pod/resource.acl":
           case "https://some.pod/.acl":
-            return new Response('', { status: 404 });
+            return new Response("", { status: 404 });
           case "https://some.pod/":
-            return new Response( '<.acl>; rel="acl"', { status: 200 });
+            return new Response('<.acl>; rel="acl"', { status: 200 });
         }
-        throw new Error('Unepxected URL');
+        throw new Error("Unepxected URL");
       },
     });
 
@@ -99,12 +102,12 @@ describe("getAgentAccess", () => {
   it("returns null if no ACL is advertised by the target resource", async () => {
     const resource = getMockDataset("https://some.pod/resource");
     const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
-      fetch: async url => {
+      fetch: async (url) => {
         switch (url.toString()) {
           case "https://some.pod/resource.acl":
-            return new Response('ACL not found', { status: 404 });
+            return new Response("ACL not found", { status: 404 });
         }
-        throw new Error('Unepxected URL');
+        throw new Error("Unepxected URL");
       },
     });
 
@@ -121,15 +124,18 @@ describe("getAgentAccess", () => {
     );
 
     const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
-      fetch: async url => {
+      fetch: async (url) => {
         switch (url.toString()) {
           case "https://some.pod/resource.acl":
-            return new Response(await triplesToTurtle(toRdfJsQuads(aclResource)), {
-              status: 200,
-              headers: { "Content-Type": "text/turtle" },
-            });
+            return new Response(
+              await triplesToTurtle(toRdfJsQuads(aclResource)),
+              {
+                status: 200,
+                headers: { "Content-Type": "text/turtle" },
+              },
+            );
         }
-        throw new Error('Unepxected URL');
+        throw new Error("Unepxected URL");
       },
     });
 
@@ -150,23 +156,25 @@ describe("getAgentAccess", () => {
       { read: true, append: false, write: false, control: false },
       "default",
     );
-    
+
     const resource = getMockDataset(
       "https://some.pod/resource",
       "https://some.pod/resource.acl",
     );
     const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
-      fetch: async url => {
+      fetch: async (url) => {
         switch (url.toString()) {
           case "https://some.pod/resource.acl":
-            return new Response('', { status: 404 });
+            return new Response("", { status: 404 });
           case "https://some.pod/.acl":
-            return new Response(await triplesToTurtle(toRdfJsQuads(aclResource)), { status: 200,
-              headers: { "Content-Type": "text/turtle" }, });
+            return new Response(
+              await triplesToTurtle(toRdfJsQuads(aclResource)),
+              { status: 200, headers: { "Content-Type": "text/turtle" } },
+            );
           case "https://some.pod/":
-            return new Response( '<.acl>; rel="acl"', { status: 200 });
+            return new Response('<.acl>; rel="acl"', { status: 200 });
         }
-        throw new Error('Unepxected URL');
+        throw new Error("Unepxected URL");
       },
     });
     await expect(result).resolves.toStrictEqual({
@@ -195,23 +203,27 @@ describe("getAgentAccess", () => {
       "resource",
     );
 
-      const resource = getMockDataset(
+    const resource = getMockDataset(
       "https://some.pod/resource",
       "https://some.pod/resource.acl",
-      )
+    );
     const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
-      fetch: async url => {
+      fetch: async (url) => {
         switch (url.toString()) {
           case "https://some.pod/resource.acl":
-            return new Response(await triplesToTurtle(toRdfJsQuads(aclResource)), { status: 200,
-              headers: { "Content-Type": "text/turtle" }, });
+            return new Response(
+              await triplesToTurtle(toRdfJsQuads(aclResource)),
+              { status: 200, headers: { "Content-Type": "text/turtle" } },
+            );
           case "https://some.pod/.acl":
-            return new Response(await triplesToTurtle(toRdfJsQuads(fallbackAclResource)), { status: 200,
-              headers: { "Content-Type": "text/turtle" }, });
+            return new Response(
+              await triplesToTurtle(toRdfJsQuads(fallbackAclResource)),
+              { status: 200, headers: { "Content-Type": "text/turtle" } },
+            );
           case "https://some.pod/":
-            return new Response( '<.acl>; rel="acl"', { status: 200 });
+            return new Response('<.acl>; rel="acl"', { status: 200 });
         }
-        throw new Error('Unepxected URL');
+        throw new Error("Unepxected URL");
       },
     });
     await expect(result).resolves.toStrictEqual({
@@ -309,7 +321,6 @@ describe("getAgentAccess", () => {
       ),
     );
 
-
     const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
       fetch: mockFetch,
     });
@@ -378,7 +389,6 @@ describe("getAgentAccess", () => {
       ),
     );
 
-
     const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
       fetch: mockFetch,
     });
@@ -414,7 +424,6 @@ describe("getAgentAccess", () => {
       ),
     );
 
-
     const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
       fetch: mockFetch,
     });
@@ -449,7 +458,6 @@ describe("getAgentAccess", () => {
         "https://some.pod/resource.acl",
       ),
     );
-
 
     const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
       fetch: mockFetch,
@@ -512,7 +520,6 @@ describe("getGroupAccess", () => {
         ),
       );
 
-
     const result = getGroupAccess(resource, "https://some.pod/groups#group", {
       fetch: mockFetch,
     });
@@ -560,7 +567,6 @@ describe("getGroupAccess", () => {
         "https://some.pod/resource.acl",
       ),
     );
-
 
     const result = getGroupAccess(resource, "https://some.pod/groups#group", {
       fetch: mockFetch,
@@ -622,7 +628,6 @@ describe("getGroupAccess", () => {
           "https://some.pod/.acl",
         ),
       );
-
 
     const result = getGroupAccess(resource, "https://some.pod/groups#group", {
       fetch: mockFetch,
@@ -695,7 +700,6 @@ describe("getGroupAccess", () => {
         ),
       );
 
-
     const result = getGroupAccess(resource, "https://some.pod/groups#group", {
       fetch: mockFetch,
     });
@@ -729,7 +733,6 @@ describe("getGroupAccess", () => {
         "https://some.pod/resource.acl",
       ),
     );
-
 
     const result = getGroupAccess(resource, "https://some.pod/groups#group", {
       fetch: mockFetch,
@@ -766,7 +769,6 @@ describe("getGroupAccess", () => {
       ),
     );
 
-
     const result = getGroupAccess(resource, "https://some.pod/groups#group", {
       fetch: mockFetch,
     });
@@ -802,7 +804,6 @@ describe("getGroupAccess", () => {
       ),
     );
 
-
     const result = getGroupAccess(resource, "https://some.pod/groups#group", {
       fetch: mockFetch,
     });
@@ -837,7 +838,6 @@ describe("getGroupAccess", () => {
         "https://some.pod/resource.acl",
       ),
     );
-
 
     const result = getGroupAccess(resource, "https://some.pod/groups#group", {
       fetch: mockFetch,
@@ -900,7 +900,6 @@ describe("getPublicAccess", () => {
         ),
       );
 
-
     const result = getPublicAccess(resource, {
       fetch: mockFetch,
     });
@@ -948,7 +947,6 @@ describe("getPublicAccess", () => {
         "https://some.pod/resource.acl",
       ),
     );
-
 
     const result = getPublicAccess(resource, {
       fetch: mockFetch,
@@ -1010,7 +1008,6 @@ describe("getPublicAccess", () => {
           "https://some.pod/.acl",
         ),
       );
-
 
     const result = getPublicAccess(resource, {
       fetch: mockFetch,
@@ -1083,7 +1080,6 @@ describe("getPublicAccess", () => {
         ),
       );
 
-
     const result = getPublicAccess(resource, {
       fetch: mockFetch,
     });
@@ -1117,7 +1113,6 @@ describe("getPublicAccess", () => {
         "https://some.pod/resource.acl",
       ),
     );
-
 
     const result = getPublicAccess(resource, {
       fetch: mockFetch,
@@ -1154,7 +1149,6 @@ describe("getPublicAccess", () => {
       ),
     );
 
-
     const result = getPublicAccess(resource, {
       fetch: mockFetch,
     });
@@ -1189,7 +1183,6 @@ describe("getPublicAccess", () => {
         "https://some.pod/resource.acl",
       ),
     );
-
 
     const result = getPublicAccess(resource, {
       fetch: mockFetch,
@@ -1226,7 +1219,6 @@ describe("getPublicAccess", () => {
       ),
     );
 
-
     const result = getPublicAccess(resource, {
       fetch: mockFetch,
     });
@@ -1247,7 +1239,7 @@ describe("getAgentAccessAll", () => {
 
     expect(fetch).toHaveBeenCalledWith(
       "https://some.pod/resource.acl",
-      expect.anything()
+      expect.anything(),
     );
   });
 
@@ -1287,7 +1279,6 @@ describe("getAgentAccessAll", () => {
           "https://some.pod/.acl",
         ),
       );
-
 
     const result = getAgentAccessAll(resource, {
       fetch: mockFetch,
@@ -1330,7 +1321,6 @@ describe("getAgentAccessAll", () => {
       getAgentAccessAll: () => Promise<AgentAccess>;
     };
     const getAgentAccessAllWac = jest.spyOn(wacModule, "getAgentAccessAll");
-
 
     await getAgentAccessAll(resource, {
       fetch: mockFetch,
@@ -1385,7 +1375,6 @@ describe("getAgentAccessAll", () => {
       ),
     );
 
-
     await expect(
       getAgentAccessAll(resource, {
         fetch: mockFetch,
@@ -1428,7 +1417,6 @@ describe("getAgentAccessAll", () => {
       ),
     );
 
-
     const result = getAgentAccessAll(resource, {
       fetch: mockFetch,
     });
@@ -1451,7 +1439,7 @@ describe("getGroupAccessAll", () => {
 
     expect(fetch).toHaveBeenCalledWith(
       "https://some.pod/resource.acl",
-      expect.anything()
+      expect.anything(),
     );
   });
 
@@ -1491,7 +1479,6 @@ describe("getGroupAccessAll", () => {
           "https://some.pod/.acl",
         ),
       );
-
 
     const result = getGroupAccessAll(resource, {
       fetch: mockFetch,
@@ -1534,7 +1521,6 @@ describe("getGroupAccessAll", () => {
       getGroupAccessAll: () => Promise<AgentAccess>;
     };
     const getGroupAccessAllWac = jest.spyOn(wacModule, "getGroupAccessAll");
-
 
     await getGroupAccessAll(resource, {
       fetch: mockFetch,
@@ -1593,7 +1579,6 @@ describe("getGroupAccessAll", () => {
       ),
     );
 
-
     await expect(
       getGroupAccessAll(resource, {
         fetch: mockFetch,
@@ -1638,7 +1623,6 @@ describe("getGroupAccessAll", () => {
       ),
     );
 
-
     const result = getGroupAccessAll(resource, {
       fetch: mockFetch,
     });
@@ -1667,7 +1651,7 @@ describe("setAgentAccess", () => {
 
     expect(fetch).toHaveBeenCalledWith(
       "https://some.pod/resource.acl",
-      expect.anything()
+      expect.anything(),
     );
   });
 
@@ -1707,7 +1691,6 @@ describe("setAgentAccess", () => {
           "https://some.pod/.acl",
         ),
       );
-
 
     const result = setAgentResourceAccess(
       resource,
@@ -1777,8 +1760,6 @@ describe("setAgentAccess", () => {
       ),
     );
 
-
-
     const result = await setAgentResourceAccess(
       resource,
       "https://some.pod/profile#agent",
@@ -1822,8 +1803,6 @@ describe("setAgentAccess", () => {
         "https://some.pod/resource.acl",
       ),
     );
-
-
 
     const result = await setAgentResourceAccess(
       resource,
@@ -1869,8 +1848,6 @@ describe("setAgentAccess", () => {
       ),
     );
 
-
-
     const result = await setAgentResourceAccess(
       resource,
       "https://some.pod/profile#agent",
@@ -1914,8 +1891,6 @@ describe("setAgentAccess", () => {
         "https://some.pod/resource.acl",
       ),
     );
-
-
 
     const result = await setAgentResourceAccess(
       resource,
@@ -1963,8 +1938,6 @@ describe("setAgentAccess", () => {
       ),
     );
 
-
-
     const result = await setAgentResourceAccess(
       resource,
       "https://some.pod/profile#agent",
@@ -2008,8 +1981,6 @@ describe("setAgentAccess", () => {
         "https://some.pod/resource.acl",
       ),
     );
-
-
 
     const result = await setAgentResourceAccess(
       resource,
@@ -2315,8 +2286,6 @@ describe("setAgentAccess", () => {
         ),
       );
 
-
-
     const result = await setAgentResourceAccess(
       resource,
       "https://some.pod/profile#agent",
@@ -2358,7 +2327,6 @@ describe("setAgentAccess", () => {
     );
     const saveAclForWac = jest.spyOn(aclModule, "saveAclFor");
 
-
     await setAgentResourceAccess(
       resource,
       "https://some.pod/profile#agent",
@@ -2386,7 +2354,7 @@ describe("setGroupResourceAccess", () => {
 
     expect(fetch).toHaveBeenCalledWith(
       "https://some.pod/resource.acl",
-      expect.anything()
+      expect.anything(),
     );
   });
 
@@ -2426,7 +2394,6 @@ describe("setGroupResourceAccess", () => {
           "https://some.pod/.acl",
         ),
       );
-
 
     const result = setGroupResourceAccess(
       resource,
@@ -2490,8 +2457,6 @@ describe("setGroupResourceAccess", () => {
       ),
     );
 
-
-
     const result = await setGroupResourceAccess(
       resource,
       "https://some.pod/groups#group",
@@ -2537,8 +2502,6 @@ describe("setGroupResourceAccess", () => {
         "https://some.pod/resource.acl",
       ),
     );
-
-
 
     const result = await setGroupResourceAccess(
       resource,
@@ -2586,8 +2549,6 @@ describe("setGroupResourceAccess", () => {
       ),
     );
 
-
-
     const result = await setGroupResourceAccess(
       resource,
       "https://some.pod/groups#group",
@@ -2633,8 +2594,6 @@ describe("setGroupResourceAccess", () => {
         "https://some.pod/resource.acl",
       ),
     );
-
-
 
     const result = await setGroupResourceAccess(
       resource,
@@ -2684,8 +2643,6 @@ describe("setGroupResourceAccess", () => {
       ),
     );
 
-
-
     const result = await setGroupResourceAccess(
       resource,
       "https://some.pod/groups#group",
@@ -2732,8 +2689,6 @@ describe("setGroupResourceAccess", () => {
       ),
     );
 
-
-
     const result = await setGroupResourceAccess(
       resource,
       "https://some.pod/groups#group",
@@ -2779,8 +2734,6 @@ describe("setGroupResourceAccess", () => {
         "https://some.pod/resource.acl",
       ),
     );
-
-
 
     const result = await setGroupResourceAccess(
       resource,
@@ -2868,8 +2821,6 @@ describe("setGroupResourceAccess", () => {
         ),
       );
 
-
-
     const result = await setGroupResourceAccess(
       resource,
       "https://some.pod/groups#group",
@@ -2953,7 +2904,6 @@ describe("setGroupResourceAccess", () => {
         ),
       );
 
-
     const result = await setGroupResourceAccess(
       resource,
       "https://some.pod/groups#group",
@@ -3001,8 +2951,6 @@ describe("setGroupResourceAccess", () => {
         "https://some.pod/resource.acl",
       ),
     );
-
-
 
     await expect(
       setAgentResourceAccess(
@@ -3056,8 +3004,6 @@ describe("setGroupResourceAccess", () => {
         ),
       );
 
-
-
     const result = await setGroupResourceAccess(
       resource,
       "https://some.pod/groups#group",
@@ -3099,7 +3045,6 @@ describe("setGroupResourceAccess", () => {
     );
     const saveAclForWac = jest.spyOn(aclModule, "saveAclFor");
 
-
     await setGroupResourceAccess(
       resource,
       "https://some.pod/groups#group",
@@ -3127,7 +3072,7 @@ describe("setPublicResourceAccess", () => {
 
     expect(fetch).toHaveBeenCalledWith(
       "https://some.pod/resource.acl",
-      expect.anything()
+      expect.anything(),
     );
   });
 
@@ -3167,7 +3112,6 @@ describe("setPublicResourceAccess", () => {
           "https://some.pod/.acl",
         ),
       );
-
 
     const result = setPublicResourceAccess(
       resource,
@@ -3229,8 +3173,6 @@ describe("setPublicResourceAccess", () => {
       ),
     );
 
-
-
     const result = await setPublicResourceAccess(
       resource,
       {
@@ -3272,8 +3214,6 @@ describe("setPublicResourceAccess", () => {
         "https://some.pod/resource.acl",
       ),
     );
-
-
 
     const result = await setPublicResourceAccess(
       resource,
@@ -3317,8 +3257,6 @@ describe("setPublicResourceAccess", () => {
       ),
     );
 
-
-
     const result = await setPublicResourceAccess(
       resource,
       {
@@ -3360,8 +3298,6 @@ describe("setPublicResourceAccess", () => {
         "https://some.pod/resource.acl",
       ),
     );
-
-
 
     const result = await setPublicResourceAccess(
       resource,
@@ -3406,8 +3342,6 @@ describe("setPublicResourceAccess", () => {
       ),
     );
 
-
-
     const result = await setPublicResourceAccess(
       resource,
       {
@@ -3450,8 +3384,6 @@ describe("setPublicResourceAccess", () => {
       ),
     );
 
-
-
     const result = await setPublicResourceAccess(
       resource,
       {
@@ -3493,8 +3425,6 @@ describe("setPublicResourceAccess", () => {
         "https://some.pod/resource.acl",
       ),
     );
-
-
 
     const result = await setPublicResourceAccess(
       resource,
@@ -3578,8 +3508,6 @@ describe("setPublicResourceAccess", () => {
         ),
       );
 
-
-
     const result = await setPublicResourceAccess(
       resource,
       {
@@ -3659,7 +3587,6 @@ describe("setPublicResourceAccess", () => {
         ),
       );
 
-
     const result = await setPublicResourceAccess(
       resource,
       {
@@ -3705,8 +3632,6 @@ describe("setPublicResourceAccess", () => {
       ),
     );
 
-
-
     await expect(
       setPublicResourceAccess(
         resource,
@@ -3746,7 +3671,6 @@ describe("setPublicResourceAccess", () => {
       "setPublicResourceAccess",
     );
     const saveAclForWac = jest.spyOn(aclModule, "saveAclFor");
-
 
     await setPublicResourceAccess(
       resource,

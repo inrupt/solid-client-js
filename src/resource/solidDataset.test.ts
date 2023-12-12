@@ -19,7 +19,7 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import { beforeAll, jest, describe, it, expect } from "@jest/globals";
+import { beforeAll, jest, describe, it, expect, beforeEach, afterEach } from "@jest/globals";
 import { DataFactory } from "n3";
 import type * as RDF from "@rdfjs/types";
 import type { Parser } from "./solidDataset";
@@ -63,15 +63,9 @@ import { getUrl } from "../thing/get";
 import { getLocalNodeIri } from "../rdf.internal";
 import { mockResponse } from "../tests.internal";
 
-jest.mock("../fetcher.ts", () => ({
-  fetch: jest.fn().mockImplementation(() =>
-    Promise.resolve(
-      new Response(undefined, {
-        headers: { Location: "https://arbitrary.pod/resource" },
-      }),
-    ),
-  ),
-}));
+jest.spyOn(globalThis, "fetch").mockImplementation(async () => new Response(undefined, {
+  headers: { Location: "https://arbitrary.pod/resource" },
+}))
 
 const bnode = DataFactory.blankNode("b0");
 
@@ -2126,27 +2120,7 @@ describe("createContainerAt", () => {
 });
 
 describe("saveSolidDatasetInContainer", () => {
-  function setMockOnFetch(
-    fetch: jest.Mocked<typeof fetch>,
-    saveResponse = mockResponse(
-      undefined,
-      {
-        status: 201,
-        statusText: "Created",
-        headers: { Location: "resource" },
-      },
-      "https://some.pod/container/",
-    ),
-  ): jest.Mocked<typeof fetch> {
-    fetch.mockResolvedValueOnce(saveResponse);
-    return fetch;
-  }
-
   it("calls the included fetcher by default", async () => {
-    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mocked<typeof fetch>;
-    };
-
     await saveSolidDatasetInContainer(
       "https://some.pod/container/",
       createSolidDataset(),
@@ -2154,11 +2128,11 @@ describe("saveSolidDatasetInContainer", () => {
 
     // Two calls expected: one to store the dataset, one to retrieve its details
     // (e.g. Linked Resources).
-    expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
+    expect(fetch).toHaveBeenCalledTimes(1);
   });
 
   it("uses the given fetcher if provided", async () => {
-    const mockFetch = setMockOnFetch(jest.fn<typeof fetch>());
+    const mockFetch = jest.fn<typeof fetch>();
 
     await saveSolidDatasetInContainer(
       "https://some.pod/container/",
@@ -2170,27 +2144,21 @@ describe("saveSolidDatasetInContainer", () => {
 
     // Two calls expected: one to store the dataset, one to retrieve its details
     // (e.g. Linked Resources).
-    expect(mockFetch.mock.calls).toHaveLength(1);
+    expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 
   it("returns a meaningful error when the server returns a 403", async () => {
-    const mockFetch = setMockOnFetch(
-      jest.fn<typeof fetch>(),
-      mockResponse(
-        "Not allowed",
-        {
-          status: 403,
-          statusText: "Forbidden",
-        },
-        "https://some.pod/container/",
-      ),
-    );
-
     const fetchPromise = saveSolidDatasetInContainer(
       "https://some.pod/container/",
       createSolidDataset(),
       {
-        fetch: mockFetch,
+        fetch: async () => new Response(
+          "Not allowed",
+            {
+              status: 403,
+              statusText: "Forbidden",
+            }
+        ),
       },
     );
 
@@ -2200,22 +2168,15 @@ describe("saveSolidDatasetInContainer", () => {
   });
 
   it("returns a meaningful error when the server returns a 404", async () => {
-    const mockFetch = setMockOnFetch(
-      jest.fn<typeof fetch>(),
-      mockResponse(
-        "Not found",
-        {
-          status: 404,
-          statusText: "Not Found",
-        },
-        "https://some.pod/container/",
-      ),
-    );
     const fetchPromise = saveSolidDatasetInContainer(
       "https://some.pod/container/",
       createSolidDataset(),
       {
-        fetch: mockFetch,
+        fetch: async () => new Response("Not found",
+        {
+          status: 404,
+          statusText: "Not Found",
+        }),
       },
     );
 
@@ -2225,16 +2186,11 @@ describe("saveSolidDatasetInContainer", () => {
   });
 
   it("returns a meaningful error when the server does not return the new Resource's location", async () => {
-    const mockFetch = setMockOnFetch(
-      jest.fn<typeof fetch>(),
-      mockResponse(null, {}, "https://arbitrary.pod/container/"),
-    );
-
     const fetchPromise = saveSolidDatasetInContainer(
       "https://arbitrary.pod/container/",
       createSolidDataset(),
       {
-        fetch: mockFetch,
+        fetch: async () => new Response(),
       },
     );
 
@@ -2246,22 +2202,15 @@ describe("saveSolidDatasetInContainer", () => {
   });
 
   it("includes the status code, status message and response body when a request failed", async () => {
-    const mockFetch = setMockOnFetch(
-      jest.fn<typeof fetch>(),
-      mockResponse(
-        "Teapots don't make coffee",
-        {
-          status: 418,
-          statusText: "I'm a teapot!",
-        },
-        "https://arbitrary.pod/container/",
-      ),
-    );
     const fetchPromise = saveSolidDatasetInContainer(
       "https://arbitrary.pod/container/",
       createSolidDataset(),
       {
-        fetch: mockFetch,
+        fetch: async () => new Response("Teapots don't make coffee",
+        {
+          status: 418,
+          statusText: "I'm a teapot!",
+        }),
       },
     );
 
@@ -2273,7 +2222,7 @@ describe("saveSolidDatasetInContainer", () => {
   });
 
   it("sends the given SolidDataset to the Pod", async () => {
-    const mockFetch = setMockOnFetch(jest.fn<typeof fetch>());
+    const mockFetch = jest.fn<typeof fetch>();
     const mockThing = addUrl(
       createThing({ url: "https://arbitrary.vocab/subject" }),
       "https://arbitrary.vocab/predicate",
@@ -2305,7 +2254,7 @@ describe("saveSolidDatasetInContainer", () => {
   });
 
   it("sets relative IRIs for LocalNodes", async () => {
-    const mockFetch = setMockOnFetch(jest.fn<typeof fetch>());
+    const mockFetch = jest.fn<typeof fetch>();
     const mockObjectThing = createThing({ name: "some-object-name" });
     const mockThing = addUrl(
       createThing({ name: "some-subject-name" }),
@@ -2328,7 +2277,7 @@ describe("saveSolidDatasetInContainer", () => {
   });
 
   it("sends the suggested slug to the Pod", async () => {
-    const mockFetch = setMockOnFetch(jest.fn<typeof fetch>());
+    const mockFetch = jest.fn<typeof fetch>();
 
     await saveSolidDatasetInContainer(
       "https://some.pod/container/",
@@ -2345,7 +2294,7 @@ describe("saveSolidDatasetInContainer", () => {
   });
 
   it("does not send a suggested slug if none was provided", async () => {
-    const mockFetch = setMockOnFetch(jest.fn<typeof fetch>());
+    const mockFetch = jest.fn<typeof fetch>();
 
     await saveSolidDatasetInContainer(
       "https://some.pod/container/",
@@ -2361,22 +2310,14 @@ describe("saveSolidDatasetInContainer", () => {
   });
 
   it("includes the final slug with the return value", async () => {
-    const mockFetch = setMockOnFetch(
-      jest.fn<typeof fetch>(),
-      mockResponse(
-        "Arbitrary response",
-        {
-          headers: { Location: "https://some.pod/container/resource" },
-        },
-        "https://some.pod/container/",
-      ),
-    );
-
     const savedSolidDataset = await saveSolidDatasetInContainer(
       "https://some.pod/container/",
       createSolidDataset(),
       {
-        fetch: mockFetch,
+        fetch: async () => new Response("Arbitrary response",
+        {
+          headers: { Location: "https://some.pod/container/resource" },
+        }),
       },
     );
 
@@ -2386,19 +2327,6 @@ describe("saveSolidDatasetInContainer", () => {
   });
 
   it("resolves relative IRIs in the returned SolidDataset", async () => {
-    const mockFetch = setMockOnFetch(
-      jest.fn<typeof fetch>(),
-      mockResponse(
-        null,
-        {
-          status: 201,
-          statusText: "Created",
-          headers: { Location: "/url" },
-        },
-        "https://saved.at/url",
-      ),
-    );
-
     const mockObjectThing = createThing({ name: "some-object-name" });
     const mockThing = addUrl(
       createThing({ name: "some-subject-name" }),
@@ -2411,7 +2339,11 @@ describe("saveSolidDatasetInContainer", () => {
       "https://some.pod/",
       mockDataset,
       {
-        fetch: mockFetch,
+        fetch: async () => new Response(undefined, {
+          status: 201,
+          statusText: "Created",
+          headers: { Location: "/url" },
+        }),
       },
     );
 
@@ -2427,22 +2359,14 @@ describe("saveSolidDatasetInContainer", () => {
   });
 
   it("includes the final slug with the return value, normalised to the Container's origin", async () => {
-    const mockFetch = setMockOnFetch(
-      jest.fn<typeof fetch>(),
-      mockResponse(
-        "Arbitrary response",
-        {
-          headers: { Location: "/container/resource" },
-        },
-        "https://some.pod/container/",
-      ),
-    );
-
     const savedSolidDataset = await saveSolidDatasetInContainer(
       "https://some.pod/container/",
       createSolidDataset(),
       {
-        fetch: mockFetch,
+        fetch: async () => new Response("Arbitrary response",
+        {
+          headers: { Location: "/container/resource" },
+        }),
       },
     );
 
@@ -2452,9 +2376,9 @@ describe("saveSolidDatasetInContainer", () => {
   });
 });
 
-const mockFetchImplementation = async (url) => {
+const mockFetchImplementation: typeof fetch = async (url) => {
   if (url.toString() === "https://some.pod/") {
-    throw new Error('Unexpected URL');
+    throw new Error("Unexpected URL");
   }
 
   return new Response(undefined, {
@@ -2462,13 +2386,14 @@ const mockFetchImplementation = async (url) => {
     statusText: "Created",
     headers: { Location: "child" },
   });
-}
+};
 
 describe("createContainerInContainer", () => {
   let spyFetch: jest.SpiedFunction<typeof fetch>;
 
   beforeEach(() => {
-    spyFetch = jest.spyOn(globalThis, "fetch")
+    spyFetch = jest
+      .spyOn(globalThis, "fetch")
       .mockImplementationOnce(mockFetchImplementation);
   });
 
@@ -2489,9 +2414,9 @@ describe("createContainerInContainer", () => {
         headers: {
           "Content-Type": "text/turtle",
           Link: '<http://www.w3.org/ns/ldp#BasicContainer>; rel="type"',
-          slug: undefined
+          slug: undefined,
         },
-      }
+      },
     );
   });
 
@@ -2511,10 +2436,11 @@ describe("createContainerInContainer", () => {
     const fetchPromise = createContainerInContainer(
       "https://some.pod/parent-container/",
       {
-        fetch: async () => new Response("Not allowed", {
-          status: 403,
-          statusText: "Forbidden",
-        }),
+        fetch: async () =>
+          new Response("Not allowed", {
+            status: 403,
+            statusText: "Forbidden",
+          }),
       },
     );
 
@@ -2527,10 +2453,11 @@ describe("createContainerInContainer", () => {
     const fetchPromise = createContainerInContainer(
       "https://some.pod/parent-container/",
       {
-        fetch: async () => new Response("Not found", {
-          status: 404,
-          statusText: "Not Found",
-        }),
+        fetch: async () =>
+          new Response("Not found", {
+            status: 404,
+            statusText: "Not Found",
+          }),
       },
     );
 
@@ -2558,10 +2485,11 @@ describe("createContainerInContainer", () => {
     const fetchPromise = createContainerInContainer(
       "https://arbitrary.pod/parent-container/",
       {
-        fetch: async () => new Response("Teapots don't make coffee", {
-          status: 418,
-          statusText: "I'm a teapot!",
-        }),
+        fetch: async () =>
+          new Response("Teapots don't make coffee", {
+            status: 418,
+            statusText: "I'm a teapot!",
+          }),
       },
     );
 
@@ -2589,6 +2517,24 @@ describe("createContainerInContainer", () => {
     const savedSolidDataset = await createContainerInContainer(
       "https://some.pod/parent-container/",
       {
+        fetch: async () =>
+          new Response("Arbitrary response", {
+            headers: {
+              Location: "https://some.pod/parent-container/child-container/",
+            },
+          }),
+      },
+    );
+
+    expect(savedSolidDataset!.internal_resourceInfo.sourceIri).toBe(
+      "https://some.pod/parent-container/child-container/",
+    );
+  });
+
+  it("uses the full location URL if absolute thereby applying server-side normalisation", async () => {
+    const savedSolidDataset = await createContainerInContainer(
+      "https://some.pod/parent-container//",
+      {
         fetch: async () => new Response("Arbitrary response",
         {
           headers: {
@@ -2603,50 +2549,16 @@ describe("createContainerInContainer", () => {
     );
   });
 
-  it("uses the full location URL if absolute thereby applying server-side normalisation", async () => {
-    const mockFetch = setMockOnFetch(
-      jest.fn<typeof fetch>(),
-      mockResponse(
-        "Arbitrary response",
-        {
-          headers: {
-            Location: "https://some.pod/parent-container/child-container/",
-          },
-        },
-        "https://some.pod/parent-container//",
-      ),
-    );
-
-    const savedSolidDataset = await createContainerInContainer(
-      "https://some.pod/parent-container//",
-      {
-        fetch: mockFetch,
-      },
-    );
-
-    expect(savedSolidDataset!.internal_resourceInfo.sourceIri).toBe(
-      "https://some.pod/parent-container/child-container/",
-    );
-  });
-
   it("uses the relative location URL to indicate source IRI", async () => {
-    const mockFetch = setMockOnFetch(
-      jest.fn<typeof fetch>(),
-      mockResponse(
-        "Arbitrary response",
+    const savedSolidDataset = await createContainerInContainer(
+      "https://some.pod/parent-container//a/b",
+      {
+        fetch: async () => new Response("Arbitrary response",
         {
           headers: {
             Location: "./x/y/",
           },
-        },
-        "https://some.pod/parent-container//a/b",
-      ),
-    );
-
-    const savedSolidDataset = await createContainerInContainer(
-      "https://some.pod/parent-container//a/b",
-      {
-        fetch: mockFetch,
+        }),
       },
     );
 
@@ -2656,23 +2568,15 @@ describe("createContainerInContainer", () => {
   });
 
   it("includes the final slug with the return value, normalised to the target Container's origin", async () => {
-    const mockFetch = setMockOnFetch(
-      jest.fn<typeof fetch>(),
-      mockResponse(
-        "Arbitrary response",
-        {
-          headers: {
-            Location: "/parent-container/child-container/",
-          },
-        },
-        "https://some.pod/parent-container/",
-      ),
-    );
-
     const savedSolidDataset = await createContainerInContainer(
       "https://some.pod/parent-container/",
       {
-        fetch: mockFetch,
+        fetch: async () => new Response( "Arbitrary response",
+        {
+          headers: {
+            Location: "/parent-container/chil-container/",
+          },
+        }),
       },
     );
 
@@ -2682,25 +2586,17 @@ describe("createContainerInContainer", () => {
   });
 
   it("includes the final slug with the return value, relative to the target Container", async () => {
-    const mockFetch = setMockOnFetch(
-      jest.fn<typeof fetch>(),
-      mockResponse(
-        "Arbitrary response",
+    const savedSolidDataset = await createContainerInContainer(
+      "https://some.pod/parent-container/",
+      {
+        fetch: async () => new Response("Arbitrary response",
         {
           headers: {
             Location: "child-container/",
             "Content-Location":
               "https://some.pod/parent-container/child-container/",
           },
-        },
-        "https://some.pod/parent-container/",
-      ),
-    );
-
-    const savedSolidDataset = await createContainerInContainer(
-      "https://some.pod/parent-container/",
-      {
-        fetch: mockFetch,
+        }),
       },
     );
 
@@ -2712,24 +2608,18 @@ describe("createContainerInContainer", () => {
 
 describe("deleteContainer", () => {
   it("should DELETE a remote Container using the included fetcher if no other fetcher is available", async () => {
-    const fetcher = jest.requireMock("../fetcher") as {
-      fetch: jest.Mocked<typeof fetch>;
-    };
-
-    fetcher.fetch.mockResolvedValueOnce(
+    jest.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
       new Response(undefined, { status: 200, statusText: "Deleted" }),
     );
 
     const response = await deleteContainer("https://some.pod/container/");
 
-    expect(fetcher.fetch.mock.calls).toEqual([
-      [
+    expect(fetch).toHaveBeenCalledWith(
         "https://some.pod/container/",
         {
           method: "DELETE",
-        },
-      ],
-    ]);
+        },);
+        expect(fetch).toHaveBeenCalledTimes(1);
     expect(response).toBeUndefined();
   });
 
@@ -2790,10 +2680,11 @@ describe("deleteContainer", () => {
 
   it("should throw an error on a failed request", async () => {
     const deletionPromise = deleteContainer("https://some.pod/container/", {
-      fetch: async () => new Response(undefined, {
-        status: 400,
-        statusText: "Bad request",
-      }),
+      fetch: async () =>
+        new Response(undefined, {
+          status: 400,
+          statusText: "Bad request",
+        }),
     });
 
     await expect(deletionPromise).rejects.toThrow(
@@ -2805,10 +2696,11 @@ describe("deleteContainer", () => {
     const deletionPromise = deleteContainer(
       "https://arbitrary.pod/container/",
       {
-        fetch: async () => new Response("Teapots don't make coffee", {
-          status: 418,
-          statusText: "I'm a teapot!",
-        }),
+        fetch: async () =>
+          new Response("Teapots don't make coffee", {
+            status: 418,
+            statusText: "I'm a teapot!",
+          }),
       },
     );
 
@@ -3385,76 +3277,70 @@ describe("getWellKnownSolid", () => {
   const podUrl = "https://example.org/pod/";
   const resourceUrl = "https://example.org/pod/resource";
   const wellKnownSolid = ".well-known/solid";
-  let mockedFetcher: { fetch: jest.Mocked<typeof fetch> };
 
-  const mockESS20 = () =>
-    mockedFetcher.fetch.mockResolvedValueOnce(
-      new Response(
-        `@prefix solid: <http://www.w3.org/ns/solid/terms#> .
+  const ess20Implementation: typeof fetch = async () => 
+  new Response(
+    `@prefix solid: <http://www.w3.org/ns/solid/terms#> .
 
-    [
-        a solid:DiscoveryDocument ;
-        <http://www.w3.org/ns/auth/acl#trustedApp>
-                <https://podbrowser.inrupt.com/api/app> ;
-        solid:maxPodsPerOwner      10 ;
-        solid:notificationGateway  <https://notification.inrupt.com/> ;
-        solid:provision            <https://provision.inrupt.com/> ;
-        solid:validatesRdfSources  true
-    ] .`,
+[
+    a solid:DiscoveryDocument ;
+    <http://www.w3.org/ns/auth/acl#trustedApp>
+            <https://podbrowser.inrupt.com/api/app> ;
+    solid:maxPodsPerOwner      10 ;
+    solid:notificationGateway  <https://notification.inrupt.com/> ;
+    solid:provision            <https://provision.inrupt.com/> ;
+    solid:validatesRdfSources  true
+] .`,
+    {
+      headers: {
+        "Content-Type": "text/turtle",
+      },
+    },
+  )
+
+  const ess11Implementation: typeof fetch = async (url: RequestInfo | URL, init?: RequestInit) => {
+    if (url === "https://example.org/.well-known/solid") {
+      return mockResponse(undefined, { status: 404 }, url);
+    }
+
+    if (url === "https://example.org/pod/resource") {
+      return mockResponse(
+        undefined,
         {
           headers: {
             "Content-Type": "text/turtle",
+            link: `<${podUrl}>; rel="http://www.w3.org/ns/pim/space#storage"`,
           },
         },
-      ),
-    );
+        resourceUrl,
+      );
+    }
+
+    if (url === "https://example.org/pod/.well-known/solid") {
+      return mockResponse(
+        `
+      {
+        "@context":"https://pod.inrupt.com/solid/v1",
+        "consent":"https://consent.pod.inrupt.com",
+        "notificationGateway":"https://notification.pod.inrupt.com",
+        "powerSwitch":"https://pod.inrupt.com/powerswitch/username",
+        "storage":"https://pod.inrupt.com/username/"
+      }`,
+        {
+          headers: { "Content-Type": "application/ld+json" },
+        },
+        url,
+      );
+    }
+
+    throw new Error(`Unhandled request: ${url}, ${JSON.stringify(init)}`);
+  }
+
+  const mockESS20 = () =>
+    jest.spyOn(globalThis, 'fetch').mockImplementation(ess20Implementation);
 
   const mockESS11 = () =>
-    mockedFetcher.fetch.mockImplementation(
-      async (url: RequestInfo | URL, init?: RequestInit) => {
-        if (url === "https://example.org/.well-known/solid") {
-          return mockResponse(undefined, { status: 404 }, url);
-        }
-
-        if (url === "https://example.org/pod/resource") {
-          return mockResponse(
-            undefined,
-            {
-              headers: {
-                "Content-Type": "text/turtle",
-                link: `<${podUrl}>; rel="http://www.w3.org/ns/pim/space#storage"`,
-              },
-            },
-            resourceUrl,
-          );
-        }
-
-        if (url === "https://example.org/pod/.well-known/solid") {
-          return mockResponse(
-            `
-          {
-            "@context":"https://pod.inrupt.com/solid/v1",
-            "consent":"https://consent.pod.inrupt.com",
-            "notificationGateway":"https://notification.pod.inrupt.com",
-            "powerSwitch":"https://pod.inrupt.com/powerswitch/username",
-            "storage":"https://pod.inrupt.com/username/"
-          }`,
-            {
-              headers: { "Content-Type": "application/ld+json" },
-            },
-            url,
-          );
-        }
-
-        throw new Error(`Unhandled request: ${url}, ${JSON.stringify(init)}`);
-      },
-    );
-
-  beforeAll(() => {
-    mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mocked<typeof fetch>;
-    };
-  });
+  jest.spyOn(globalThis, 'fetch').mockImplementation(ess11Implementation);
 
   it("fetches root well known solid by default", async () => {
     // Fetches root well known
@@ -3462,21 +3348,19 @@ describe("getWellKnownSolid", () => {
 
     await getWellKnownSolid(resourceUrl);
 
-    expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
-      serverUrl.concat(wellKnownSolid),
-    );
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith(serverUrl.concat(wellKnownSolid), expect.anything());
   });
 
   it("uses the given fetcher for root well known solid if provided", async () => {
-    mockESS20();
+    const mockFetch = jest.fn<typeof fetch>(ess20Implementation)
 
-    await getWellKnownSolid(resourceUrl, { fetch: mockedFetcher.fetch });
+    await getWellKnownSolid(resourceUrl, { fetch: mockFetch });
 
-    expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
-      serverUrl.concat(wellKnownSolid),
-    );
+    expect(mockFetch).toHaveBeenCalledTimes(0);
+    // Unauthenticated fetch is still used to get the .well-known
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith(serverUrl.concat(wellKnownSolid), expect.anything());
   });
 
   it("fetches pod root well known solid otherwise", async () => {
@@ -3484,36 +3368,33 @@ describe("getWellKnownSolid", () => {
 
     await getWellKnownSolid(resourceUrl);
 
-    expect(mockedFetcher.fetch.mock.calls).toHaveLength(3);
-
+    expect(fetch).toHaveBeenCalledTimes(3);
     // Tries the root well known solid first is used to determine well known Solid
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
-      serverUrl.concat(wellKnownSolid),
-    );
+    expect(fetch).toHaveBeenNthCalledWith(1, serverUrl.concat(wellKnownSolid), expect.anything());
     // Checks the resource's location header otherwise
-    expect(mockedFetcher.fetch.mock.calls[1][0]).toBe(resourceUrl);
+    expect(fetch).toHaveBeenNthCalledWith(2, resourceUrl, expect.anything());
     // The advertised podIdentifier (as storage) is used to determine well known Solid
-    expect(mockedFetcher.fetch.mock.calls[2][0]).toBe(
-      podUrl.concat(wellKnownSolid),
+    expect(fetch).toHaveBeenNthCalledWith(
+      3,
+      podUrl.concat(wellKnownSolid), expect.anything()
     );
   });
 
   it("uses the given fetcher for pod root well known solid if provided", async () => {
-    mockESS11();
+    const mockFetch = jest.fn<typeof fetch>(ess11Implementation)
 
-    await getWellKnownSolid(resourceUrl, { fetch: mockedFetcher.fetch });
+    await getWellKnownSolid(resourceUrl, { fetch: mockFetch });
 
-    expect(mockedFetcher.fetch.mock.calls).toHaveLength(3);
-
-    // Fails at pod root (unauthenticated)
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
-      serverUrl.concat(wellKnownSolid),
-    );
-    // Checks the pod root (authenticated/with the provided fetcher)
-    expect(mockedFetcher.fetch.mock.calls[1][0]).toBe(resourceUrl);
-    // Retrieve pod root well known solid
-    expect(mockedFetcher.fetch.mock.calls[2][0]).toBe(
-      podUrl.concat(".well-known/solid"),
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+    expect(fetch).toHaveBeenCalledTimes(1);
+    // Tries the root well known solid first is used to determine well known Solid
+    expect(fetch).toHaveBeenNthCalledWith(1, serverUrl.concat(wellKnownSolid), expect.anything());
+    // Checks the resource's location header otherwise
+    expect(mockFetch).toHaveBeenNthCalledWith(1, resourceUrl, expect.anything());
+    // The advertised podIdentifier (as storage) is used to determine well known Solid
+    expect(mockFetch).toHaveBeenNthCalledWith(
+      2,
+      podUrl.concat(wellKnownSolid), expect.anything()
     );
   });
 

@@ -31,10 +31,7 @@ import type {
 import { hasServerResourceInfo } from "../interfaces";
 import { internal_toIriString } from "../interfaces.internal";
 import { getFile } from "../resource/file";
-import {
-  getResourceInfo,
-  getSourceUrl,
-} from "../resource/resource";
+import { getResourceInfo, getSourceUrl } from "../resource/resource";
 import type { WithAcl } from "../acl/acl";
 import { hasAccessibleAcl } from "../acl/acl";
 import { internal_fetchAcl, internal_setAcl } from "../acl/acl.internal";

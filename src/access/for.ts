@@ -116,10 +116,7 @@ export async function getAccessFor(
 export async function getAccessFor(
   resourceUrl: UrlString,
   actorType: Actor,
-  actor?:
-    | WebId
-    | UrlString
-    | { fetch?: typeof fetch },
+  actor?: WebId | UrlString | { fetch?: typeof fetch },
   options?: { fetch?: typeof fetch },
 ): Promise<Access | null> {
   if (actorType === "agent") {
@@ -295,10 +292,7 @@ export async function setAccessFor(
   resourceUrl: UrlString,
   actorType: Actor,
   access: Partial<Access>,
-  actor?:
-    | WebId
-    | UrlString
-    | { fetch?: typeof fetch },
+  actor?: WebId | UrlString | { fetch?: typeof fetch },
   options?: { fetch?: typeof fetch },
 ): Promise<Access | null> {
   if (actorType === "agent") {

@@ -19,7 +19,14 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import { jest, describe, it, expect, beforeEach, afterEach } from "@jest/globals";
+import {
+  jest,
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+} from "@jest/globals";
 import { foaf, rdf } from "rdf-namespaces";
 import { DataFactory } from "n3";
 import { isomorphic } from "rdf-isomorphic";
@@ -86,12 +93,14 @@ describe("The Parser", () => {
   let fetchSpy: jest.SpiedFunction<typeof fetch>;
 
   beforeEach(() => {
-    fetchSpy = jest.spyOn(globalThis, 'fetch').mockImplementation(async () => new Response());
+    fetchSpy = jest
+      .spyOn(globalThis, "fetch")
+      .mockImplementation(async () => new Response());
   });
 
   afterEach(() => {
     jest.restoreAllMocks();
-  })
+  });
 
   it("should correctly find all triples in raw JSON-LD", async () => {
     const parser = getJsonLdParser();

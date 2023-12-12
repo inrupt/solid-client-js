@@ -7661,12 +7661,12 @@ describe("getPoliciesAndMatchers", () => {
     expect(solidDatasetModule.getSolidDataset).toHaveBeenNthCalledWith(
       1,
       "https://some.pod/policy-resource",
-      undefined
+      undefined,
     );
     expect(solidDatasetModule.getSolidDataset).toHaveBeenNthCalledWith(
       2,
       "https://some.pod/matcher-resource",
-      undefined
+      undefined,
     );
   });
 

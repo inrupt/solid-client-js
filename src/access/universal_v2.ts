@@ -26,9 +26,7 @@ import {
   saveAcrFor,
 } from "../acp/acp";
 import type { UrlString, WebId } from "../interfaces";
-import {
-  getSourceIri,
-} from "../resource/resource";
+import { getSourceIri } from "../resource/resource";
 import {
   internal_getAgentAccess as getAgentAccessAcp,
   internal_getAgentAccessAll as getAgentAccessAllAcp,

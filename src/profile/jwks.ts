@@ -32,9 +32,7 @@ import type {
   WithResourceInfo,
 } from "../interfaces";
 import { overwriteFile } from "../resource/file";
-import {
-  getSourceUrl,
-} from "../resource/resource";
+import { getSourceUrl } from "../resource/resource";
 import { getSolidDataset } from "../resource/solidDataset";
 import { getUrl } from "../thing/get";
 import { setIri } from "../thing/set";

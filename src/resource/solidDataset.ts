@@ -290,9 +290,7 @@ export async function responseToSolidDataset(
  */
 export async function getSolidDataset(
   url: UrlString | Url,
-  options?: Partial<
-    { fetch: typeof fetch } & ParseOptions
-  >,
+  options?: Partial<{ fetch: typeof fetch } & ParseOptions>,
 ): Promise<SolidDataset & WithServerResourceInfo> {
   url = internal_toIriString(url);
   const parserContentTypes = Object.keys(options?.parsers ?? {});
@@ -507,7 +505,8 @@ export async function createContainerAt(
   options?: {
     fetch?: typeof fetch;
     initialContent?: SolidDataset;
-  }): Promise<SolidDataset & WithServerResourceInfo> {
+  },
+): Promise<SolidDataset & WithServerResourceInfo> {
   url = internal_toIriString(url);
   url = url.endsWith("/") ? url : `${url}/`;
   const response = await (options?.fetch ?? fetch)(url, {
@@ -575,7 +574,7 @@ function isUpdate(
 type SaveInContainerOptions = {
   fetch?: typeof fetch;
   slugSuggestion?: string;
-}
+};
 
 /**
  * Given a SolidDataset, store it in a Solid Pod in a new Resource inside a Container.
@@ -1180,9 +1179,7 @@ function resolveLocalIrisInThing(
  */
 export async function getWellKnownSolid(
   url: UrlString | Url,
-  options?: Partial<
-    { fetch?: typeof fetch } & ParseOptions
-  >,
+  options?: Partial<{ fetch?: typeof fetch } & ParseOptions>,
 ): Promise<SolidDataset & WithServerResourceInfo> {
   const urlString = internal_toIriString(url);
 

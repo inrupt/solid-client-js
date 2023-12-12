@@ -27,9 +27,7 @@ import type {
 } from "..";
 import { asIri, getIriAll, getSolidDataset, getThing, getThingAll } from "..";
 import { foaf, pim, rdfs } from "../constants";
-import {
-  getSourceIri,
-} from "../resource/resource";
+import { getSourceIri } from "../resource/resource";
 
 export type ProfileAll<T extends SolidDataset & WithServerResourceInfo> = {
   webIdProfile: T;
@@ -91,17 +89,12 @@ export async function getProfileAll<
   webId: WebId,
   options?: {
     fetch?: typeof fetch;
-      webIdProfile?: T;
-    }
-  ,
+    webIdProfile?: T;
+  },
 ): Promise<ProfileAll<T>>;
 export async function getProfileAll(
   webId: WebId,
-  options?: 
-    { fetch?: typeof fetch;
-      webIdProfile: undefined;
-    }
-  ,
+  options?: { fetch?: typeof fetch; webIdProfile: undefined },
 ): Promise<ProfileAll<SolidDataset & WithServerResourceInfo>>;
 export async function getProfileAll<
   T extends SolidDataset & WithServerResourceInfo,
@@ -110,12 +103,13 @@ export async function getProfileAll<
   options?: {
     fetch?: typeof fetch;
     webIdProfile?: T;
-  }): Promise<ProfileAll<T | (SolidDataset & WithServerResourceInfo)>> {
+  },
+): Promise<ProfileAll<T | (SolidDataset & WithServerResourceInfo)>> {
   const authFetch = options?.fetch ?? fetch;
   const webIdProfile =
     options?.webIdProfile ??
     // This should always use an unauthenticated fetch.
-    await getSolidDataset(webId);
+    (await getSolidDataset(webId));
   const altProfileAll = (
     await Promise.allSettled(
       getAltProfileUrlAllFrom(webId, webIdProfile).map((uniqueProfileIri) =>

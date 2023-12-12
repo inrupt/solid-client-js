@@ -436,6 +436,11 @@ async function writeFile<T extends File | NodeFile | Buffer>(
   }
 
   // If a slug is in the parameters, set the request headers accordingly
+  if (options.slug !== undefined) {
+    headers.Slug = options.slug;
+  }
+  headers["Content-Type"] = getContentType(file, options.contentType);
+
   const targetUrlString = internal_toIriString(targetUrl);
 
   return (options.fetch ?? fetch)(targetUrlString, {

@@ -8453,12 +8453,12 @@ describe("getPoliciesAndRules", () => {
     expect(solidDatasetModule.getSolidDataset).toHaveBeenNthCalledWith(
       1,
       "https://some.pod/policy-resource",
-      undefined
+      undefined,
     );
     expect(solidDatasetModule.getSolidDataset).toHaveBeenNthCalledWith(
       2,
       "https://some.pod/rule-resource",
-      undefined
+      undefined,
     );
   });
 

@@ -20,7 +20,14 @@
 //
 
 import { Buffer as NodeBuffer } from "buffer";
-import { jest, describe, it, expect } from "@jest/globals";
+import {
+  jest,
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+} from "@jest/globals";
 import {
   getFile,
   deleteFile,
@@ -84,18 +91,10 @@ describe("flattenHeaders", () => {
 
 describe("getFile", () => {
   it("should GET a remote resource using the included fetcher if no other fetcher is available", async () => {
-    const fetcher = jest.requireMock("../fetcher") as {
-      fetch: jest.Mocked<typeof fetch>;
-    };
-
-    fetcher.fetch.mockReturnValue(
-      Promise.resolve(
-        new Response("Some data", { status: 200, statusText: "OK" }),
-      ),
-    );
-
+    jest.spyOn(globalThis, "fetch").mockResolvedValueOnce(new Response("Some data", { status: 200, statusText: "OK" }))
     await getFile("https://some.url");
-    expect(fetcher.fetch.mock.calls).toEqual([["https://some.url", undefined]]);
+    expect(fetch).toHaveBeenCalledWith("https://some.url", undefined);
+    expect(fetch).toHaveBeenCalledTimes(1);
   });
 
   it("should GET a remote resource using the provided fetcher", async () => {
@@ -353,17 +352,21 @@ describe("Write non-RDF data into a folder", () => {
   const mockBlob = new Blob(["mock blob data"], { type: "binary" });
   const mockBuffer = Buffer.from("mock blob data");
   const mockNodeBuffer = NodeBuffer.from("mock blob data");
-  function setMockOnFetch(
-    fetch: jest.Mocked<typeof fetch>,
-    saveResponse = new Response(undefined, {
-      status: 201,
-      statusText: "Created",
-      headers: { Location: "someFileName" },
-    }),
-  ): jest.Mocked<typeof fetch> {
-    fetch.mockResolvedValueOnce(saveResponse);
-    return fetch;
-  }
+
+  beforeEach(() => {
+    jest.spyOn(globalThis, "fetch").mockImplementation(
+      async () =>
+        new Response(undefined, {
+          status: 201,
+          statusText: "Created",
+          headers: { Location: "someFileName" },
+        }),
+    );
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
 
   describe.each([
     ["blob", mockBlob],
@@ -371,34 +374,23 @@ describe("Write non-RDF data into a folder", () => {
     ["nodeBuffer", mockNodeBuffer],
   ])("support for %s raw data source", (_, data) => {
     it("should default to the included fetcher if no other is available", async () => {
-      const fetcher = jest.requireMock("../fetcher") as {
-        fetch: jest.Mocked<typeof fetch>;
-      };
-
-      fetcher.fetch = setMockOnFetch(fetcher.fetch);
-
       await saveFileInContainer("https://some.url", data);
 
-      expect(fetcher.fetch).toHaveBeenCalled();
+      expect(fetch).toHaveBeenCalledTimes(1);
     });
 
     it("should POST to a remote resource using the included fetcher, and return the saved file", async () => {
-      const fetcher = jest.requireMock("../fetcher") as {
-        fetch: jest.Mocked<typeof fetch>;
-      };
-
-      fetcher.fetch = setMockOnFetch(fetcher.fetch);
-
       const savedFile = await saveFileInContainer("https://some.url", data);
-
-      const mockCall = fetcher.fetch.mock.calls[0];
-      expect(mockCall[0]).toBe("https://some.url");
-      expect(mockCall[1]?.headers).toEqual({
-        "Content-Type":
-          mockBlob === data ? "binary" : "application/octet-stream",
+      expect(fetch).toHaveBeenCalledTimes(1);
+      expect(fetch).toHaveBeenCalledWith("https://some.url", {
+        headers: {
+          "Content-Type":
+            mockBlob === data ? "binary" : "application/octet-stream",
+        },
+        method: "POST",
+        body: data,
       });
-      expect(mockCall[1]?.method).toBe("POST");
-      expect(mockCall[1]?.body).toEqual(data);
+
       if (mockBlob === data) {
         // eslint-disable-next-line jest/no-conditional-expect
         expect(savedFile).toBeInstanceOf(Blob);
@@ -411,55 +403,49 @@ describe("Write non-RDF data into a folder", () => {
     });
 
     it("should use the provided fetcher if available", async () => {
-      const mockFetch = setMockOnFetch(jest.fn<typeof fetch>());
+      const mockFetch = jest.fn<typeof fetch>();
 
       await saveFileInContainer("https://some.url", data, {
         fetch: mockFetch,
       });
 
-      expect(mockFetch).toHaveBeenCalled();
-    });
-
-    it("should POST a remote resource using the provided fetcher", async () => {
-      const mockFetch = setMockOnFetch(jest.fn<typeof fetch>());
-
-      await saveFileInContainer("https://some.url", data, {
-        fetch: mockFetch,
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      expect(mockFetch).toHaveBeenCalledWith("https://some.url", {
+        headers: {
+          "Content-Type":
+            mockBlob === data ? "binary" : "application/octet-stream",
+        },
+        method: "POST",
+        body: data,
       });
-
-      const mockCall = mockFetch.mock.calls[0];
-      expect(mockCall[0]).toBe("https://some.url");
-      expect(mockCall[1]?.headers).toEqual({
-        "Content-Type":
-          mockBlob === data ? "binary" : "application/octet-stream",
-      });
-      expect(mockCall[1]?.body).toEqual(data);
+      expect(fetch).not.toHaveBeenCalled();
     });
 
     it("should pass the suggested slug through", async () => {
-      const mockFetch = setMockOnFetch(jest.fn<typeof fetch>());
+      const mockFetch = jest.fn<typeof fetch>();
 
       await saveFileInContainer("https://some.url", data, {
         fetch: mockFetch,
         slug: "someFileName",
       });
 
-      const mockCall = mockFetch.mock.calls[0];
-      expect(mockCall[0]).toBe("https://some.url");
-      expect(mockCall[1]?.headers).toEqual({
-        "Content-Type":
-          mockBlob === data ? "binary" : "application/octet-stream",
-        Slug: "someFileName",
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      expect(mockFetch).toHaveBeenCalledWith("https://some.url", {
+        headers: {
+          "Content-Type":
+            mockBlob === data ? "binary" : "application/octet-stream",
+          Slug: "someFileName",
+        },
+        method: "POST",
+        body: data,
       });
-      expect(mockCall[1]?.body).toEqual(data);
+      expect(fetch).not.toHaveBeenCalled();
     });
 
     it("throws when a reserved header is passed", async () => {
-      const mockFetch = setMockOnFetch(jest.fn<typeof fetch>());
-
       await expect(
         saveFileInContainer("https://some.url", data, {
-          fetch: mockFetch,
+          fetch: async () => new Response(),
           init: {
             headers: {
               Slug: "someFileName",
@@ -470,14 +456,10 @@ describe("Write non-RDF data into a folder", () => {
     });
 
     it("throws when saving failed", async () => {
-      const mockFetch = setMockOnFetch(
-        jest.fn<typeof fetch>(),
-        new Response(undefined, { status: 403, statusText: "Forbidden" }),
-      );
-
       await expect(
         saveFileInContainer("https://some.url", data, {
-          fetch: mockFetch,
+          fetch: async () =>
+            new Response(undefined, { status: 403, statusText: "Forbidden" }),
         }),
       ).rejects.toThrow(
         "Saving the file in [https://some.url] failed: [403] [Forbidden]",
@@ -485,14 +467,10 @@ describe("Write non-RDF data into a folder", () => {
     });
 
     it("throws when the server did not return the location of the newly-saved file", async () => {
-      const mockFetch = setMockOnFetch(
-        jest.fn<typeof fetch>(),
-        new Response(undefined, { status: 201, statusText: "Created" }),
-      );
-
       await expect(
         saveFileInContainer("https://some.url", data, {
-          fetch: mockFetch,
+          fetch: async () =>
+            new Response(undefined, { status: 201, statusText: "Created" }),
         }),
       ).rejects.toThrow(
         "Could not determine the location of the newly saved file.",
@@ -500,17 +478,13 @@ describe("Write non-RDF data into a folder", () => {
     });
 
     it("includes the status code, status message and response body when a request failed", async () => {
-      const mockFetch = setMockOnFetch(
-        jest.fn<typeof fetch>(),
-        new Response("Teapots don't make coffee", {
-          status: 418,
-          statusText: "I'm a teapot!",
-        }),
-      );
-
       await expect(
         saveFileInContainer("https://arbitrary.url", data, {
-          fetch: mockFetch,
+          fetch: async () =>
+            new Response("Teapots don't make coffee", {
+              status: 418,
+              statusText: "I'm a teapot!",
+            }),
         }),
       ).rejects.toMatchObject({
         statusCode: 418,
@@ -521,12 +495,6 @@ describe("Write non-RDF data into a folder", () => {
   });
 
   it("sets the correct Content Type on the returned file, if available", async () => {
-    const fetcher = jest.requireMock("../fetcher") as {
-      fetch: jest.Mocked<typeof fetch>;
-    };
-
-    fetcher.fetch = setMockOnFetch(fetcher.fetch);
-
     const mockTextBlob = new Blob(["mock blob data"], {
       type: "text/plain",
     });
@@ -540,12 +508,6 @@ describe("Write non-RDF data into a folder", () => {
   });
 
   it("sets the given Content Type on the returned file, if any was given", async () => {
-    const fetcher = jest.requireMock("../fetcher") as {
-      fetch: jest.Mocked<typeof fetch>;
-    };
-
-    fetcher.fetch = setMockOnFetch(fetcher.fetch);
-
     const mockTextBlob = new Blob(["mock blob data"], {
       type: "text/plain",
     });
@@ -562,12 +524,6 @@ describe("Write non-RDF data into a folder", () => {
   });
 
   it("defaults the Content Type to `application/octet-stream` if none is known", async () => {
-    const fetcher = jest.requireMock("../fetcher") as {
-      fetch: jest.Mocked<typeof fetch>;
-    };
-
-    fetcher.fetch = setMockOnFetch(fetcher.fetch);
-
     const mockTextBlob = new Blob(["mock blob data"]);
     const savedFile = await saveFileInContainer(
       "https://some.url",
@@ -586,52 +542,50 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
   const mockBuffer = Buffer.from("mock blob data");
   const mockNodeBuffer = NodeBuffer.from("mock blob data");
 
+  beforeEach(() => {
+    jest.spyOn(globalThis, "fetch").mockImplementation(
+      async () =>
+        new Response(undefined, {
+          status: 201,
+          statusText: "Created",
+        }),
+    );
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
   describe.each([
     ["blob", mockBlob],
     ["buffer", mockBuffer],
     ["nodeBuffer", mockNodeBuffer],
   ])("support for %s raw data source", (_, data) => {
     it("should default to the included fetcher if no other fetcher is available", async () => {
-      const fetcher = jest.requireMock("../fetcher") as {
-        fetch: jest.Mocked<typeof fetch>;
-      };
-
-      fetcher.fetch.mockReturnValue(
-        Promise.resolve(
-          new Response(undefined, { status: 201, statusText: "Created" }),
-        ),
-      );
-
       await overwriteFile("https://some.url", data);
 
-      expect(fetcher.fetch).toHaveBeenCalled();
+      expect(fetch).toHaveBeenCalledTimes(1);
     });
 
     it("should PUT to a remote resource when using the included fetcher, and return the saved file", async () => {
-      const fetcher = jest.requireMock("../fetcher") as {
-        fetch: jest.Mocked<typeof fetch>;
-      };
-
-      fetcher.fetch.mockReturnValue(
-        Promise.resolve(
-          new Response(undefined, {
-            status: 201,
-            statusText: "Created",
-            url: "https://some.url",
-          } as ResponseInit),
-        ),
+      jest.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+        new Response(undefined, {
+          status: 201,
+          statusText: "Created",
+          url: "https://some.url",
+        } as ResponseInit),
       );
 
       const savedFile = await overwriteFile("https://some.url", data);
-
-      const mockCall = fetcher.fetch.mock.calls[0];
-      expect(mockCall[0]).toBe("https://some.url");
-      expect(mockCall[1]?.headers).toEqual({
-        "Content-Type":
-          mockBlob === data ? "binary" : "application/octet-stream",
+      expect(fetch).toHaveBeenCalledTimes(1);
+      expect(fetch).toHaveBeenCalledWith("https://some.url", {
+        headers: {
+          "Content-Type":
+            mockBlob === data ? "binary" : "application/octet-stream",
+        },
+        method: "PUT",
+        body: data,
       });
-      expect(mockCall[1]?.method).toBe("PUT");
-      expect(mockCall[1]?.body).toEqual(data);
       if (mockBlob === data) {
         // eslint-disable-next-line jest/no-conditional-expect
         expect(savedFile).toBeInstanceOf(Blob);
@@ -645,13 +599,10 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
     });
 
     it("should use the provided fetcher", async () => {
-      const mockFetch = jest
-        .fn<typeof fetch>()
-        .mockReturnValue(
-          Promise.resolve(
-            new Response(undefined, { status: 201, statusText: "Created" }),
-          ),
-        );
+      const mockFetch = jest.fn<typeof fetch>(
+        async () =>
+          new Response(undefined, { status: 201, statusText: "Created" }),
+      );
 
       await overwriteFile("https://some.url", data, {
         fetch: mockFetch,
@@ -675,14 +626,16 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
         fetch: mockFetch,
       });
 
-      const mockCall = mockFetch.mock.calls[0];
-      expect(mockCall[0]).toBe("https://some.url");
-      expect(mockCall[1]?.headers).toEqual({
-        "Content-Type":
-          mockBlob === data ? "binary" : "application/octet-stream",
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      expect(mockFetch).toHaveBeenCalledWith("https://some.url", {
+        headers: expect.objectContaining({
+          "Content-Type":
+            mockBlob === data ? "binary" : "application/octet-stream",
+        }),
+        method: "PUT",
+        body: data,
       });
-      expect(mockCall[1]?.method).toBe("PUT");
-      expect(mockCall[1]?.body).toEqual(data);
+
       if (mockBlob === data) {
         // eslint-disable-next-line jest/no-conditional-expect
         expect(savedFile).toBeInstanceOf(Blob);
