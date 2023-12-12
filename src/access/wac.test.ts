@@ -50,7 +50,7 @@ import { getPublicResourceAccess } from "../acl/class";
 import { toRdfJsQuads } from "../rdfjs.internal";
 import { mockResponse } from "../tests.internal";
 
-const spyFetch = jest.spyOn(globalThis, "fetch").mockImplementation(
+jest.spyOn(globalThis, "fetch").mockImplementation(
   async () =>
     new Response(undefined, {
       headers: { Location: "https://arbitrary.pod/resource" },
@@ -91,8 +91,9 @@ describe("getAgentAccess", () => {
             return new Response("", { status: 404 });
           case "https://some.pod/":
             return new Response('<.acl>; rel="acl"', { status: 200 });
+          default:
+            throw new Error("Unepxected URL");
         }
-        throw new Error("Unepxected URL");
       },
     });
 
@@ -103,9 +104,8 @@ describe("getAgentAccess", () => {
     const resource = getMockDataset("https://some.pod/resource");
     const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
       fetch: async (url) => {
-        switch (url.toString()) {
-          case "https://some.pod/resource.acl":
-            return new Response("ACL not found", { status: 404 });
+        if (url.toString() === "https://some.pod/resource.acl") {
+          return new Response("ACL not found", { status: 404 });
         }
         throw new Error("Unepxected URL");
       },
@@ -125,15 +125,15 @@ describe("getAgentAccess", () => {
 
     const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
       fetch: async (url) => {
-        switch (url.toString()) {
-          case "https://some.pod/resource.acl":
-            return new Response(
-              await triplesToTurtle(toRdfJsQuads(aclResource)),
-              {
-                status: 200,
-                headers: { "Content-Type": "text/turtle" },
-              },
-            );
+        if (url.toString() === "https://some.pod/resource.acl") {
+          return Object.defineProperty(
+            new Response(await triplesToTurtle(toRdfJsQuads(aclResource)), {
+              status: 200,
+              headers: { "Content-Type": "text/turtle" },
+            }),
+            "url",
+            { value: url.toString() },
+          );
         }
         throw new Error("Unepxected URL");
       },
@@ -157,25 +157,49 @@ describe("getAgentAccess", () => {
       "default",
     );
 
+    const mockFetch = jest
+      .fn<typeof fetch>()
+      // No resource ACL available...
+      .mockResolvedValueOnce(
+        mockResponse(
+          "",
+          {
+            status: 404,
+          },
+          "https://some.pod/resource.acl",
+        ),
+      )
+      // Link to the fallback ACL...
+      .mockResolvedValueOnce(
+        mockResponse(
+          "",
+          {
+            status: 200,
+            headers: {
+              Link: '<.acl>; rel="acl"',
+            },
+          },
+          "https://some.pod/",
+        ),
+      )
+      // Get the fallback ACL
+      .mockResolvedValueOnce(
+        mockResponse(
+          await triplesToTurtle(toRdfJsQuads(aclResource)),
+          {
+            status: 200,
+            headers: { "Content-Type": "text/turtle" },
+          },
+          "https://some.pod/.acl",
+        ),
+      );
+
     const resource = getMockDataset(
       "https://some.pod/resource",
       "https://some.pod/resource.acl",
     );
     const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
-      fetch: async (url) => {
-        switch (url.toString()) {
-          case "https://some.pod/resource.acl":
-            return new Response("", { status: 404 });
-          case "https://some.pod/.acl":
-            return new Response(
-              await triplesToTurtle(toRdfJsQuads(aclResource)),
-              { status: 200, headers: { "Content-Type": "text/turtle" } },
-            );
-          case "https://some.pod/":
-            return new Response('<.acl>; rel="acl"', { status: 200 });
-        }
-        throw new Error("Unepxected URL");
-      },
+      fetch: mockFetch,
     });
     await expect(result).resolves.toStrictEqual({
       read: true,
@@ -209,21 +233,32 @@ describe("getAgentAccess", () => {
     );
     const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
       fetch: async (url) => {
+        let response: Response | undefined;
         switch (url.toString()) {
           case "https://some.pod/resource.acl":
-            return new Response(
+            response = new Response(
               await triplesToTurtle(toRdfJsQuads(aclResource)),
               { status: 200, headers: { "Content-Type": "text/turtle" } },
             );
+            break;
           case "https://some.pod/.acl":
-            return new Response(
+            response = new Response(
               await triplesToTurtle(toRdfJsQuads(fallbackAclResource)),
               { status: 200, headers: { "Content-Type": "text/turtle" } },
             );
+            break;
           case "https://some.pod/":
-            return new Response('<.acl>; rel="acl"', { status: 200 });
+            response = new Response('<.acl>; rel="acl"', { status: 200 });
+            break;
+          default:
+            throw new Error("Unepxected URL");
         }
-        throw new Error("Unepxected URL");
+        if (!response) {
+          throw new Error("Unepxected URL");
+        }
+        return Object.defineProperty(response, "url", {
+          value: url.toString(),
+        });
       },
     });
     await expect(result).resolves.toStrictEqual({

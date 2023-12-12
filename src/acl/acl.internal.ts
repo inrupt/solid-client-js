@@ -163,7 +163,6 @@ export async function internal_fetchFallbackAcl(
   if (containerAcl === null) {
     return internal_fetchFallbackAcl(containerInfo, options);
   }
-
   return containerAcl;
 }
 

@@ -19,7 +19,7 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import { jest, describe, it, expect, afterEach } from "@jest/globals";
+import { jest, describe, it, expect } from "@jest/globals";
 import type { WithAccessibleAcl, AclDataset, Access, WithAcl } from "./acl";
 import {
   getResourceAcl,

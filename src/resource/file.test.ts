@@ -91,7 +91,11 @@ describe("flattenHeaders", () => {
 
 describe("getFile", () => {
   it("should GET a remote resource using the included fetcher if no other fetcher is available", async () => {
-    jest.spyOn(globalThis, "fetch").mockResolvedValueOnce(new Response("Some data", { status: 200, statusText: "OK" }))
+    jest
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(
+        new Response("Some data", { status: 200, statusText: "OK" }),
+      );
     await getFile("https://some.url");
     expect(fetch).toHaveBeenCalledWith("https://some.url", undefined);
     expect(fetch).toHaveBeenCalledTimes(1);
@@ -204,26 +208,19 @@ describe("getFile", () => {
 
 describe("Non-RDF data deletion", () => {
   it("should DELETE a remote resource using the included fetcher if no other fetcher is available", async () => {
-    const fetcher = jest.requireMock("../fetcher") as {
-      fetch: jest.Mocked<typeof fetch>;
-    };
-
-    fetcher.fetch.mockReturnValueOnce(
-      Promise.resolve(
-        new Response(undefined, { status: 200, statusText: "Deleted" }),
-      ),
-    );
+    jest
+      .spyOn(globalThis, "fetch")
+      .mockReturnValueOnce(
+        Promise.resolve(
+          new Response(undefined, { status: 200, statusText: "Deleted" }),
+        ),
+      );
 
     const response = await deleteFile("https://some.url");
 
-    expect(fetcher.fetch.mock.calls).toEqual([
-      [
-        "https://some.url",
-        {
-          method: "DELETE",
-        },
-      ],
-    ]);
+    expect(fetch).toHaveBeenCalledWith("https://some.url", {
+      method: "DELETE",
+    });
     expect(response).toBeUndefined();
   });
 
@@ -403,7 +400,12 @@ describe("Write non-RDF data into a folder", () => {
     });
 
     it("should use the provided fetcher if available", async () => {
-      const mockFetch = jest.fn<typeof fetch>();
+      const mockFetch = jest.fn<typeof fetch>(
+        async () =>
+          new Response(null, {
+            headers: { Location: "/container/resource" },
+          }),
+      );
 
       await saveFileInContainer("https://some.url", data, {
         fetch: mockFetch,
@@ -422,7 +424,12 @@ describe("Write non-RDF data into a folder", () => {
     });
 
     it("should pass the suggested slug through", async () => {
-      const mockFetch = jest.fn<typeof fetch>();
+      const mockFetch = jest.fn<typeof fetch>(
+        async () =>
+          new Response(null, {
+            headers: { Location: "/container/resource" },
+          }),
+      );
 
       await saveFileInContainer("https://some.url", data, {
         fetch: mockFetch,
