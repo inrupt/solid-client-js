@@ -19,7 +19,7 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import RdfJsDataFactory from "@rdfjs/data-model";
+import { DataFactory } from "n3";
 import type * as RdfJs from "@rdfjs/types";
 import type {
   BlankNodeId,
@@ -39,7 +39,7 @@ import type { ToRdfJsOptions } from "./rdfjs";
 import type { IriString } from "./interfaces";
 import { xmlSchemaTypes } from "./datatypes";
 
-export const DataFactory = RdfJsDataFactory;
+export { DataFactory };
 
 type QuadParseOptions = Partial<{
   otherQuads: RdfJs.Quad[];
@@ -356,7 +356,7 @@ export function toRdfJsQuads(
   options: ToRdfJsOptions = {},
 ): RdfJs.Quad[] {
   const quads: RdfJs.Quad[] = [];
-  const dataFactory = options.dataFactory ?? RdfJsDataFactory;
+  const dataFactory = options.dataFactory ?? DataFactory;
 
   Object.keys(dataset.graphs).forEach((graphIri: IriString) => {
     const graph = dataset.graphs[graphIri];
@@ -386,7 +386,7 @@ export function subjectToRdfJsQuads(
   options: ToRdfJsOptions = {},
 ): RdfJs.Quad[] {
   const quads: RdfJs.Quad[] = [];
-  const dataFactory = options.dataFactory ?? RdfJsDataFactory;
+  const dataFactory = options.dataFactory ?? DataFactory;
 
   Object.keys(predicates).forEach((predicateIri) => {
     const predicateNode = dataFactory.namedNode(predicateIri);
