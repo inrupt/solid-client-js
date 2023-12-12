@@ -151,7 +151,7 @@ export async function addJwkToJwks(
 export async function addPublicKeyToProfileJwks(
   publicKey: Jwk,
   webId: WebId,
-  options?: { fetch?: typeof fetch },
+  options: { fetch?: typeof fetch } = {},
 ): Promise<Blob & WithResourceInfo> {
   const profileDataset = await getSolidDataset(webId, options);
   if (profileDataset === null) {
@@ -172,6 +172,6 @@ export async function addPublicKeyToProfileJwks(
 
   return overwriteFile(jwksIri, new Blob([JSON.stringify(updatedJwks)]), {
     contentType: "application/json",
-    fetch: options?.fetch,
+    fetch: options.fetch,
   });
 }

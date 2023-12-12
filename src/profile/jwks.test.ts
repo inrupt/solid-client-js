@@ -163,12 +163,19 @@ describe("addPublicKeyToProfileJwks", () => {
     const mockedDatasetModule = jest.requireMock(
       "../resource/solidDataset",
     ) as any;
-    mockedDatasetModule.getSolidDataset.mockResolvedValueOnce(null);
+    mockedDatasetModule.getSolidDataset.mockResolvedValue(null);
 
     await expect(
       addPublicKeyToProfileJwks(
         { kid: "..." },
         "https://some.pod/resource#webId",
+      ),
+    ).rejects.toThrow(/profile document.*webId.*retrieved/);
+    await expect(
+      addPublicKeyToProfileJwks(
+        { kid: "..." },
+        "https://some.pod/resource#webId",
+        {},
       ),
     ).rejects.toThrow(/profile document.*webId.*retrieved/);
   });

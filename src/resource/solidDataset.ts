@@ -502,16 +502,16 @@ export async function deleteSolidDataset(
  */
 export async function createContainerAt(
   url: UrlString | Url,
-  options?: {
+  options: {
     fetch?: typeof fetch;
     initialContent?: SolidDataset;
-  },
+  } = {},
 ): Promise<SolidDataset & WithServerResourceInfo> {
   url = internal_toIriString(url);
   url = url.endsWith("/") ? url : `${url}/`;
-  const response = await (options?.fetch ?? fetch)(url, {
+  const response = await (options.fetch ?? fetch)(url, {
     method: "PUT",
-    body: options?.initialContent
+    body: options.initialContent
       ? await triplesToTurtle(
           toRdfJsQuads(options.initialContent).map(getNamedNodesForLocalNodes),
         )
@@ -528,7 +528,7 @@ export async function createContainerAt(
 
   if (internal_isUnsuccessfulResponse(response)) {
     const containerType =
-      options?.initialContent === undefined ? "empty" : "non-empty";
+      options.initialContent === undefined ? "empty" : "non-empty";
     throw new FetchError(
       `Creating the ${containerType} Container at [${url}] failed: [${
         response.status
@@ -541,7 +541,7 @@ export async function createContainerAt(
   const containerDataset: SolidDataset &
     WithChangeLog &
     WithServerResourceInfo = freeze({
-    ...(options?.initialContent ?? createSolidDataset()),
+    ...(options.initialContent ?? createSolidDataset()),
     internal_changeLog: { additions: [], deletions: [] },
     internal_resourceInfo: resourceInfo,
   });
