@@ -199,7 +199,7 @@ if (
             readHeaders,
           );
 
-          // The response will be a 401
+          // The response will be a 401.
           await expect(
             getSolidDataset(profileUrl, {
               fetch: customFetch,
@@ -260,5 +260,4 @@ if (
 } else {
   // eslint-disable-next-line jest/expect-expect, jest/no-focused-tests
   test.only(`Skipping unsupported application-defined request metadata tests in ${env.environment}`, () => {});
-
 }
