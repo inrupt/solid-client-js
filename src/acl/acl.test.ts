@@ -20,9 +20,6 @@
 //
 
 import { jest, describe, it, expect } from "@jest/globals";
-
-import { Response, Headers } from "@inrupt/universal-fetch";
-
 import type { WithAccessibleAcl, AclDataset, Access, WithAcl } from "./acl";
 import {
   getResourceAcl,
@@ -60,22 +57,16 @@ import { addIri, addStringNoLocale } from "../thing/add";
 import { getIri } from "../thing/get";
 import { mockResponse } from "../tests.internal";
 
-jest.mock("../fetcher.ts", () => ({
-  fetch: jest.fn().mockImplementation(() =>
-    Promise.resolve(
-      new Response(undefined, {
-        headers: { Location: "https://arbitrary.pod/resource" },
-      }),
-    ),
+jest.spyOn(globalThis, "fetch").mockImplementation(() =>
+  Promise.resolve(
+    new Response(undefined, {
+      headers: { Location: "https://arbitrary.pod/resource" },
+    }),
   ),
-}));
+);
 
 describe("fetchAcl", () => {
   it("calls the included fetcher by default", async () => {
-    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mocked<typeof fetch>;
-    };
-
     const mockResourceInfo: WithServerResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
@@ -89,9 +80,9 @@ describe("fetchAcl", () => {
 
     await internal_fetchAcl(mockResourceInfo);
 
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
-      "https://some.pod/resource.acl",
-    );
+    expect(fetch).toHaveBeenCalledWith("https://some.pod/resource.acl", {
+      headers: { Accept: "text/turtle" },
+    });
   });
 
   it("does not attempt to fetch ACLs if the fetched Resource does not include a pointer to an ACL file, and sets an appropriate default value.", async () => {
@@ -305,15 +296,12 @@ describe("fetchResourceAcl", () => {
         },
       },
     };
-    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mocked<typeof fetch>;
-    };
 
     await internal_fetchResourceAcl(sourceDataset);
 
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
-      "https://some.pod/resource.acl",
-    );
+    expect(fetch).toHaveBeenCalledWith("https://some.pod/resource.acl", {
+      headers: { Accept: "text/turtle" },
+    });
   });
 
   it("returns null if the source SolidDataset has no known ACL IRI", async () => {
@@ -493,14 +481,10 @@ describe("fetchFallbackAcl", () => {
         },
       },
     };
-    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mocked<typeof fetch>;
-    };
-
     await internal_fetchFallbackAcl(sourceDataset);
 
-    expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe("https://some.pod/");
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith("https://some.pod/", { method: "HEAD" });
   });
 
   it("travels up multiple levels if no ACL was found on the levels in between", async () => {
@@ -800,19 +784,15 @@ describe("getSolidDatasetWithAcl", () => {
   });
 
   it("calls the included fetcher by default", async () => {
-    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mocked<typeof fetch>;
-    };
-
     getSolidDatasetWithAcl("https://some.pod/resource").catch(() => {
       // We're just checking that this is called,
       // so we can ignore the error about not being able to parse
       // the mock Response.
     });
 
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
-      "https://some.pod/resource",
-    );
+    expect(fetch).toHaveBeenCalledWith("https://some.pod/resource", {
+      headers: { Accept: "text/turtle" },
+    });
   });
 
   it("does not attempt to fetch ACLs if the fetched Resource does not include a pointer to an ACL file, and sets an appropriate default value.", async () => {
@@ -905,28 +885,21 @@ describe("getSolidDatasetWithAcl", () => {
 
 describe("getFileWithAcl", () => {
   it("should GET a remote resource using the included fetcher if no other fetcher is available", async () => {
-    const fetcher = jest.requireMock("../fetcher") as {
-      fetch: jest.Mocked<typeof fetch>;
-    };
-
-    fetcher.fetch.mockReturnValue(
-      Promise.resolve(
-        new Response("Some data", { status: 200, statusText: "OK" }),
-      ),
-    );
+    jest
+      .spyOn(globalThis, "fetch")
+      .mockImplementation(
+        async () =>
+          new Response("Some data", { status: 200, statusText: "OK" }),
+      );
 
     await getFileWithAcl("https://some.url");
-    expect(fetcher.fetch.mock.calls).toEqual([["https://some.url", undefined]]);
+    expect(fetch).toHaveBeenCalledWith("https://some.url", undefined);
   });
 
   it("should GET a remote resource using the provided fetcher", async () => {
-    const mockFetch = jest
-      .fn<typeof fetch>()
-      .mockReturnValue(
-        Promise.resolve(
-          new Response("Some data", { status: 200, statusText: "OK" }),
-        ),
-      );
+    const mockFetch = jest.fn<typeof fetch>(
+      async () => new Response("Some data", { status: 200, statusText: "OK" }),
+    );
 
     await getFileWithAcl("https://some.url", {
       fetch: mockFetch,
@@ -1230,20 +1203,11 @@ describe("getResourceInfoWithAcl", () => {
   });
 
   it("calls the included fetcher by default", async () => {
-    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mocked<typeof fetch>;
-    };
-
     await getResourceInfoWithAcl("https://some.pod/resource");
 
-    expect(mockedFetcher.fetch.mock.calls).toEqual([
-      [
-        "https://some.pod/resource",
-        {
-          method: "HEAD",
-        },
-      ],
-    ]);
+    expect(fetch).toHaveBeenCalledWith("https://some.pod/resource", {
+      method: "HEAD",
+    });
   });
 
   it("does not attempt to fetch ACLs if the fetched Resource does not include a pointer to an ACL file, and sets an appropriate default value.", async () => {
@@ -2515,9 +2479,6 @@ describe("removeEmptyAclRules", () => {
 
 describe("saveAclFor", () => {
   it("calls the included fetcher by default", async () => {
-    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mocked<typeof fetch>;
-    };
     const withResourceInfo = {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource",
@@ -2539,7 +2500,7 @@ describe("saveAclFor", () => {
 
     await saveAclFor(withResourceInfo, aclResource);
 
-    expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
+    expect(fetch).toHaveBeenCalledTimes(1);
   });
 
   it("uses the given fetcher if provided", async () => {
@@ -2735,9 +2696,6 @@ describe("saveAclFor", () => {
 
 describe("deleteAclFor", () => {
   it("calls the included fetcher by default", async () => {
-    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mocked<typeof fetch>;
-    };
     const mockResource: WithServerResourceInfo & WithAccessibleAcl = {
       internal_resourceInfo: {
         sourceIri: "https://some.pod/resource",
@@ -2751,14 +2709,9 @@ describe("deleteAclFor", () => {
 
     await deleteAclFor(mockResource);
 
-    expect(mockedFetcher.fetch.mock.calls).toEqual([
-      [
-        "https://some.pod/resource.acl",
-        {
-          method: "DELETE",
-        },
-      ],
-    ]);
+    expect(fetch).toHaveBeenCalledWith("https://some.pod/resource.acl", {
+      method: "DELETE",
+    });
   });
 
   it("uses the given fetcher if provided", async () => {

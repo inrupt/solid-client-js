@@ -19,19 +19,19 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import { jest, describe, it, expect } from "@jest/globals";
-import { Response } from "@inrupt/universal-fetch";
+import {
+  jest,
+  describe,
+  it,
+  expect,
+  beforeEach,
+  afterEach,
+} from "@jest/globals";
 import { foaf, rdf } from "rdf-namespaces";
 import { DataFactory } from "n3";
 import { isomorphic } from "rdf-isomorphic";
 import type * as RDF from "@rdfjs/types";
 import { getJsonLdParser } from "./jsonLd";
-
-jest.mock("../fetcher.ts", () => ({
-  fetch: jest
-    .fn()
-    .mockImplementation(() => Promise.resolve(new Response(undefined, {}))),
-}));
 
 async function stringToArray(str: string) {
   const parser = getJsonLdParser();
@@ -90,6 +90,18 @@ const personQuads = [
 ];
 
 describe("The Parser", () => {
+  let fetchSpy: jest.SpiedFunction<typeof fetch>;
+
+  beforeEach(() => {
+    fetchSpy = jest
+      .spyOn(globalThis, "fetch")
+      .mockImplementation(async () => new Response());
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   it("should correctly find all triples in raw JSON-LD", async () => {
     const parser = getJsonLdParser();
     const onQuadCallback = jest.fn<Parameters<typeof parser.onQuad>[0]>();
@@ -154,10 +166,7 @@ describe("The Parser", () => {
       parser.onComplete(onCompleteCallback);
       parser.onQuad(() => {});
 
-      const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-        fetch: jest.Mocked<typeof fetch>;
-      };
-      mockedFetcher.fetch.mockResolvedValueOnce(
+      fetchSpy.mockResolvedValueOnce(
         new Response(
           JSON.stringify({
             "@context": {
@@ -185,7 +194,7 @@ describe("The Parser", () => {
 
       expect(onErrorCallback).toHaveBeenCalledTimes(0);
       expect(onCompleteCallback).toHaveBeenCalledTimes(1);
-      expect(mockedFetcher.fetch).toHaveBeenCalledTimes(1);
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
     });
 
     it("should handle errors gracefully", async () => {
@@ -196,10 +205,7 @@ describe("The Parser", () => {
       parser.onError(onErrorCallback);
       parser.onComplete(onCompleteCallback);
 
-      const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-        fetch: jest.Mocked<typeof fetch>;
-      };
-      mockedFetcher.fetch.mockRejectedValue("Some error");
+      fetchSpy.mockRejectedValueOnce("Some error");
 
       // FIXME: Despite the type signature, parser.parse does return a Promise,
       // so we await on it until we fix this behavior.
@@ -213,7 +219,7 @@ describe("The Parser", () => {
 
       expect(onErrorCallback).toHaveBeenCalledTimes(1);
       expect(onCompleteCallback).toHaveBeenCalledTimes(1);
-      expect(mockedFetcher.fetch).toHaveBeenCalledTimes(1);
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
     });
 
     it("Should parse valid JSON-LD to correct quads", async () => {

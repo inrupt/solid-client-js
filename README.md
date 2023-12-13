@@ -29,7 +29,7 @@ Pods.
 [@inrupt/solid-client-authn-browser](https://www.npmjs.com/package/@inrupt/solid-client-authn-browser)
 allows apps running in a browser to authenticate against a Solid server. This is
 only necessary if you wish to access private resources in a Pod (to access
-public resources you could simply use standard `window.fetch()`).
+public resources you could simply use standard `fetch()`).
 
 ## Vocabularies and interoperability
 

@@ -27,11 +27,7 @@ import type {
 } from "..";
 import { asIri, getIriAll, getSolidDataset, getThing, getThingAll } from "..";
 import { foaf, pim, rdfs } from "../constants";
-import {
-  getSourceIri,
-  internal_defaultFetchOptions,
-} from "../resource/resource";
-import { fetch as defaultFetch } from "../fetcher";
+import { getSourceIri } from "../resource/resource";
 
 export type ProfileAll<T extends SolidDataset & WithServerResourceInfo> = {
   webIdProfile: T;
@@ -91,37 +87,29 @@ export async function getProfileAll<
   T extends SolidDataset & WithServerResourceInfo,
 >(
   webId: WebId,
-  options?: Partial<
-    typeof internal_defaultFetchOptions & {
-      webIdProfile: T;
-    }
-  >,
+  options?: {
+    fetch?: typeof fetch;
+    webIdProfile?: T;
+  },
 ): Promise<ProfileAll<T>>;
 export async function getProfileAll(
   webId: WebId,
-  options?: Partial<
-    typeof internal_defaultFetchOptions & {
-      webIdProfile: undefined;
-    }
-  >,
+  options?: { fetch?: typeof fetch; webIdProfile: undefined },
 ): Promise<ProfileAll<SolidDataset & WithServerResourceInfo>>;
 export async function getProfileAll<
   T extends SolidDataset & WithServerResourceInfo,
 >(
   webId: WebId,
-  options: Partial<
-    typeof internal_defaultFetchOptions & {
-      webIdProfile: T;
-    }
-  > = internal_defaultFetchOptions,
+  options?: {
+    fetch?: typeof fetch;
+    webIdProfile?: T;
+  },
 ): Promise<ProfileAll<T | (SolidDataset & WithServerResourceInfo)>> {
-  const authFetch = options.fetch ?? defaultFetch;
+  const authFetch = options?.fetch ?? fetch;
   const webIdProfile =
-    options.webIdProfile ??
-    (await getSolidDataset(webId, {
-      // This should always use an unauthenticated fetch.
-      fetch: defaultFetch,
-    }));
+    options?.webIdProfile ??
+    // This should always use an unauthenticated fetch.
+    (await getSolidDataset(webId));
   const altProfileAll = (
     await Promise.allSettled(
       getAltProfileUrlAllFrom(webId, webIdProfile).map((uniqueProfileIri) =>
@@ -159,9 +147,7 @@ export async function getProfileAll<
  */
 export async function getPodUrlAll(
   webId: WebId,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<UrlString[]> {
   const profiles = await getProfileAll(webId, options);
   return getPodUrlAllFrom(profiles, webId);
@@ -216,5 +202,5 @@ export function getPodUrlAllFrom(
 export async function getWebIdDataset(
   webId: WebId,
 ): Promise<ReturnType<typeof getSolidDataset>> {
-  return getSolidDataset(webId, { fetch: defaultFetch });
+  return getSolidDataset(webId);
 }

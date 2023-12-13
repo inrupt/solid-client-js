@@ -37,11 +37,7 @@ import type {
 import { setThing } from "../thing/thing";
 import { removeAll } from "../thing/remove";
 import { setIri } from "../thing/set";
-import {
-  getResourceInfo,
-  getSourceUrl,
-  internal_defaultFetchOptions,
-} from "../resource/resource";
+import { getResourceInfo, getSourceUrl } from "../resource/resource";
 import { getFile } from "../resource/file";
 import { internal_cloneResource } from "../resource/resource.internal";
 import {
@@ -118,9 +114,7 @@ export function hasResourceAcl<
  */
 export async function getSolidDatasetWithAcl(
   url: UrlString | Url,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<SolidDataset & WithServerResourceInfo & WithAcl> {
   const solidDataset = await getSolidDataset(url, options);
   const acl = await internal_fetchAcl(solidDataset, options);
@@ -153,9 +147,7 @@ export async function getSolidDatasetWithAcl(
  */
 export async function getFileWithAcl(
   input: Url | UrlString,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<File & WithServerResourceInfo & WithAcl> {
   const file = await getFile(input, options);
   const acl = await internal_fetchAcl(file, options);
@@ -181,9 +173,7 @@ export async function getFileWithAcl(
  */
 export async function getResourceInfoWithAcl(
   url: UrlString,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<WithServerResourceInfo & WithAcl> {
   const resourceInfo = await getResourceInfo(url, options);
   const acl = await internal_fetchAcl(resourceInfo, options);
@@ -350,9 +340,7 @@ export function createAclFromFallbackAcl(
 export async function saveAclFor(
   resource: WithAccessibleAcl,
   resourceAcl: SolidDataset,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<AclDataset & WithResourceInfo> {
   if (!hasAccessibleAcl(resource)) {
     throw new Error(
@@ -391,18 +379,14 @@ export async function deleteAclFor<
   Resource extends WithResourceInfo & WithAccessibleAcl,
 >(
   resource: Resource,
-  options: Partial<
-    typeof internal_defaultFetchOptions
-  > = internal_defaultFetchOptions,
+  options?: { fetch?: typeof fetch },
 ): Promise<Resource & { acl: { resourceAcl: null } }> {
-  const config = {
-    ...internal_defaultFetchOptions,
-    ...options,
-  };
-
-  const response = await config.fetch(resource.internal_resourceInfo.aclUrl, {
-    method: "DELETE",
-  });
+  const response = await (options?.fetch ?? fetch)(
+    resource.internal_resourceInfo.aclUrl,
+    {
+      method: "DELETE",
+    },
+  );
 
   if (!response.ok) {
     throw new Error(

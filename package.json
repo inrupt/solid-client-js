@@ -203,7 +203,6 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
-    "@inrupt/universal-fetch": "^1.0.1",
     "@rdfjs/dataset": "^1.1.0",
     "@types/rdfjs__dataset": "^1.0.4",
     "buffer": "^6.0.3",

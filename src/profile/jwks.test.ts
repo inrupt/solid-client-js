@@ -20,7 +20,6 @@
 //
 
 import { describe, it, jest, expect } from "@jest/globals";
-import { Response } from "@inrupt/universal-fetch";
 import { rdf, security } from "../constants";
 import { mockSolidDatasetFrom } from "../resource/mock";
 import { buildThing } from "../thing/build";
@@ -33,6 +32,13 @@ import {
   getProfileJwksIri,
   setProfileJwks,
 } from "./jwks";
+
+jest.spyOn(globalThis, "fetch").mockImplementation(
+  async () =>
+    new Response(JSON.stringify({ keys: [] }), {
+      headers: { Location: "https://arbitrary.pod/resource" },
+    }),
+);
 
 jest.mock("../resource/solidDataset", () => {
   const actualResourceModule = jest.requireActual(
@@ -52,16 +58,6 @@ jest.mock("../resource/file", () => {
     getFile: jest.fn(),
   };
 });
-
-jest.mock("../fetcher.ts", () => ({
-  fetch: jest.fn().mockImplementation(() =>
-    Promise.resolve(
-      new Response(JSON.stringify({ keys: [] }), {
-        headers: { Location: "https://arbitrary.pod/resource" },
-      }),
-    ),
-  ),
-}));
 
 describe("setProfileJwks", () => {
   it("overwrites an existing JWKS IRI value", () => {
@@ -118,16 +114,10 @@ describe("addJwkToJwks", () => {
   });
 
   it("uses the default fetch if none is provided", async () => {
-    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mocked<typeof fetch>;
-    };
-
     await addJwkToJwks({ kid: "..." }, "https://example.org/jwks");
 
-    expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
-      "https://example.org/jwks",
-    );
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith("https://example.org/jwks");
   });
 
   it("throws if the given IRI does not resolve to a JWKS", async () => {
@@ -173,12 +163,19 @@ describe("addPublicKeyToProfileJwks", () => {
     const mockedDatasetModule = jest.requireMock(
       "../resource/solidDataset",
     ) as any;
-    mockedDatasetModule.getSolidDataset.mockResolvedValueOnce(null);
+    mockedDatasetModule.getSolidDataset.mockResolvedValue(null);
 
     await expect(
       addPublicKeyToProfileJwks(
         { kid: "..." },
         "https://some.pod/resource#webId",
+      ),
+    ).rejects.toThrow(/profile document.*webId.*retrieved/);
+    await expect(
+      addPublicKeyToProfileJwks(
+        { kid: "..." },
+        "https://some.pod/resource#webId",
+        {},
       ),
     ).rejects.toThrow(/profile document.*webId.*retrieved/);
   });

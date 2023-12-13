@@ -20,8 +20,6 @@
 //
 
 import { jest, describe, it, expect } from "@jest/globals";
-
-import { Response } from "@inrupt/universal-fetch";
 import {
   getResourceInfo,
   getSourceIri,
@@ -44,28 +42,21 @@ import { SolidClientError } from "../interfaces";
 import { createSolidDataset } from "./solidDataset";
 import { mockResponse } from "../tests.internal";
 
-jest.mock("../fetcher.ts", () => ({
-  fetch: jest.fn().mockImplementation(() =>
-    Promise.resolve(
-      new Response(undefined, {
-        headers: { Location: "https://arbitrary.pod/resource" },
-      }),
-    ),
-  ),
-}));
+jest.spyOn(globalThis, "fetch").mockImplementation(
+  async () =>
+    new Response(undefined, {
+      headers: { Location: "https://arbitrary.pod/resource" },
+    }),
+);
 
 describe("getResourceInfo", () => {
   it("calls the included fetcher by default", async () => {
-    const mockedFetcher = jest.requireMock("../fetcher.ts") as {
-      fetch: jest.Mocked<typeof window.fetch>;
-    };
-
     await getResourceInfo("https://some.pod/resource");
 
-    expect(mockedFetcher.fetch.mock.calls).toHaveLength(1);
-    expect(mockedFetcher.fetch.mock.calls[0][0]).toBe(
-      "https://some.pod/resource",
-    );
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith("https://some.pod/resource", {
+      method: "HEAD",
+    });
   });
 
   it("uses the given fetcher if provided", async () => {
@@ -77,8 +68,11 @@ describe("getResourceInfo", () => {
       fetch: mockFetch,
     });
 
-    expect(mockFetch.mock.calls).toHaveLength(1);
-    expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
+    expect(fetch).toHaveBeenCalledTimes(0);
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    expect(mockFetch).toHaveBeenCalledWith("https://some.pod/resource", {
+      method: "HEAD",
+    });
   });
 
   it("keeps track of where the SolidDataset was fetched from", async () => {
@@ -101,22 +95,13 @@ describe("getResourceInfo", () => {
   });
 
   it("knows when the Resource contains a SolidDataset", async () => {
-    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
-      Promise.resolve(
-        mockResponse(
-          undefined,
-          {
-            headers: { "Content-Type": "text/turtle" },
-          },
-          "https://arbitrary.pod/resource",
-        ),
-      ),
-    );
-
     const solidDatasetInfo = await getResourceInfo(
       "https://arbitrary.pod/resource",
       {
-        fetch: mockFetch,
+        fetch: async () =>
+          new Response(undefined, {
+            headers: { "Content-Type": "text/turtle" },
+          }),
       },
     );
 
