@@ -57,10 +57,10 @@ if (
   );
 }
 
-const headers: Record<string, string>[] = [];
 if (
   typeof env.features?.APPLICATION_DEFINED_REQUEST_METADATA_HEADERS === "string"
 ) {
+  const headers: Record<string, string>[] = [];
   try {
     const rawHeaders = JSON.parse(
       env.features?.APPLICATION_DEFINED_REQUEST_METADATA_HEADERS,
@@ -76,190 +76,192 @@ if (
       `E2E_TEST_FEATURE_APPLICATION_DEFINED_REQUEST_METADATA_HEADERS is malformed: expected a JSON key:value map, found ${env.features?.APPLICATION_DEFINED_REQUEST_METADATA_HEADERS}`,
     );
   }
-}
-
-const customizeHeaders = (
-  customizedFetch: typeof fetch,
-  requestHeaders: Record<string, string>,
-  responseHeaders: (h: Headers) => void,
-) => {
-  return async (
-    info: Parameters<typeof fetch>[0],
-    init?: Parameters<typeof fetch>[1],
+  const customizeHeaders = (
+    customizedFetch: typeof fetch,
+    requestHeaders: Record<string, string>,
+    responseHeaders: (h: Headers) => void,
   ) => {
-    const response = await customizedFetch(info, {
-      ...init,
-      headers: {
-        ...init?.headers,
-        ...requestHeaders,
-      },
-    });
-    responseHeaders(response.headers);
-    return response;
-  };
-};
-
-describe.each(headers)(
-  "End-to-end application-defined request metadata: %s",
-  (returnedHeaders: Record<string, string>) => {
-    let session: Session;
-    let pod: string;
-    let profileUrl: string;
-
-    const requestHeaders = {
-      ...returnedHeaders,
-      "non-returned-header": "some-non-returned-value",
+    return async (
+      info: Parameters<typeof fetch>[0],
+      init?: Parameters<typeof fetch>[1],
+    ) => {
+      const response = await customizedFetch(info, {
+        ...init,
+        headers: {
+          ...init?.headers,
+          ...requestHeaders,
+        },
+      });
+      responseHeaders(response.headers);
+      return response;
     };
+  };
 
-    beforeAll(async () => {
-      session = await getAuthenticatedSession(env);
-      if (session.info.webId === undefined) {
-        throw new Error("Authentication of end-to-end test session failed");
-      }
-      pod = await getPodRoot(session);
-      profileUrl = session.info.webId;
-    });
+  // If these tests should be skipped, the table used by the .each is empty, which fails the test.
+  // The dummy header on the next line is therefore never actually used, but it prevents jest
+  // from complaining.
+  describe.each(headers)(
+    "End-to-end application-defined request metadata: %s",
+    (returnedHeaders: Record<string, string>) => {
+      let session: Session;
+      let pod: string;
+      let profileUrl: string;
 
-    afterAll(async () => {
-      await session.logout();
-    });
+      const requestHeaders = {
+        ...returnedHeaders,
+        "non-returned-header": "some-non-returned-value",
+      };
 
-    describe("authenticated", () => {
-      it("can read back predefined headers set by the client on a successful request", async () => {
-        let responseHeaders: Headers = new Headers();
-        const readHeaders = (headers: Headers) => {
-          responseHeaders = headers;
-        };
-        const spiedFetch = jest.spyOn(session, "fetch");
-        const customFetch = customizeHeaders(
-          session.fetch,
-          requestHeaders,
-          readHeaders,
-        );
-
-        await expect(
-          getSolidDataset(pod, { fetch: customFetch }),
-        ).resolves.not.toThrow();
-
-        expect(spiedFetch).toHaveBeenCalledWith(
-          expect.anything(),
-          expect.objectContaining({
-            headers: expect.objectContaining({
-              [Object.keys(returnedHeaders)[0]]:
-                Object.values(returnedHeaders)[0],
-              "non-returned-header": "some-non-returned-value",
-            }),
-          }),
-        );
-        expect(responseHeaders.get(Object.keys(returnedHeaders)[0])).toContain(
-          Object.values(returnedHeaders)[0],
-        );
-        expect(responseHeaders.get("non-returned-header")).toBeNull();
+      beforeAll(async () => {
+        session = await getAuthenticatedSession(env);
+        if (session.info.webId === undefined) {
+          throw new Error("Authentication of end-to-end test session failed");
+        }
+        pod = await getPodRoot(session);
+        profileUrl = session.info.webId;
       });
 
-      it("can read back predefined headers set by the client on a failed request", async () => {
-        let responseHeaders: Headers = new Headers();
-        const readHeaders = (headers: Headers) => {
-          responseHeaders = headers;
-        };
-        const spiedFetch = jest.spyOn(session, "fetch");
-        const customFetch = customizeHeaders(
-          session.fetch,
-          requestHeaders,
-          readHeaders,
-        );
-
-        // The response will be a 404
-        await expect(() =>
-          getSolidDataset(new URL("non-existing-resource", pod).href, {
-            fetch: customFetch,
-          }),
-        ).rejects.toThrow();
-
-        expect(spiedFetch).toHaveBeenCalledWith(
-          expect.anything(),
-          expect.objectContaining({
-            headers: expect.objectContaining({
-              [Object.keys(returnedHeaders)[0]]:
-                Object.values(returnedHeaders)[0],
-            }),
-          }),
-        );
-        expect(responseHeaders.get(Object.keys(returnedHeaders)[0])).toContain(
-          Object.values(returnedHeaders)[0],
-        );
-        expect(responseHeaders.get("non-returned-header")).toBeNull();
-      });
-    });
-
-    describe("unauthenticated", () => {
-      it("can read back predefined headers set by the client on a successful request", async () => {
-        let responseHeaders: Headers = new Headers();
-        const readHeaders = (headers: Headers) => {
-          responseHeaders = headers;
-        };
-        const spiedFetch = jest.spyOn(global, "fetch");
-        const customFetch = customizeHeaders(
-          fetch,
-          requestHeaders,
-          readHeaders,
-        );
-
-        // The response will be a 401
-        await expect(
-          getSolidDataset(profileUrl, {
-            fetch: customFetch,
-          }),
-        ).resolves.not.toThrow();
-
-        expect(spiedFetch).toHaveBeenCalledWith(
-          expect.anything(),
-          expect.objectContaining({
-            headers: expect.objectContaining({
-              [Object.keys(returnedHeaders)[0]]:
-                Object.values(returnedHeaders)[0],
-            }),
-          }),
-        );
-        expect(responseHeaders.get(Object.keys(returnedHeaders)[0])).toContain(
-          Object.values(returnedHeaders)[0],
-        );
-        expect(responseHeaders.get("non-returned-header")).toBeNull();
+      afterAll(async () => {
+        await session.logout();
       });
 
-      it("can read back predefined headers set by the client on a failed request", async () => {
-        let responseHeaders: Headers = new Headers();
-        const readHeaders = (headers: Headers) => {
-          responseHeaders = headers;
-        };
-        const spiedFetch = jest.spyOn(global, "fetch");
-        const customFetch = customizeHeaders(
-          fetch,
-          requestHeaders,
-          readHeaders,
-        );
+      describe("authenticated", () => {
+        it("can read back predefined headers set by the client on a successful request", async () => {
+          let responseHeaders: Headers = new Headers();
+          const readHeaders = (headers: Headers) => {
+            responseHeaders = headers;
+          };
+          const spiedFetch = jest.spyOn(session, "fetch");
+          const customFetch = customizeHeaders(
+            session.fetch,
+            requestHeaders,
+            readHeaders,
+          );
 
-        // The response will be a 401
-        await expect(() =>
-          getSolidDataset(new URL("non-existing-resource", pod).href, {
-            fetch: customFetch,
-          }),
-        ).rejects.toThrow();
+          await expect(
+            getSolidDataset(pod, { fetch: customFetch }),
+          ).resolves.not.toThrow();
 
-        expect(spiedFetch).toHaveBeenCalledWith(
-          expect.anything(),
-          expect.objectContaining({
-            headers: expect.objectContaining({
-              [Object.keys(returnedHeaders)[0]]:
-                Object.values(returnedHeaders)[0],
+          expect(spiedFetch).toHaveBeenCalledWith(
+            expect.anything(),
+            expect.objectContaining({
+              headers: expect.objectContaining({
+                [Object.keys(returnedHeaders)[0]]:
+                  Object.values(returnedHeaders)[0],
+                "non-returned-header": "some-non-returned-value",
+              }),
             }),
-          }),
-        );
-        expect(responseHeaders.get(Object.keys(returnedHeaders)[0])).toContain(
-          Object.values(returnedHeaders)[0],
-        );
-        expect(responseHeaders.get("non-returned-header")).toBeNull();
+          );
+          expect(
+            responseHeaders.get(Object.keys(returnedHeaders)[0]),
+          ).toContain(Object.values(returnedHeaders)[0]);
+          expect(responseHeaders.get("non-returned-header")).toBeNull();
+        });
+
+        it("can read back predefined headers set by the client on a failed request", async () => {
+          let responseHeaders: Headers = new Headers();
+          const readHeaders = (headers: Headers) => {
+            responseHeaders = headers;
+          };
+          const spiedFetch = jest.spyOn(session, "fetch");
+          const customFetch = customizeHeaders(
+            session.fetch,
+            requestHeaders,
+            readHeaders,
+          );
+
+          // The response will be a 404
+          await expect(() =>
+            getSolidDataset(new URL("non-existing-resource", pod).href, {
+              fetch: customFetch,
+            }),
+          ).rejects.toThrow();
+
+          expect(spiedFetch).toHaveBeenCalledWith(
+            expect.anything(),
+            expect.objectContaining({
+              headers: expect.objectContaining({
+                [Object.keys(returnedHeaders)[0]]:
+                  Object.values(returnedHeaders)[0],
+              }),
+            }),
+          );
+          expect(
+            responseHeaders.get(Object.keys(returnedHeaders)[0]),
+          ).toContain(Object.values(returnedHeaders)[0]);
+          expect(responseHeaders.get("non-returned-header")).toBeNull();
+        });
       });
-    });
-  },
-);
+
+      describe("unauthenticated", () => {
+        it("can read back predefined headers set by the client on a successful request", async () => {
+          let responseHeaders: Headers = new Headers();
+          const readHeaders = (headers: Headers) => {
+            responseHeaders = headers;
+          };
+          const spiedFetch = jest.spyOn(global, "fetch");
+          const customFetch = customizeHeaders(
+            fetch,
+            requestHeaders,
+            readHeaders,
+          );
+
+          // The response will be a 401
+          await expect(
+            getSolidDataset(profileUrl, {
+              fetch: customFetch,
+            }),
+          ).resolves.not.toThrow();
+
+          expect(spiedFetch).toHaveBeenCalledWith(
+            expect.anything(),
+            expect.objectContaining({
+              headers: expect.objectContaining({
+                [Object.keys(returnedHeaders)[0]]:
+                  Object.values(returnedHeaders)[0],
+              }),
+            }),
+          );
+          expect(
+            responseHeaders.get(Object.keys(returnedHeaders)[0]),
+          ).toContain(Object.values(returnedHeaders)[0]);
+          expect(responseHeaders.get("non-returned-header")).toBeNull();
+        });
+
+        it("can read back predefined headers set by the client on a failed request", async () => {
+          let responseHeaders: Headers = new Headers();
+          const readHeaders = (headers: Headers) => {
+            responseHeaders = headers;
+          };
+          const spiedFetch = jest.spyOn(global, "fetch");
+          const customFetch = customizeHeaders(
+            fetch,
+            requestHeaders,
+            readHeaders,
+          );
+
+          // The response will be a 401
+          await expect(() =>
+            getSolidDataset(new URL("non-existing-resource", pod).href, {
+              fetch: customFetch,
+            }),
+          ).rejects.toThrow();
+
+          expect(spiedFetch).toHaveBeenCalledWith(
+            expect.anything(),
+            expect.objectContaining({
+              headers: expect.objectContaining({
+                [Object.keys(returnedHeaders)[0]]:
+                  Object.values(returnedHeaders)[0],
+              }),
+            }),
+          );
+          expect(
+            responseHeaders.get(Object.keys(returnedHeaders)[0]),
+          ).toContain(Object.values(returnedHeaders)[0]);
+          expect(responseHeaders.get("non-returned-header")).toBeNull();
+        });
+      });
+    },
+  );
+}
