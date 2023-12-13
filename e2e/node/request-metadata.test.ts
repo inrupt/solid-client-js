@@ -40,13 +40,6 @@ import { getSolidDataset } from "../../src";
 const { Headers } = global;
 
 const env = getNodeTestingEnvironment();
-if (
-  env.features?.APPLICATION_DEFINED_REQUEST_METADATA === "false" ||
-  env.features?.APPLICATION_DEFINED_REQUEST_METADATA === ""
-) {
-  // eslint-disable-next-line jest/no-focused-tests, jest/expect-expect
-  test.only(`Skipping unsupported application-defined request metadata tests in ${env.environment}`, () => {});
-}
 
 if (
   env.features?.APPLICATION_DEFINED_REQUEST_METADATA === "true" &&
@@ -264,4 +257,8 @@ if (
       });
     },
   );
+} else {
+  // eslint-disable-next-line jest/expect-expect, jest/no-focused-tests
+  test.only(`Skipping unsupported application-defined request metadata tests in ${env.environment}`, () => {});
+
 }
