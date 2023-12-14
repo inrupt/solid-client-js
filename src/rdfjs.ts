@@ -39,15 +39,14 @@
 //      NamedNode instances for the 2nd param when we know we want a Datatype.
 
 import type * as RdfJs from "@rdfjs/types";
-import rdfjsDatasetModule from "@rdfjs/dataset";
+import { Store } from "n3";
 import type { ImmutableDataset } from "./rdf.internal";
 import {
   addRdfJsQuadToDataset,
   getChainBlankNodes,
   toRdfJsQuads,
 } from "./rdfjs.internal";
-
-const rdfJsDataset = rdfjsDatasetModule.dataset;
+import { Quad } from "@rdfjs/types";
 
 /**
  * Convert an RDF/JS Dataset into a [[SolidDataset]]
@@ -93,8 +92,6 @@ export function fromRdfJsDataset(
 
 export type ToRdfJsOptions = Partial<{
   dataFactory: RdfJs.DataFactory;
-  // We could consider making this a required parameter,
-  // so we can remove our dependency on @rdfjs/dataset:
   datasetFactory: RdfJs.DatasetCoreFactory;
 }>;
 /**
@@ -112,6 +109,6 @@ export function toRdfJsDataset(
   set: ImmutableDataset,
   options: ToRdfJsOptions = {},
 ): RdfJs.DatasetCore {
-  const datasetFactory = options.datasetFactory?.dataset ?? rdfJsDataset;
+  const datasetFactory = options.datasetFactory?.dataset ?? ((quads: Quad[]) => new Store(quads));
   return datasetFactory(toRdfJsQuads(set, options));
 }

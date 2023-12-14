@@ -34,7 +34,7 @@ import {
   test,
 } from "@jest/globals";
 
-import { blankNode } from "@rdfjs/dataset";
+import { DataFactory } from "n3";
 import type { Session } from "@inrupt/solid-client-authn-node";
 
 import {
@@ -64,6 +64,7 @@ import {
   deleteSolidDataset,
   getWellKnownSolid,
 } from "../../src/index";
+const { blankNode } = DataFactory;
 
 const env = getNodeTestingEnvironment();
 

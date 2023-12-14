@@ -19,14 +19,12 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-// @rdfjs/dataset is a CommonJS module, so named imports break in Node.
-// Thus, import the default export, then obtain the `dataset` property from there.
-import rdfJsDatasetModule from "@rdfjs/dataset";
+import { Store } from "n3";
 import type * as RdfJs from "@rdfjs/types";
 import type { IriString } from "./interfaces";
 import type { XmlSchemaTypeIri } from "./datatypes";
 
-export const rdfJsDataset = rdfJsDatasetModule.dataset;
+export const rdfJsDataset: RdfJs.DatasetCoreFactory<RdfJs.Quad>['dataset'] = (quads: RdfJs.Quad[]) => new Store(quads);
 
 export const localNodeSkolemPrefix =
   "https://inrupt.com/.well-known/sdk-local-node/" as const;

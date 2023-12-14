@@ -20,9 +20,8 @@
 //
 
 import { jest, describe, it, expect } from "@jest/globals";
-import { dataset } from "@rdfjs/dataset";
 import * as fc from "fast-check";
-import { DataFactory } from "n3";
+import { DataFactory, Store } from "n3";
 import type * as RdfJs from "@rdfjs/types";
 import {
   serializeBoolean,
@@ -34,6 +33,7 @@ import {
 import type { ImmutableDataset } from "./rdf.internal";
 import { addRdfJsQuadToDataset } from "./rdfjs.internal";
 import { fromRdfJsDataset, toRdfJsDataset } from "./rdfjs";
+import { Quad } from "@rdfjs/types";
 
 describe("fromRdfJsDataset", () => {
   const fcNamedNode = fc
@@ -121,7 +121,7 @@ describe("fromRdfJsDataset", () => {
           : quad.object;
       return DataFactory.quad(subject, quad.predicate, object, quad.graph);
     }
-    return dataset(quads.map(maybeReplaceBlankNodesInQuad));
+    return new Store(quads.map(maybeReplaceBlankNodesInQuad));
   });
 
   it("loses no data", () => {
@@ -214,7 +214,7 @@ describe("fromRdfJsDataset", () => {
       DataFactory.quad(blankNode2, predicate1, literalInteger, acrGraph),
       DataFactory.quad(blankNode2, predicate2, literalInteger, acrGraph),
     ];
-    const rdfJsDataset = dataset(quads);
+    const rdfJsDataset = new Store(quads);
 
     expect(fromRdfJsDataset(rdfJsDataset)).toStrictEqual({
       type: "Dataset",
@@ -300,7 +300,7 @@ describe("fromRdfJsDataset", () => {
     );
     const quad4 = DataFactory.quad(item2Node, rest, nil);
 
-    const rdfJsDataset = dataset([quad1, quad2, quad3, quad4]);
+    const rdfJsDataset = new Store([quad1, quad2, quad3, quad4]);
     const thereAndBackAgain = toRdfJsDataset(fromRdfJsDataset(rdfJsDataset));
     expect(thereAndBackAgain.size).toBe(4);
     expect(
@@ -335,7 +335,7 @@ describe("fromRdfJsDataset", () => {
       DataFactory.quad(blankNode3, predicate3, blankNode4, acrGraph),
       DataFactory.quad(blankNode4, predicate2, literalString, acrGraph),
     ];
-    const rdfJsDataset = dataset(quads);
+    const rdfJsDataset = new Store(quads);
     const thereAndBackAgain = toRdfJsDataset(fromRdfJsDataset(rdfJsDataset));
     expect(thereAndBackAgain.size).toBe(rdfJsDataset.size);
   });
@@ -354,7 +354,7 @@ describe("fromRdfJsDataset", () => {
       DataFactory.quad(blankNode3, predicate, blankNode1),
       DataFactory.quad(blankNode2, predicate, literalString),
     ];
-    const rdfJsDataset = dataset(quads);
+    const rdfJsDataset = new Store(quads);
     const thereAndBackAgain = toRdfJsDataset(fromRdfJsDataset(rdfJsDataset));
     expect(thereAndBackAgain.size).toBe(rdfJsDataset.size);
   });
@@ -370,7 +370,7 @@ describe("fromRdfJsDataset", () => {
       DataFactory.quad(blankNode2, predicate, literalString),
       DataFactory.quad(blankNode3, predicate, blankNode2),
     ];
-    const rdfJsDataset = dataset(quads);
+    const rdfJsDataset = new Store(quads);
     const thereAndBackAgain = toRdfJsDataset(fromRdfJsDataset(rdfJsDataset));
     expect(thereAndBackAgain.size).toBe(rdfJsDataset.size);
   });
@@ -387,7 +387,7 @@ describe("fromRdfJsDataset", () => {
       DataFactory.quad(blankNode3, predicate, blankNode1),
       DataFactory.quad(blankNode2, predicate, literalString),
     ];
-    const rdfJsDataset = dataset(quads);
+    const rdfJsDataset = new Store(quads);
     const thereAndBackAgain = toRdfJsDataset(fromRdfJsDataset(rdfJsDataset));
     expect(thereAndBackAgain.size).toBe(rdfJsDataset.size);
   });
@@ -835,7 +835,7 @@ describe("toRdfJsDataset", () => {
       defaultGraph: jest.fn(DataFactory.defaultGraph),
     } as RdfJs.DataFactory;
     const customDatasetFactory = {
-      dataset: jest.fn(dataset),
+      dataset: jest.fn((quads: Quad[]) => new Store(quads)),
     } as RdfJs.DatasetCoreFactory;
     const sourceDataset: ImmutableDataset = {
       type: "Dataset",

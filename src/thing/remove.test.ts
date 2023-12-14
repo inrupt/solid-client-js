@@ -21,8 +21,7 @@
 
 import { describe, it, expect } from "@jest/globals";
 
-import { dataset } from "@rdfjs/dataset";
-import { DataFactory } from "n3";
+import { DataFactory, Store } from "n3";
 import type {
   IriString,
   Thing,
@@ -2798,7 +2797,7 @@ describe("removeLiteral", () => {
       DataFactory.namedNode("https://some.vocab/predicate"),
       DataFactory.literal("Some arbitrary string", "en-US"),
     );
-    const thing = dataset();
+    const thing = new Store();
     thing.add(quad);
 
     const thingWithStringWithLocale: Thing = {

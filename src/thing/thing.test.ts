@@ -21,8 +21,7 @@
 
 import { describe, it, expect } from "@jest/globals";
 
-import { DataFactory } from "n3";
-import { dataset } from "@rdfjs/dataset";
+import { DataFactory, Store } from "n3";
 import {
   getThing,
   getThingAll,
@@ -112,7 +111,7 @@ describe("isThing", () => {
   });
 
   it("returns false for a plain RDF/JS Dataset", () => {
-    expect(isThing(dataset())).toBe(false);
+    expect(isThing(new Store())).toBe(false);
   });
 
   it("returns false for a SolidDataset", () => {
