@@ -37,8 +37,6 @@ import {
 } from "@inrupt/internal-test-env";
 import { getSolidDataset } from "../../src";
 
-const { Headers } = global;
-
 const env = getNodeTestingEnvironment();
 
 if (
@@ -192,7 +190,7 @@ if (
           const readHeaders = (headers: Headers) => {
             responseHeaders = headers;
           };
-          const spiedFetch = jest.spyOn(global, "fetch");
+          const spiedFetch = jest.spyOn(globalThis, "fetch");
           const customFetch = customizeHeaders(
             fetch,
             requestHeaders,
@@ -226,7 +224,7 @@ if (
           const readHeaders = (headers: Headers) => {
             responseHeaders = headers;
           };
-          const spiedFetch = jest.spyOn(global, "fetch");
+          const spiedFetch = jest.spyOn(globalThis, "fetch");
           const customFetch = customizeHeaders(
             fetch,
             requestHeaders,
