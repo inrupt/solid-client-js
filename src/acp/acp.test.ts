@@ -38,7 +38,7 @@ import {
   getVcAccess,
   setVcAccess,
 } from "./acp";
-import type { UrlString, WithServerResourceInfo, File } from "../interfaces";
+import type { UrlString, WithServerResourceInfo } from "../interfaces";
 import { createThing, setThing } from "../thing/thing";
 import { addIri } from "../thing/add";
 import type { AccessControlResource } from "./control";
@@ -279,7 +279,7 @@ describe("getFileWithAcr", () => {
 
   it("attaches the fetched ACR to the returned File", async () => {
     const mockedFile: File & WithServerResourceInfo = Object.assign(
-      new Blob(),
+      new File([], ''),
       {
         internal_resourceInfo: {
           sourceIri: "https://some.pod/resource",
@@ -641,7 +641,7 @@ describe("getFileWithAccessDatasets", () => {
   });
 
   it("fetches the ACL when the File at the given URL exposes one", async () => {
-    const mockFile = Object.assign(new Blob(), {
+    const mockFile = Object.assign(new File([], ''), {
       internal_resourceInfo: {
         aclUrl: "https://some.pod/resource.acl",
         linkedResources: { acl: ["https://some.pod/resource.acl"] },
@@ -667,7 +667,7 @@ describe("getFileWithAccessDatasets", () => {
   });
 
   it("fetches the ACR when the File at the given URL exposes one", async () => {
-    const mockFile = Object.assign(new Blob(), {
+    const mockFile = Object.assign(new File([], 'resource'), {
       internal_resourceInfo: {
         linkedResources: {
           [acp.accessControl]: ["https://some.pod/resource?ext=acr"],
@@ -693,7 +693,7 @@ describe("getFileWithAccessDatasets", () => {
   });
 
   it("does not fetch any Access Dataset if none is exposed", async () => {
-    const mockFile = Object.assign(new Blob(), {
+    const mockFile = Object.assign(new File([], ''), {
       internal_resourceInfo: {
         linkedResources: {},
         sourceIri: "https://arbitrary.pod/resource",
@@ -713,7 +713,7 @@ describe("getFileWithAccessDatasets", () => {
   });
 
   it("passes on the given fetcher to the Resource and ACL fetcher", async () => {
-    const mockFile = Object.assign(new Blob(), {
+    const mockFile = Object.assign(new File([], ''), {
       internal_resourceInfo: {
         aclUrl: "https://some.pod/resource.acl",
         linkedResources: { acl: ["https://some.pod/resource.acl"] },
@@ -748,7 +748,7 @@ describe("getFileWithAccessDatasets", () => {
   });
 
   it("passes on the given fetcher to the Resource and ACR fetcher", async () => {
-    const mockFile = Object.assign(new Blob(), {
+    const mockFile = Object.assign(new File([], 'resource'), {
       internal_resourceInfo: {
         linkedResources: {
           [acp.accessControl]: ["https://some.pod/resource?ext=acr"],

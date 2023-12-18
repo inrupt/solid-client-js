@@ -606,7 +606,7 @@ describe("getContentType", () => {
 
 describe("getSourceIri", () => {
   it("returns the source IRI if known", () => {
-    const withResourceInfo: WithResourceInfo = Object.assign(new Blob(), {
+    const withResourceInfo: WithResourceInfo = Object.assign(new File([], ''), {
       internal_resourceInfo: {
         sourceIri: "https://arbitrary.pod/resource",
         isRawData: true,
@@ -618,7 +618,7 @@ describe("getSourceIri", () => {
   });
 
   it("returns null if no source IRI is known", () => {
-    expect(getSourceIri(new Blob())).toBeNull();
+    expect(getSourceIri(new File([], ''))).toBeNull();
   });
 });
 

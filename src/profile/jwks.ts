@@ -170,7 +170,7 @@ export async function addPublicKeyToProfileJwks(
 
   const updatedJwks = await addJwkToJwks(publicKey, jwksIri, options);
 
-  return overwriteFile(jwksIri, new Blob([JSON.stringify(updatedJwks)]), {
+  return overwriteFile(jwksIri, new File([JSON.stringify(updatedJwks)], jwksIri.slice(jwksIri.lastIndexOf('/') + 1)), {
     contentType: "application/json",
     fetch: options.fetch,
   });

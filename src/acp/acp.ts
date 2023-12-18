@@ -22,7 +22,6 @@
 import { acp } from "../constants";
 import type {
   SolidDataset,
-  File,
   Url,
   UrlString,
   WithServerResourceInfo,

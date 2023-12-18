@@ -27,7 +27,6 @@ import {
 } from "../resource/solidDataset";
 import type {
   WithResourceInfo,
-  File,
   WithServerResourceInfo,
   UrlString,
   Url,

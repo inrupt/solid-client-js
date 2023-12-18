@@ -22,7 +22,6 @@ import type {
   Url,
   UrlString,
   SolidDataset,
-  File,
   WithServerResourceInfo,
 } from "../interfaces";
 import { internal_toIriString } from "../interfaces.internal";
@@ -108,7 +107,7 @@ export function mockFileFrom(
     contentType: WithServerResourceInfo["internal_resourceInfo"]["contentType"];
   }>,
 ): Unpromisify<ReturnType<typeof getFile>> {
-  const file = new Blob();
+  const file = new File([], 'name.txt');
   const fileWithResourceInfo: File & WithServerResourceInfo = Object.assign(
     file,
     {

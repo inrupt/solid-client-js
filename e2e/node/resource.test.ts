@@ -20,11 +20,6 @@
 //
 
 import {
-  Buffer as NodeBuffer,
-  File as NodeFile,
-  Blob as NodeBlob,
-} from "buffer";
-import {
   jest,
   afterEach,
   beforeEach,
@@ -149,7 +144,7 @@ describe("Authenticated end-to-end", () => {
 
     const sessionFile = await overwriteFile(
       fileUrl,
-      Buffer.from("test"),
+      new File([new Blob(["test"])], fileUrl.slice(fileUrl.lastIndexOf('/') + 1)),
       fetchOptions,
     );
     const sessionDataset = await getSolidDataset(sessionResource, fetchOptions);
@@ -159,135 +154,6 @@ describe("Authenticated end-to-end", () => {
 
     await deleteFile(fileUrl, fetchOptions);
   });
-
-  it("can create, delete, and differentiate between RDF and non-RDF Resources using a node Buffer", async () => {
-    const fileUrl = `${sessionResource}.txt`;
-
-    const sessionFile = await overwriteFile(
-      fileUrl,
-      NodeBuffer.from("test"),
-      fetchOptions,
-    );
-    const sessionDataset = await getSolidDataset(sessionResource, fetchOptions);
-
-    expect(isRawData(sessionDataset)).toBe(false);
-    expect(isRawData(sessionFile)).toBe(true);
-
-    await deleteFile(fileUrl, fetchOptions);
-  });
-
-  it("can create, delete, and differentiate between RDF and non-RDF Resources using a Blob from the node Buffer package", async () => {
-    const fileUrl = `${sessionResource}.txt`;
-
-    const sessionFile = await overwriteFile(
-      fileUrl,
-      // We need to type cast because the buffer definition
-      // of Blob does not have the prototype property expected
-      // by the lib.dom.ts
-      new NodeBlob(["test"], {
-        type: "text/plain",
-      }) as unknown as globalThis.Blob,
-      fetchOptions,
-    );
-    const sessionDataset = await getSolidDataset(sessionResource, fetchOptions);
-
-    expect(isRawData(sessionDataset)).toBe(false);
-    expect(isRawData(sessionFile)).toBe(true);
-
-    await deleteFile(fileUrl, fetchOptions);
-  });
-
-  // Blob is only available globally Node 18 and above
-  (nodeMajor > 18 ? it : it.skip)(
-    "can create, delete, and differentiate between RDF and non-RDF Resources using a Blob",
-    async () => {
-      const fileUrl = `${sessionResource}.txt`;
-
-      const sessionFile = await overwriteFile(
-        fileUrl,
-        // We need to type cast because the buffer definition
-        // of Blob does not have the prototype property expected
-        // by the lib.dom.ts
-        new Blob(["test"], {
-          type: "text/plain",
-        }),
-        fetchOptions,
-      );
-      const sessionDataset = await getSolidDataset(
-        sessionResource,
-        fetchOptions,
-      );
-
-      // Eslint isn't detecting the fact that this is inside an it statement
-      // because of the conditional.
-      // eslint-disable-next-line jest/no-standalone-expect
-      expect(isRawData(sessionDataset)).toBe(false);
-      // eslint-disable-next-line jest/no-standalone-expect
-      expect(isRawData(sessionFile)).toBe(true);
-
-      await deleteFile(fileUrl, fetchOptions);
-    },
-  );
-
-  // Cannot use file constructor in Node 18 and below
-  (nodeMajor > 18 ? it : it.skip)(
-    "can create, delete, and differentiate between RDF and non-RDF Resources using a File",
-    async () => {
-      const fileUrl = `${sessionResource}.txt`;
-
-      const sessionFile = await overwriteFile(
-        fileUrl,
-        // We need to type cast because the buffer definition
-        // of Blob does not have the prototype property expected
-        // by the lib.dom.ts
-        new File(["test"], fileUrl, { type: "text/plain" }),
-        fetchOptions,
-      );
-      const sessionDataset = await getSolidDataset(
-        sessionResource,
-        fetchOptions,
-      );
-
-      // Eslint isn't detecting the fact that this is inside an it statement
-      // because of the conditional.
-      // eslint-disable-next-line jest/no-standalone-expect
-      expect(isRawData(sessionDataset)).toBe(false);
-      // eslint-disable-next-line jest/no-standalone-expect
-      expect(isRawData(sessionFile)).toBe(true);
-
-      await deleteFile(fileUrl, fetchOptions);
-    },
-  );
-
-  // Cannot use node file constructor in Node 16 and below (https://github.com/feross/buffer/issues/325)
-  (nodeMajor > 16 ? it : it.skip)(
-    "can create, delete, and differentiate between RDF and non-RDF Resources using a File from the node Buffer package",
-    async () => {
-      const fileUrl = `${sessionResource}.txt`;
-
-      const sessionFile = await overwriteFile(
-        fileUrl,
-        // We need to type cast because the buffer definition
-        // of Blob does not have the prototype property expected
-        // by the lib.dom.ts
-        new NodeFile(["test"], fileUrl, { type: "text/plain" }),
-        fetchOptions,
-      );
-      const sessionDataset = await getSolidDataset(
-        sessionResource,
-        fetchOptions,
-      );
-
-      // Eslint isn't detecting the fact that this is inside an it statement
-      // because of the conditional.
-      // eslint-disable-next-line jest/no-standalone-expect
-      expect(isRawData(sessionDataset)).toBe(false);
-      // eslint-disable-next-line jest/no-standalone-expect
-      expect(isRawData(sessionFile)).toBe(true);
-
-      await deleteFile(fileUrl, fetchOptions);
-    },
-  );
 
   it("can create and remove Containers", async () => {
     const containerUrl = `${pod}solid-client-tests/node/container-test/container1-${session.info.sessionId}/`;
@@ -365,17 +231,16 @@ describe("Authenticated end-to-end", () => {
   it("can customize the fetch to get and set HTTP headers", async () => {
     let headers: Headers = new Headers();
     const customFetch: typeof fetch = async (
-      info: Parameters<typeof fetch>[0],
-      init?: Parameters<typeof fetch>[1],
+      ...args
     ) => {
-      const response = await fetchOptions.fetch(info, {
-        ...init,
+      const response = await fetchOptions.fetch(args[0], {
+        ...args[1],
         headers: {
-          ...init?.headers,
+          ...args[1]?.headers,
           "User-Agent": "some-user-agent",
         },
       });
-      if (info.toString() === sessionResource) {
+      if (args[0].toString() === sessionResource) {
         headers = response.headers;
       }
       return response;

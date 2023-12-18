@@ -233,7 +233,7 @@ describe("addPublicKeyToProfileJwks", () => {
 
     // check public key matches
     expect(savedJwks).toEqual(
-      new Blob([JSON.stringify({ keys: [{ kid: "..." }] })]),
+      new File([JSON.stringify({ keys: [{ kid: "..." }] })], 'resource'),
     );
   });
 

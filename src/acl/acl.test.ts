@@ -929,7 +929,7 @@ describe("getFileWithAcl", () => {
     expect(file.internal_resourceInfo.contentType).toContain("text/plain");
     expect(file.internal_resourceInfo.isRawData).toBe(true);
 
-    const fileData = await file.text();
+    const fileData = await file.toString();
     expect(fileData).toBe("Some data");
   });
 
