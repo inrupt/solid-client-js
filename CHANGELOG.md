@@ -20,6 +20,7 @@ The following changes have been implemented but not released yet:
 
 - Use the global `fetch` function instead of `@inrupt/universal-fetch`. This means this library now only works
   with Node 18 and higher.
+- Due to changes in the rollup config the `umd` output is now found at `dist/index.umd.js` rather than `umd/index.js`.
 
 ## [1.30.2] - 2023-09-26
 

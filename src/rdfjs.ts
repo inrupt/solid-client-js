@@ -34,20 +34,17 @@
 //      considers the value a language tag. If and only if the 2nd param is
 //      explicitly passed in as a NamedNode will it be treated as a Datatype
 //      IRI.
-//       Therefore, for consistency across RDF/JS Implementations, our library
-//      needs to be explicit, and to always call 'DataFactory.literal()' with
-//      NamedNode instances for the 2nd param when we know we want a Datatype.
-
-import type * as RdfJs from "@rdfjs/types";
-import rdfjsDatasetModule from "@rdfjs/dataset";
-import type { ImmutableDataset } from "./rdf.internal";
+import type {
+  DataFactory,
+  DatasetCore,
+  DatasetCoreFactory,
+} from "@rdfjs/types";
+import { rdfJsDataset, type ImmutableDataset } from "./rdf.internal";
 import {
   addRdfJsQuadToDataset,
   getChainBlankNodes,
   toRdfJsQuads,
 } from "./rdfjs.internal";
-
-const rdfJsDataset = rdfjsDatasetModule.dataset;
 
 /**
  * Convert an RDF/JS Dataset into a [[SolidDataset]]
@@ -61,9 +58,7 @@ const rdfJsDataset = rdfjsDatasetModule.dataset;
  * @returns A [[SolidDataset]] containing the same data as the given RDF/JS Dataset.
  * @since 1.9.0
  */
-export function fromRdfJsDataset(
-  rdfJsDataset: RdfJs.DatasetCore,
-): ImmutableDataset {
+export function fromRdfJsDataset(rdfJsDataset: DatasetCore): ImmutableDataset {
   const dataset: ImmutableDataset = {
     graphs: { default: {} },
     type: "Dataset",
@@ -92,10 +87,8 @@ export function fromRdfJsDataset(
 }
 
 export type ToRdfJsOptions = Partial<{
-  dataFactory: RdfJs.DataFactory;
-  // We could consider making this a required parameter,
-  // so we can remove our dependency on @rdfjs/dataset:
-  datasetFactory: RdfJs.DatasetCoreFactory;
+  dataFactory: DataFactory;
+  datasetFactory: DatasetCoreFactory;
 }>;
 /**
  * Convert a [[SolidDataset]] into an RDF/JS Dataset
@@ -111,7 +104,7 @@ export type ToRdfJsOptions = Partial<{
 export function toRdfJsDataset(
   set: ImmutableDataset,
   options: ToRdfJsOptions = {},
-): RdfJs.DatasetCore {
+): DatasetCore {
   const datasetFactory = options.datasetFactory?.dataset ?? rdfJsDataset;
   return datasetFactory(toRdfJsQuads(set, options));
 }

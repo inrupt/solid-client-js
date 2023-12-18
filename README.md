@@ -103,7 +103,7 @@ and `String.prototype.endsWith`.
 ## Node.js Support
 
 Our JavaScript Client Libraries track Node.js [LTS
-releases](https://nodejs.org/en/about/releases/), and support 16.x, 18.x and 20.x.
+releases](https://nodejs.org/en/about/releases/), and support 18.x and 20.x.
 
 # Installation
 
