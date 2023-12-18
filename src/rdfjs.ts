@@ -34,14 +34,12 @@
 //      considers the value a language tag. If and only if the 2nd param is
 //      explicitly passed in as a NamedNode will it be treated as a Datatype
 //      IRI.
-import { Store } from "n3";
 import type {
   DataFactory,
   DatasetCore,
-  DatasetCoreFactory,
-  Quad,
+  DatasetCoreFactory
 } from "@rdfjs/types";
-import type { ImmutableDataset } from "./rdf.internal";
+import { rdfJsDataset, type ImmutableDataset } from "./rdf.internal";
 import {
   addRdfJsQuadToDataset,
   getChainBlankNodes,
@@ -107,7 +105,6 @@ export function toRdfJsDataset(
   set: ImmutableDataset,
   options: ToRdfJsOptions = {},
 ): DatasetCore {
-  const datasetFactory =
-    options.datasetFactory?.dataset ?? ((quads: Quad[]) => new Store(quads));
+  const datasetFactory = options.datasetFactory?.dataset ?? rdfJsDataset;
   return datasetFactory(toRdfJsQuads(set, options));
 }
