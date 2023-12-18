@@ -13,3 +13,4 @@ next.config.js
 # with the following files
 e2e/bundle/*.js
 e2e/bundle/dist/*.js
+e2e/browser/test-app

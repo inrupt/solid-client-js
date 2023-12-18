@@ -37,7 +37,7 @@
 import type {
   DataFactory,
   DatasetCore,
-  DatasetCoreFactory
+  DatasetCoreFactory,
 } from "@rdfjs/types";
 import { rdfJsDataset, type ImmutableDataset } from "./rdf.internal";
 import {
