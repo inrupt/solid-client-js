@@ -19,9 +19,7 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import type { Buffer, File as NodeFile } from "buffer";
 import type {
-  File,
   UploadRequestInit,
   WithResourceInfo,
   Url,
@@ -91,8 +89,11 @@ export async function getFile(
       response,
     );
   }
+
   const resourceInfo = internal_parseResourceInfo(response);
-  const data = await response.blob();
+  const data = new File([await response.blob()], response.url.slice(response.url.lastIndexOf('/') + 1), {
+    
+  });
   const fileWithResourceInfo: File & WithServerResourceInfo = Object.assign(
     data,
     {
@@ -200,24 +201,7 @@ type SaveFileOptions = WriteFileOptions & {
  * @param options Additional parameters for file creation (e.g. a slug).
  * @returns A Promise that resolves to the saved file, if available, or `null` if the current user does not have Read access to the newly-saved file. It rejects if saving fails.
  */
-export async function saveFileInContainer<FileExt extends File | NodeFile>(
-  folderUrl: Url | UrlString,
-  file: FileExt,
-  options?: Partial<SaveFileOptions>,
-): Promise<FileExt & WithResourceInfo>;
-/**
- * @deprecated `saveFileInContainer` should only have `File` input
- */
-export async function saveFileInContainer<
-  FileExt extends File | NodeFile | Buffer,
->(
-  folderUrl: Url | UrlString,
-  file: FileExt,
-  options?: Partial<SaveFileOptions>,
-): Promise<FileExt & WithResourceInfo>;
-export async function saveFileInContainer<
-  FileExt extends File | NodeFile | Buffer,
->(
+export async function saveFileInContainer<FileExt extends File>(
   folderUrl: Url | UrlString,
   file: FileExt,
   options?: Partial<SaveFileOptions>,
@@ -304,23 +288,10 @@ export type WriteFileOptions = GetFileOptions & {
  * @param file The file to be written.
  * @param options Additional parameters for file creation (e.g., media type).
  */
-export async function overwriteFile<FileExt extends File | NodeFile>(
+export async function overwriteFile<FileExt extends File>(
   fileUrl: Url | UrlString,
   file: FileExt,
-  options?: Partial<WriteFileOptions>,
-): Promise<FileExt & WithResourceInfo>;
-/**
- * @deprecated `overwriteFile` should only have `File` input
- */
-export async function overwriteFile<FileExt extends File | NodeFile | Buffer>(
-  fileUrl: Url | UrlString,
-  file: FileExt,
-  options?: Partial<WriteFileOptions>,
-): Promise<FileExt & WithResourceInfo>;
-export async function overwriteFile<FileExt extends File | NodeFile | Buffer>(
-  fileUrl: Url | UrlString,
-  file: FileExt,
-  options?: Partial<WriteFileOptions>,
+  options: Partial<WriteFileOptions> = {},
 ): Promise<FileExt & WithResourceInfo> {
   const fileUrlString = internal_toIriString(fileUrl);
   const response = await writeFile(fileUrlString, file, "PUT", options);
@@ -405,22 +376,7 @@ export function flattenHeaders(
  * @param method The HTTP method
  * @param options Additional parameters for file creation (e.g. a slug, or media type)
  */
-async function writeFile<T extends File | NodeFile>(
-  targetUrl: UrlString,
-  file: T,
-  method: "PUT" | "POST",
-  options?: Partial<SaveFileOptions>,
-): Promise<Response>;
-/**
- * @deprecated `writeFile` should only have `File` input
- */
-async function writeFile<T extends File | NodeFile | Buffer>(
-  targetUrl: UrlString,
-  file: T,
-  method: "PUT" | "POST",
-  options?: Partial<SaveFileOptions>,
-): Promise<Response>;
-async function writeFile<T extends File | NodeFile | Buffer>(
+async function writeFile<T extends File>(
   targetUrl: UrlString,
   file: T,
   method: "PUT" | "POST",
@@ -437,7 +393,7 @@ async function writeFile<T extends File | NodeFile | Buffer>(
 
   // If a slug is in the parameters, set the request headers accordingly
   if (options.slug !== undefined) {
-    headers.Slug = options.slug;
+    headers.Slug = options.slug ?? file.name;
   }
   headers["Content-Type"] = getContentType(file, options.contentType);
 
@@ -452,20 +408,11 @@ async function writeFile<T extends File | NodeFile | Buffer>(
 }
 
 function getContentType(
-  file: File | NodeFile | Buffer,
+  file: File,
   contentTypeOverride?: string,
 ): string {
   if (typeof contentTypeOverride === "string") {
     return contentTypeOverride;
   }
-  const fileType =
-    typeof file === "object" &&
-    file !== null &&
-    "type" in file &&
-    typeof file.type === "string" &&
-    file.type.length > 0
-      ? file.type
-      : undefined;
-
-  return fileType ?? "application/octet-stream";
+  return file.type;
 }

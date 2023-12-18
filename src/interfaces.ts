@@ -46,11 +46,6 @@ export type WebId = UrlString;
 export type SolidDataset = ImmutableDataset;
 
 /**
- * A File is anything stored on a Pod in a format that solid-client does not have special affordances for, e.g. an image, or a plain JSON file.
- */
-export type File = Blob;
-
-/**
  * A JSON data structure that represents a set of public keys as a JSON object.
  * See https://datatracker.ietf.org/doc/html/rfc7517 for details.
  */
