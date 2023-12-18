@@ -22,8 +22,15 @@
 import { jest, describe, it, expect } from "@jest/globals";
 import { dataset } from "@rdfjs/dataset";
 import * as fc from "fast-check";
-import { DataFactory } from "n3";
-import type * as RdfJs from "@rdfjs/types";
+import { DataFactory as DF, Store } from "n3";
+import type {
+  BlankNode,
+  DatasetCore,
+  Quad,
+  Term,
+  DatasetCoreFactory,
+  DataFactory,
+} from "@rdfjs/types";
 import {
   serializeBoolean,
   serializeDatetime,
@@ -38,51 +45,40 @@ import { fromRdfJsDataset, toRdfJsDataset } from "./rdfjs";
 describe("fromRdfJsDataset", () => {
   const fcNamedNode = fc
     .webUrl({ withFragments: true, withQueryParameters: true })
-    .map((url) => DataFactory.namedNode(url));
-  const fcString = fc.string().map((value) => DataFactory.literal(value));
+    .map((url) => DF.namedNode(url));
+  const fcString = fc.string().map((value) => DF.literal(value));
   const fcInteger = fc
     .integer()
     .map((value) =>
-      DataFactory.literal(
-        serializeInteger(value),
-        DataFactory.namedNode(xmlSchemaTypes.integer),
-      ),
+      DF.literal(serializeInteger(value), DF.namedNode(xmlSchemaTypes.integer)),
     );
   const fcDecimal = fc
     .float()
     .map((value) =>
-      DataFactory.literal(
-        serializeDecimal(value),
-        DataFactory.namedNode(xmlSchemaTypes.decimal),
-      ),
+      DF.literal(serializeDecimal(value), DF.namedNode(xmlSchemaTypes.decimal)),
     );
   const fcDatetime = fc
     .date()
     .map((value) =>
-      DataFactory.literal(
+      DF.literal(
         serializeDatetime(value),
-        DataFactory.namedNode(xmlSchemaTypes.dateTime),
+        DF.namedNode(xmlSchemaTypes.dateTime),
       ),
     );
   const fcBoolean = fc
     .boolean()
     .map((value) =>
-      DataFactory.literal(
-        serializeBoolean(value),
-        DataFactory.namedNode(xmlSchemaTypes.boolean),
-      ),
+      DF.literal(serializeBoolean(value), DF.namedNode(xmlSchemaTypes.boolean)),
     );
   const fcLangString = fc
     .tuple(
       fc.string(),
       fc.oneof(fc.constant("nl-NL"), fc.constant("en-GB"), fc.constant("fr")),
     )
-    .map(([value, lang]) => DataFactory.literal(value, lang));
+    .map(([value, lang]) => DF.literal(value, lang));
   const fcArbitraryLiteral = fc
     .tuple(fc.string(), fc.webUrl({ withFragments: true }))
-    .map(([value, dataType]) =>
-      DataFactory.literal(value, DataFactory.namedNode(dataType)),
-    );
+    .map(([value, dataType]) => DF.literal(value, DF.namedNode(dataType)));
   const fcLiteral = fc.oneof(
     fcString,
     fcInteger,
@@ -94,8 +90,8 @@ describe("fromRdfJsDataset", () => {
   );
   const fcBlankNode = fc
     .asciiString()
-    .map((asciiString) => DataFactory.blankNode(asciiString));
-  const fcDefaultGraph = fc.constant(DataFactory.defaultGraph());
+    .map((asciiString) => DF.blankNode(asciiString));
+  const fcDefaultGraph = fc.constant(DF.defaultGraph());
   const fcGraph = fc.oneof(fcDefaultGraph, fcNamedNode);
   const fcQuadSubject = fc.oneof(fcNamedNode, fcBlankNode);
   const fcQuadPredicate = fcNamedNode;
@@ -103,14 +99,14 @@ describe("fromRdfJsDataset", () => {
   const fcQuad = fc
     .tuple(fcQuadSubject, fcQuadPredicate, fcQuadObject, fcGraph)
     .map(([subject, predicate, object, graph]) =>
-      DataFactory.quad(subject, predicate, object, graph),
+      DF.quad(subject, predicate, object, graph),
     );
   const fcDatasetWithReusedBlankNodes = fc.uniqueArray(fcQuad).map((quads) => {
-    const reusedBlankNode = DataFactory.blankNode();
-    function maybeReplaceBlankNode(node: RdfJs.BlankNode): RdfJs.BlankNode {
+    const reusedBlankNode = DF.blankNode();
+    function maybeReplaceBlankNode(node: BlankNode): BlankNode {
       return Math.random() < 0.5 ? node : reusedBlankNode;
     }
-    function maybeReplaceBlankNodesInQuad(quad: RdfJs.Quad): RdfJs.Quad {
+    function maybeReplaceBlankNodesInQuad(quad: Quad): Quad {
       const subject =
         quad.subject.termType === "BlankNode"
           ? maybeReplaceBlankNode(quad.subject)
@@ -119,7 +115,7 @@ describe("fromRdfJsDataset", () => {
         quad.object.termType === "BlankNode"
           ? maybeReplaceBlankNode(quad.object)
           : quad.object;
-      return DataFactory.quad(subject, quad.predicate, object, quad.graph);
+      return DF.quad(subject, quad.predicate, object, quad.graph);
     }
     return dataset(quads.map(maybeReplaceBlankNodesInQuad));
   });
@@ -128,11 +124,8 @@ describe("fromRdfJsDataset", () => {
     const runs = process.env.CI ? 1000 : 100;
     expect.assertions(runs * 2 + 2);
 
-    function hasMatchingQuads(
-      a: RdfJs.DatasetCore,
-      b: RdfJs.DatasetCore,
-    ): boolean {
-      function blankNodeToNull(term: RdfJs.Term): RdfJs.Term | null {
+    function hasMatchingQuads(a: DatasetCore, b: DatasetCore): boolean {
+      function blankNodeToNull(term: Term): Term | null {
         return term.termType === "BlankNode" ? null : term;
       }
 
@@ -172,47 +165,47 @@ describe("fromRdfJsDataset", () => {
   });
 
   it("can represent all Quads", () => {
-    const blankNode1 = DataFactory.blankNode();
-    const blankNode2 = DataFactory.blankNode();
+    const blankNode1 = DF.blankNode();
+    const blankNode2 = DF.blankNode();
     const subject1IriString = "https://some.pod/resource#subject1";
-    const subject1 = DataFactory.namedNode(subject1IriString);
+    const subject1 = DF.namedNode(subject1IriString);
     const subject2IriString = "https://some.pod/resource#subject2";
-    const subject2 = DataFactory.namedNode(subject2IriString);
+    const subject2 = DF.namedNode(subject2IriString);
     const predicate1IriString = "https://some.vocab/predicate1";
-    const predicate1 = DataFactory.namedNode(predicate1IriString);
+    const predicate1 = DF.namedNode(predicate1IriString);
     const predicate2IriString = "https://some.vocab/predicate2";
-    const predicate2 = DataFactory.namedNode(predicate2IriString);
+    const predicate2 = DF.namedNode(predicate2IriString);
     const literalStringValue = "Some string";
-    const literalString = DataFactory.literal(
+    const literalString = DF.literal(
       literalStringValue,
-      DataFactory.namedNode(xmlSchemaTypes.string),
+      DF.namedNode(xmlSchemaTypes.string),
     );
     const literalLangStringValue = "Some lang string";
     const literalLangStringLocale = "en-gb";
-    const literalLangString = DataFactory.literal(
+    const literalLangString = DF.literal(
       literalLangStringValue,
       literalLangStringLocale,
     );
     const literalIntegerValue = "42";
-    const literalInteger = DataFactory.literal(
+    const literalInteger = DF.literal(
       literalIntegerValue,
-      DataFactory.namedNode(xmlSchemaTypes.integer),
+      DF.namedNode(xmlSchemaTypes.integer),
     );
-    const defaultGraph = DataFactory.defaultGraph();
+    const defaultGraph = DF.defaultGraph();
     const acrGraphIriString = "https://some.pod/resource?ext=acr";
-    const acrGraph = DataFactory.namedNode(acrGraphIriString);
+    const acrGraph = DF.namedNode(acrGraphIriString);
 
     const quads = [
-      DataFactory.quad(subject1, predicate1, literalString, defaultGraph),
-      DataFactory.quad(subject1, predicate1, literalLangString, defaultGraph),
-      DataFactory.quad(subject1, predicate1, literalInteger, defaultGraph),
-      DataFactory.quad(subject1, predicate2, subject2, defaultGraph),
-      DataFactory.quad(subject2, predicate1, blankNode1, acrGraph),
-      DataFactory.quad(subject2, predicate1, blankNode2, acrGraph),
-      DataFactory.quad(blankNode1, predicate1, literalString, acrGraph),
-      DataFactory.quad(blankNode2, predicate1, literalString, acrGraph),
-      DataFactory.quad(blankNode2, predicate1, literalInteger, acrGraph),
-      DataFactory.quad(blankNode2, predicate2, literalInteger, acrGraph),
+      DF.quad(subject1, predicate1, literalString, defaultGraph),
+      DF.quad(subject1, predicate1, literalLangString, defaultGraph),
+      DF.quad(subject1, predicate1, literalInteger, defaultGraph),
+      DF.quad(subject1, predicate2, subject2, defaultGraph),
+      DF.quad(subject2, predicate1, blankNode1, acrGraph),
+      DF.quad(subject2, predicate1, blankNode2, acrGraph),
+      DF.quad(blankNode1, predicate1, literalString, acrGraph),
+      DF.quad(blankNode2, predicate1, literalString, acrGraph),
+      DF.quad(blankNode2, predicate1, literalInteger, acrGraph),
+      DF.quad(blankNode2, predicate2, literalInteger, acrGraph),
     ];
     const rdfJsDataset = dataset(quads);
 
@@ -276,64 +269,52 @@ describe("fromRdfJsDataset", () => {
   });
 
   it("can represent lists", () => {
-    const first = DataFactory.namedNode(
+    const first = DF.namedNode(
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
     );
-    const rest = DataFactory.namedNode(
+    const rest = DF.namedNode(
       "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
     );
-    const nil = DataFactory.namedNode(
-      "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil",
-    );
-    const item1Node = DataFactory.blankNode();
-    const item2Node = DataFactory.blankNode();
-    const quad1 = DataFactory.quad(
-      item1Node,
-      first,
-      DataFactory.literal("First item in a list"),
-    );
-    const quad2 = DataFactory.quad(item1Node, rest, item2Node);
-    const quad3 = DataFactory.quad(
+    const nil = DF.namedNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#nil");
+    const item1Node = DF.blankNode();
+    const item2Node = DF.blankNode();
+    const quad1 = DF.quad(item1Node, first, DF.literal("First item in a list"));
+    const quad2 = DF.quad(item1Node, rest, item2Node);
+    const quad3 = DF.quad(
       item2Node,
       first,
-      DataFactory.literal("Second item in a list"),
+      DF.literal("Second item in a list"),
     );
-    const quad4 = DataFactory.quad(item2Node, rest, nil);
+    const quad4 = DF.quad(item2Node, rest, nil);
 
     const rdfJsDataset = dataset([quad1, quad2, quad3, quad4]);
     const thereAndBackAgain = toRdfJsDataset(fromRdfJsDataset(rdfJsDataset));
     expect(thereAndBackAgain.size).toBe(4);
     expect(
-      thereAndBackAgain.match(
-        null,
-        null,
-        DataFactory.literal("First item in a list"),
-      ).size,
+      thereAndBackAgain.match(null, null, DF.literal("First item in a list"))
+        .size,
     ).toBe(1);
     expect(
-      thereAndBackAgain.match(
-        null,
-        null,
-        DataFactory.literal("Second item in a list"),
-      ).size,
+      thereAndBackAgain.match(null, null, DF.literal("Second item in a list"))
+        .size,
     ).toBe(1);
   });
 
   it("does not lose any predicates", () => {
-    const blankNode1 = DataFactory.blankNode();
-    const blankNode2 = DataFactory.blankNode();
-    const blankNode3 = DataFactory.blankNode();
-    const blankNode4 = DataFactory.blankNode();
-    const predicate1 = DataFactory.namedNode("https://example.com/predicate1");
-    const predicate2 = DataFactory.namedNode("https://example.com/predicate2");
-    const predicate3 = DataFactory.namedNode("https://example.com/predicate3");
-    const acrGraph = DataFactory.namedNode("https://example.com/acrGraph");
-    const literalString = DataFactory.literal("Arbitrary literal string");
+    const blankNode1 = DF.blankNode();
+    const blankNode2 = DF.blankNode();
+    const blankNode3 = DF.blankNode();
+    const blankNode4 = DF.blankNode();
+    const predicate1 = DF.namedNode("https://example.com/predicate1");
+    const predicate2 = DF.namedNode("https://example.com/predicate2");
+    const predicate3 = DF.namedNode("https://example.com/predicate3");
+    const acrGraph = DF.namedNode("https://example.com/acrGraph");
+    const literalString = DF.literal("Arbitrary literal string");
     const quads = [
-      DataFactory.quad(blankNode1, predicate1, blankNode2, acrGraph),
-      DataFactory.quad(blankNode2, predicate2, blankNode3, acrGraph),
-      DataFactory.quad(blankNode3, predicate3, blankNode4, acrGraph),
-      DataFactory.quad(blankNode4, predicate2, literalString, acrGraph),
+      DF.quad(blankNode1, predicate1, blankNode2, acrGraph),
+      DF.quad(blankNode2, predicate2, blankNode3, acrGraph),
+      DF.quad(blankNode3, predicate3, blankNode4, acrGraph),
+      DF.quad(blankNode4, predicate2, literalString, acrGraph),
     ];
     const rdfJsDataset = dataset(quads);
     const thereAndBackAgain = toRdfJsDataset(fromRdfJsDataset(rdfJsDataset));
@@ -341,18 +322,18 @@ describe("fromRdfJsDataset", () => {
   });
 
   it("does not trip over circular blank nodes", () => {
-    const namedNode = DataFactory.namedNode("https://example.com/namedNode");
-    const blankNode1 = DataFactory.blankNode();
-    const blankNode2 = DataFactory.blankNode();
-    const blankNode3 = DataFactory.blankNode();
-    const predicate = DataFactory.namedNode("https://example.com/predicate");
-    const literalString = DataFactory.literal("Arbitrary literal string");
+    const namedNode = DF.namedNode("https://example.com/namedNode");
+    const blankNode1 = DF.blankNode();
+    const blankNode2 = DF.blankNode();
+    const blankNode3 = DF.blankNode();
+    const predicate = DF.namedNode("https://example.com/predicate");
+    const literalString = DF.literal("Arbitrary literal string");
     const quads = [
-      DataFactory.quad(namedNode, predicate, blankNode2),
-      DataFactory.quad(blankNode1, predicate, blankNode2),
-      DataFactory.quad(blankNode2, predicate, blankNode3),
-      DataFactory.quad(blankNode3, predicate, blankNode1),
-      DataFactory.quad(blankNode2, predicate, literalString),
+      DF.quad(namedNode, predicate, blankNode2),
+      DF.quad(blankNode1, predicate, blankNode2),
+      DF.quad(blankNode2, predicate, blankNode3),
+      DF.quad(blankNode3, predicate, blankNode1),
+      DF.quad(blankNode2, predicate, literalString),
     ];
     const rdfJsDataset = dataset(quads);
     const thereAndBackAgain = toRdfJsDataset(fromRdfJsDataset(rdfJsDataset));
@@ -360,15 +341,15 @@ describe("fromRdfJsDataset", () => {
   });
 
   it("does not trip over blank nodes that appear as the object for different subjects", () => {
-    const blankNode1 = DataFactory.blankNode();
-    const blankNode2 = DataFactory.blankNode();
-    const blankNode3 = DataFactory.blankNode();
-    const predicate = DataFactory.namedNode("https://example.com/predicate");
-    const literalString = DataFactory.literal("Arbitrary literal string");
+    const blankNode1 = DF.blankNode();
+    const blankNode2 = DF.blankNode();
+    const blankNode3 = DF.blankNode();
+    const predicate = DF.namedNode("https://example.com/predicate");
+    const literalString = DF.literal("Arbitrary literal string");
     const quads = [
-      DataFactory.quad(blankNode1, predicate, blankNode2),
-      DataFactory.quad(blankNode2, predicate, literalString),
-      DataFactory.quad(blankNode3, predicate, blankNode2),
+      DF.quad(blankNode1, predicate, blankNode2),
+      DF.quad(blankNode2, predicate, literalString),
+      DF.quad(blankNode3, predicate, blankNode2),
     ];
     const rdfJsDataset = dataset(quads);
     const thereAndBackAgain = toRdfJsDataset(fromRdfJsDataset(rdfJsDataset));
@@ -376,16 +357,16 @@ describe("fromRdfJsDataset", () => {
   });
 
   it("does not trip over Datasets that only contain Blank Node Subjects", () => {
-    const blankNode1 = DataFactory.blankNode();
-    const blankNode2 = DataFactory.blankNode();
-    const blankNode3 = DataFactory.blankNode();
-    const predicate = DataFactory.namedNode("https://example.com/predicate");
-    const literalString = DataFactory.literal("Arbitrary literal string");
+    const blankNode1 = DF.blankNode();
+    const blankNode2 = DF.blankNode();
+    const blankNode3 = DF.blankNode();
+    const predicate = DF.namedNode("https://example.com/predicate");
+    const literalString = DF.literal("Arbitrary literal string");
     const quads = [
-      DataFactory.quad(blankNode1, predicate, blankNode2),
-      DataFactory.quad(blankNode2, predicate, blankNode3),
-      DataFactory.quad(blankNode3, predicate, blankNode1),
-      DataFactory.quad(blankNode2, predicate, literalString),
+      DF.quad(blankNode1, predicate, blankNode2),
+      DF.quad(blankNode2, predicate, blankNode3),
+      DF.quad(blankNode3, predicate, blankNode1),
+      DF.quad(blankNode2, predicate, literalString),
     ];
     const rdfJsDataset = dataset(quads);
     const thereAndBackAgain = toRdfJsDataset(fromRdfJsDataset(rdfJsDataset));
@@ -398,11 +379,11 @@ describe("fromRdfJsDataset", () => {
         type: "Dataset",
         graphs: { default: {} },
       };
-      const mockQuad = DataFactory.quad(
-        DataFactory.namedNode("https://some.subject"),
-        DataFactory.namedNode("https://some.predicate"),
-        DataFactory.blankNode("some-blank-node"),
-        DataFactory.defaultGraph(),
+      const mockQuad = DF.quad(
+        DF.namedNode("https://some.subject"),
+        DF.namedNode("https://some.predicate"),
+        DF.blankNode("some-blank-node"),
+        DF.defaultGraph(),
       );
       const dataset = addRdfJsQuadToDataset(mockDataset, mockQuad);
 
@@ -429,10 +410,10 @@ describe("fromRdfJsDataset", () => {
         type: "Dataset",
         graphs: { default: {} },
       };
-      const mockQuad = DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.subject"),
-        DataFactory.namedNode("https://arbitrary.predicate"),
-        DataFactory.namedNode("https://arbitrary.object"),
+      const mockQuad = DF.quad(
+        DF.namedNode("https://arbitrary.subject"),
+        DF.namedNode("https://arbitrary.predicate"),
+        DF.namedNode("https://arbitrary.object"),
         { termType: "Unknown term type" } as any,
       );
       expect(() => addRdfJsQuadToDataset(mockDataset, mockQuad)).toThrow(
@@ -445,11 +426,11 @@ describe("fromRdfJsDataset", () => {
         type: "Dataset",
         graphs: { default: {} },
       };
-      const mockQuad = DataFactory.quad(
+      const mockQuad = DF.quad(
         { termType: "Unknown term type" } as any,
-        DataFactory.namedNode("https://arbitrary.predicate"),
-        DataFactory.namedNode("https://arbitrary.object"),
-        DataFactory.defaultGraph(),
+        DF.namedNode("https://arbitrary.predicate"),
+        DF.namedNode("https://arbitrary.object"),
+        DF.defaultGraph(),
       );
       expect(() => addRdfJsQuadToDataset(mockDataset, mockQuad)).toThrow(
         "Cannot parse Quads with nodes of type [Unknown term type] as their Subject node.",
@@ -461,11 +442,11 @@ describe("fromRdfJsDataset", () => {
         type: "Dataset",
         graphs: { default: {} },
       };
-      const mockQuad = DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.subject"),
+      const mockQuad = DF.quad(
+        DF.namedNode("https://arbitrary.subject"),
         { termType: "Unknown term type" } as any,
-        DataFactory.namedNode("https://arbitrary.object"),
-        DataFactory.defaultGraph(),
+        DF.namedNode("https://arbitrary.object"),
+        DF.defaultGraph(),
       );
       expect(() => addRdfJsQuadToDataset(mockDataset, mockQuad)).toThrow(
         "Cannot parse Quads with nodes of type [Unknown term type] as their Predicate node.",
@@ -477,18 +458,18 @@ describe("fromRdfJsDataset", () => {
         type: "Dataset",
         graphs: { default: {} },
       };
-      const chainBlankNode = DataFactory.blankNode();
-      const otherQuad = DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.subject"),
-        DataFactory.namedNode("https://arbitrary.predicate"),
+      const chainBlankNode = DF.blankNode();
+      const otherQuad = DF.quad(
+        DF.namedNode("https://arbitrary.subject"),
+        DF.namedNode("https://arbitrary.predicate"),
         chainBlankNode,
-        DataFactory.defaultGraph(),
+        DF.defaultGraph(),
       );
-      const mockQuad = DataFactory.quad(
+      const mockQuad = DF.quad(
         chainBlankNode,
         { termType: "Unknown term type" } as any,
-        DataFactory.namedNode("https://arbitrary.object"),
-        DataFactory.defaultGraph(),
+        DF.namedNode("https://arbitrary.object"),
+        DF.defaultGraph(),
       );
       expect(() =>
         addRdfJsQuadToDataset(mockDataset, otherQuad, {
@@ -505,25 +486,25 @@ describe("fromRdfJsDataset", () => {
         type: "Dataset",
         graphs: { default: {} },
       };
-      const chainBlankNode1 = DataFactory.blankNode();
-      const chainBlankNode2 = DataFactory.blankNode();
-      const otherQuad = DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.subject"),
-        DataFactory.namedNode("https://arbitrary.predicate"),
+      const chainBlankNode1 = DF.blankNode();
+      const chainBlankNode2 = DF.blankNode();
+      const otherQuad = DF.quad(
+        DF.namedNode("https://arbitrary.subject"),
+        DF.namedNode("https://arbitrary.predicate"),
         chainBlankNode1,
-        DataFactory.defaultGraph(),
+        DF.defaultGraph(),
       );
-      const inBetweenQuad = DataFactory.quad(
+      const inBetweenQuad = DF.quad(
         chainBlankNode1,
         { termType: "Unknown term type" } as any,
         chainBlankNode2,
-        DataFactory.defaultGraph(),
+        DF.defaultGraph(),
       );
-      const mockQuad = DataFactory.quad(
+      const mockQuad = DF.quad(
         chainBlankNode2,
-        DataFactory.namedNode("https://arbitrary.predicate"),
-        DataFactory.namedNode("https://arbitrary.object"),
-        DataFactory.defaultGraph(),
+        DF.namedNode("https://arbitrary.predicate"),
+        DF.namedNode("https://arbitrary.object"),
+        DF.defaultGraph(),
       );
       expect(() =>
         addRdfJsQuadToDataset(mockDataset, otherQuad, {
@@ -540,25 +521,25 @@ describe("fromRdfJsDataset", () => {
         type: "Dataset",
         graphs: { default: {} },
       };
-      const chainBlankNode1 = DataFactory.blankNode();
-      const chainBlankNode2 = DataFactory.blankNode();
-      const otherQuad = DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.subject"),
-        DataFactory.namedNode("https://arbitrary.predicate"),
+      const chainBlankNode1 = DF.blankNode();
+      const chainBlankNode2 = DF.blankNode();
+      const otherQuad = DF.quad(
+        DF.namedNode("https://arbitrary.subject"),
+        DF.namedNode("https://arbitrary.predicate"),
         chainBlankNode1,
-        DataFactory.defaultGraph(),
+        DF.defaultGraph(),
       );
-      const inBetweenQuad = DataFactory.quad(
+      const inBetweenQuad = DF.quad(
         chainBlankNode1,
-        DataFactory.namedNode("https://arbitrary.predicate"),
+        DF.namedNode("https://arbitrary.predicate"),
         chainBlankNode2,
-        DataFactory.defaultGraph(),
+        DF.defaultGraph(),
       );
-      const mockQuad = DataFactory.quad(
+      const mockQuad = DF.quad(
         chainBlankNode2,
         { termType: "Unknown term type" } as any,
-        DataFactory.namedNode("https://arbitrary.object"),
-        DataFactory.defaultGraph(),
+        DF.namedNode("https://arbitrary.object"),
+        DF.defaultGraph(),
       );
       expect(() =>
         addRdfJsQuadToDataset(mockDataset, otherQuad, {
@@ -575,11 +556,11 @@ describe("fromRdfJsDataset", () => {
         type: "Dataset",
         graphs: { default: {} },
       };
-      const mockQuad = DataFactory.quad(
-        DataFactory.namedNode("https://arbitrary.subject"),
-        DataFactory.namedNode("https://arbitrary.predicate"),
+      const mockQuad = DF.quad(
+        DF.namedNode("https://arbitrary.subject"),
+        DF.namedNode("https://arbitrary.predicate"),
         { termType: "Unknown term type" } as any,
-        DataFactory.defaultGraph(),
+        DF.defaultGraph(),
       );
       expect(() => addRdfJsQuadToDataset(mockDataset, mockQuad)).toThrow(
         "Objects of type [Unknown term type] are not supported.",
@@ -591,18 +572,18 @@ describe("fromRdfJsDataset", () => {
         type: "Dataset",
         graphs: { default: {} },
       };
-      const chainBlankNode1 = DataFactory.blankNode();
-      const otherQuad = DataFactory.quad(
-        DataFactory.namedNode("https://some.subject"),
-        DataFactory.namedNode("https://some.predicate/1"),
+      const chainBlankNode1 = DF.blankNode();
+      const otherQuad = DF.quad(
+        DF.namedNode("https://some.subject"),
+        DF.namedNode("https://some.predicate/1"),
         chainBlankNode1,
-        DataFactory.defaultGraph(),
+        DF.defaultGraph(),
       );
-      const mockQuad = DataFactory.quad(
+      const mockQuad = DF.quad(
         chainBlankNode1,
-        DataFactory.namedNode("https://some.predicate/2"),
-        DataFactory.blankNode("some-blank-node"),
-        DataFactory.defaultGraph(),
+        DF.namedNode("https://some.predicate/2"),
+        DF.blankNode("some-blank-node"),
+        DF.defaultGraph(),
       );
 
       const updatedDataset = addRdfJsQuadToDataset(mockDataset, otherQuad, {
@@ -639,25 +620,25 @@ describe("fromRdfJsDataset", () => {
         type: "Dataset",
         graphs: { default: {} },
       };
-      const chainBlankNode1 = DataFactory.blankNode();
-      const chainBlankNode2 = DataFactory.blankNode();
-      const otherQuad = DataFactory.quad(
-        DataFactory.namedNode("https://some.subject"),
-        DataFactory.namedNode("https://some.predicate/1"),
+      const chainBlankNode1 = DF.blankNode();
+      const chainBlankNode2 = DF.blankNode();
+      const otherQuad = DF.quad(
+        DF.namedNode("https://some.subject"),
+        DF.namedNode("https://some.predicate/1"),
         chainBlankNode1,
-        DataFactory.defaultGraph(),
+        DF.defaultGraph(),
       );
-      const inBetweenQuad = DataFactory.quad(
+      const inBetweenQuad = DF.quad(
         chainBlankNode1,
-        DataFactory.namedNode("https://some.predicate/2"),
+        DF.namedNode("https://some.predicate/2"),
         chainBlankNode2,
-        DataFactory.defaultGraph(),
+        DF.defaultGraph(),
       );
-      const mockQuad = DataFactory.quad(
+      const mockQuad = DF.quad(
         chainBlankNode2,
-        DataFactory.namedNode("https://some.predicate/3"),
-        DataFactory.blankNode("some-blank-node"),
-        DataFactory.defaultGraph(),
+        DF.namedNode("https://some.predicate/3"),
+        DF.blankNode("some-blank-node"),
+        DF.defaultGraph(),
       );
 
       const updatedDataset = addRdfJsQuadToDataset(mockDataset, otherQuad, {
@@ -828,15 +809,15 @@ describe("toRdfJsDataset", () => {
 
   it("can take a custom DataFactory", () => {
     const customDataFactory = {
-      quad: jest.fn(DataFactory.quad),
-      namedNode: jest.fn(DataFactory.namedNode),
-      literal: jest.fn(DataFactory.literal),
-      blankNode: jest.fn(DataFactory.blankNode),
-      defaultGraph: jest.fn(DataFactory.defaultGraph),
-    } as RdfJs.DataFactory;
+      quad: jest.fn(DF.quad),
+      namedNode: jest.fn(DF.namedNode),
+      literal: jest.fn(DF.literal),
+      blankNode: jest.fn(DF.blankNode),
+      defaultGraph: jest.fn(DF.defaultGraph),
+    } as DataFactory;
     const customDatasetFactory = {
-      dataset: jest.fn(dataset),
-    } as RdfJs.DatasetCoreFactory;
+      dataset: jest.fn((quads: Quad[]) => new Store(quads)),
+    } as DatasetCoreFactory;
     const sourceDataset: ImmutableDataset = {
       type: "Dataset",
       graphs: {

@@ -34,7 +34,6 @@ import {
   test,
 } from "@jest/globals";
 
-import { blankNode } from "@rdfjs/dataset";
 import type { Session } from "@inrupt/solid-client-authn-node";
 
 import {
@@ -45,6 +44,7 @@ import {
   getPodRoot,
   createFetch,
 } from "@inrupt/internal-test-env";
+import { DataFactory } from "n3";
 import {
   getSolidDataset,
   setThing,
@@ -64,6 +64,8 @@ import {
   deleteSolidDataset,
   getWellKnownSolid,
 } from "../../src/index";
+
+const { blankNode } = DataFactory;
 
 const env = getNodeTestingEnvironment();
 
@@ -259,35 +261,28 @@ describe("Authenticated end-to-end", () => {
     },
   );
 
-  // Cannot use node file constructor in Node 16 and below (https://github.com/feross/buffer/issues/325)
-  (nodeMajor > 16 ? it : it.skip)(
-    "can create, delete, and differentiate between RDF and non-RDF Resources using a File from the node Buffer package",
-    async () => {
-      const fileUrl = `${sessionResource}.txt`;
+  it("can create, delete, and differentiate between RDF and non-RDF Resources using a File from the node Buffer package", async () => {
+    const fileUrl = `${sessionResource}.txt`;
 
-      const sessionFile = await overwriteFile(
-        fileUrl,
-        // We need to type cast because the buffer definition
-        // of Blob does not have the prototype property expected
-        // by the lib.dom.ts
-        new NodeFile(["test"], fileUrl, { type: "text/plain" }),
-        fetchOptions,
-      );
-      const sessionDataset = await getSolidDataset(
-        sessionResource,
-        fetchOptions,
-      );
+    const sessionFile = await overwriteFile(
+      fileUrl,
+      // We need to type cast because the buffer definition
+      // of Blob does not have the prototype property expected
+      // by the lib.dom.ts
+      new NodeFile(["test"], fileUrl, { type: "text/plain" }),
+      fetchOptions,
+    );
+    const sessionDataset = await getSolidDataset(sessionResource, fetchOptions);
 
-      // Eslint isn't detecting the fact that this is inside an it statement
-      // because of the conditional.
-      // eslint-disable-next-line jest/no-standalone-expect
-      expect(isRawData(sessionDataset)).toBe(false);
-      // eslint-disable-next-line jest/no-standalone-expect
-      expect(isRawData(sessionFile)).toBe(true);
+    // Eslint isn't detecting the fact that this is inside an it statement
+    // because of the conditional.
+    // eslint-disable-next-line jest/no-standalone-expect
+    expect(isRawData(sessionDataset)).toBe(false);
+    // eslint-disable-next-line jest/no-standalone-expect
+    expect(isRawData(sessionFile)).toBe(true);
 
-      await deleteFile(fileUrl, fetchOptions);
-    },
-  );
+    await deleteFile(fileUrl, fetchOptions);
+  });
 
   it("can create and remove Containers", async () => {
     const containerUrl = `${pod}solid-client-tests/node/container-test/container1-${session.info.sessionId}/`;
