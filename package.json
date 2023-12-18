@@ -162,8 +162,7 @@
   },
   "files": [
     "dist",
-    "src",
-    "umd"
+    "src"
   ],
   "sideEffects": false,
   "repository": {
