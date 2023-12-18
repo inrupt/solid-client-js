@@ -91,9 +91,11 @@ export async function getFile(
   }
 
   const resourceInfo = internal_parseResourceInfo(response);
-  const data = new File([await response.blob()], response.url.slice(response.url.lastIndexOf('/') + 1), {
-    
-  });
+  const data = new File(
+    [await response.blob()],
+    response.url.slice(response.url.lastIndexOf("/") + 1),
+    {},
+  );
   const fileWithResourceInfo: File & WithServerResourceInfo = Object.assign(
     data,
     {
@@ -407,10 +409,7 @@ async function writeFile<T extends File>(
   });
 }
 
-function getContentType(
-  file: File,
-  contentTypeOverride?: string,
-): string {
+function getContentType(file: File, contentTypeOverride?: string): string {
   if (typeof contentTypeOverride === "string") {
     return contentTypeOverride;
   }
