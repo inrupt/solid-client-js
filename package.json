@@ -170,11 +170,11 @@
     "url": "https://github.com/inrupt/solid-client-js.git"
   },
   "devDependencies": {
-    "@inrupt/base-rollup-config": "^3.0.0",
-    "@inrupt/eslint-config-lib": "^3.0.0",
-    "@inrupt/internal-playwright-helpers": "^3.0.0",
-    "@inrupt/internal-test-env": "^3.0.0",
-    "@inrupt/jest-jsdom-polyfills": "^3.0.0",
+    "@inrupt/base-rollup-config": "^3.0.1",
+    "@inrupt/eslint-config-lib": "^3.0.1",
+    "@inrupt/internal-playwright-helpers": "^3.0.1",
+    "@inrupt/internal-test-env": "^3.0.1",
+    "@inrupt/jest-jsdom-polyfills": "^3.0.1",
     "@inrupt/solid-client-authn-node": "^1.17.5",
     "@playwright/test": "^1.40.1",
     "@rdfjs/types": "^1.1.0",

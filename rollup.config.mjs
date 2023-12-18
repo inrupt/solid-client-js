@@ -20,12 +20,4 @@ config[0].output.push(
   }
 )
 
-config[0].plugins = [
-  typescript({
-    compilerOptions: {
-      module: 'ESNext'
-    }
-  })
-]
-
 export default config;
