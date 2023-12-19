@@ -18,22 +18,18 @@ jobs:
       matrix:
         # Available OS's: https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
         os: [ubuntu-latest, windows-latest]
-        # The Node version does not influence how well our tests run in the browser,
-        # so we only need to test in one.
-        node-version: [20.x]
         environment-name: ["ESS PodSpaces", "ESS Dev-2-1"]
         experimental: [false]
         include:
           - environment-name: "ESS Dev-2-2"
             experimental: true
-            node-version: 20.x
             os: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version-file: ".nvmrc"
           cache: "npm"
           cache-dependency-path: "**/package-lock.json"
       # install
