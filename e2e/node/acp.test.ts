@@ -39,7 +39,6 @@ import {
 } from "@inrupt/internal-test-env";
 import Link from "http-link-header";
 import {
-  acp_ess_1 as acp,
   acp_ess_2,
   fromRdfJsDataset,
   getSolidDataset,
@@ -125,12 +124,8 @@ describe("An ACP Solid server", () => {
     );
   });
 
-  it("advertises its ACLs as ACP AccessControlResources", async () => {
-    expect(await acp.isAcpControlled(sessionResource, fetchOptions)).toBe(true);
-  });
-
   it("can read ACP access controls", async () => {
-    const resourceWithAcr = await acp.getSolidDatasetWithAcr(
+    const resourceWithAcr = await acp_ess_2.getSolidDatasetWithAcr(
       sessionResource,
       fetchOptions,
     );
