@@ -19,11 +19,7 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import {
-  Buffer as NodeBuffer,
-  File as NodeFile,
-  Blob as NodeBlob,
-} from "buffer";
+import { File as NodeFile, Blob as NodeBlob } from "buffer";
 import {
   jest,
   afterEach,
@@ -80,7 +76,7 @@ const nodeVersion = process.versions.node.split(".");
 const nodeMajor = Number(nodeVersion[0]);
 
 describe("Authenticated end-to-end", () => {
-  let fetchOptions: { fetch: typeof global.fetch };
+  let fetchOptions: { fetch: typeof fetch };
   let session: Session;
   let sessionContainer: string;
   let sessionResource: string;
@@ -146,38 +142,6 @@ describe("Authenticated end-to-end", () => {
     );
   });
 
-  it("can create, delete, and differentiate between RDF and non-RDF Resources", async () => {
-    const fileUrl = `${sessionResource}.txt`;
-
-    const sessionFile = await overwriteFile(
-      fileUrl,
-      Buffer.from("test"),
-      fetchOptions,
-    );
-    const sessionDataset = await getSolidDataset(sessionResource, fetchOptions);
-
-    expect(isRawData(sessionDataset)).toBe(false);
-    expect(isRawData(sessionFile)).toBe(true);
-
-    await deleteFile(fileUrl, fetchOptions);
-  });
-
-  it("can create, delete, and differentiate between RDF and non-RDF Resources using a node Buffer", async () => {
-    const fileUrl = `${sessionResource}.txt`;
-
-    const sessionFile = await overwriteFile(
-      fileUrl,
-      NodeBuffer.from("test"),
-      fetchOptions,
-    );
-    const sessionDataset = await getSolidDataset(sessionResource, fetchOptions);
-
-    expect(isRawData(sessionDataset)).toBe(false);
-    expect(isRawData(sessionFile)).toBe(true);
-
-    await deleteFile(fileUrl, fetchOptions);
-  });
-
   it("can create, delete, and differentiate between RDF and non-RDF Resources using a Blob from the node Buffer package", async () => {
     const fileUrl = `${sessionResource}.txt`;
 
@@ -186,6 +150,8 @@ describe("Authenticated end-to-end", () => {
       // We need to type cast because the buffer definition
       // of Blob does not have the prototype property expected
       // by the lib.dom.ts
+      // See https://github.com/microsoft/TypeScript/issues/53668
+      // and https://github.com/microsoft/TypeScript/issues/52166
       new NodeBlob(["test"], {
         type: "text/plain",
       }) as unknown as globalThis.Blob,
@@ -199,37 +165,30 @@ describe("Authenticated end-to-end", () => {
     await deleteFile(fileUrl, fetchOptions);
   });
 
-  // Blob is only available globally Node 18 and above
-  (nodeMajor > 18 ? it : it.skip)(
-    "can create, delete, and differentiate between RDF and non-RDF Resources using a Blob",
-    async () => {
-      const fileUrl = `${sessionResource}.txt`;
+  it("can create, delete, and differentiate between RDF and non-RDF Resources using a Blob", async () => {
+    const fileUrl = `${sessionResource}.txt`;
 
-      const sessionFile = await overwriteFile(
-        fileUrl,
-        // We need to type cast because the buffer definition
-        // of Blob does not have the prototype property expected
-        // by the lib.dom.ts
-        new Blob(["test"], {
-          type: "text/plain",
-        }),
-        fetchOptions,
-      );
-      const sessionDataset = await getSolidDataset(
-        sessionResource,
-        fetchOptions,
-      );
+    const sessionFile = await overwriteFile(
+      fileUrl,
+      // We need to type cast because the buffer definition
+      // of Blob does not have the prototype property expected
+      // by the lib.dom.ts
+      new Blob(["test"], {
+        type: "text/plain",
+      }),
+      fetchOptions,
+    );
+    const sessionDataset = await getSolidDataset(sessionResource, fetchOptions);
 
-      // Eslint isn't detecting the fact that this is inside an it statement
-      // because of the conditional.
-      // eslint-disable-next-line jest/no-standalone-expect
-      expect(isRawData(sessionDataset)).toBe(false);
-      // eslint-disable-next-line jest/no-standalone-expect
-      expect(isRawData(sessionFile)).toBe(true);
+    // Eslint isn't detecting the fact that this is inside an it statement
+    // because of the conditional.
+    // eslint-disable-next-line jest/no-standalone-expect
+    expect(isRawData(sessionDataset)).toBe(false);
+    // eslint-disable-next-line jest/no-standalone-expect
+    expect(isRawData(sessionFile)).toBe(true);
 
-      await deleteFile(fileUrl, fetchOptions);
-    },
-  );
+    await deleteFile(fileUrl, fetchOptions);
+  });
 
   // Cannot use file constructor in Node 18 and below
   (nodeMajor > 18 ? it : it.skip)(
