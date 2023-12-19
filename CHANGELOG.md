@@ -16,13 +16,9 @@ The following changes have been implemented but not released yet:
   with Node 18 and higher.
 - Due to changes in the rollup config the `umd` output is now found at `dist/index.umd.js` rather than `umd/index.js`.
 - Drop support for `Buffer`s as input to `saveFileInContainer` and `overwriteFile`. Use the file name of inputs to `saveFileInContainer` as the `Slug` name recommendation if no slug is explicitly provided.
-- Have `getJsonLdParser` return `void` rather than a Promise so that it now alignsw
-
-the parser returned by `getJsonLdParser` no longer returns a promise when
-the `parse` method is called. This function's signature had already specified it
-returns `void`, so no code should rely on a returned value.
-
-- Remove deprecated ACP APIs
+- Have `getJsonLdParser` return `void` rather than a Promise so that it now aligns with
+  the `Parser` type definition.
+- Remove deprecated ACP APIs.
 
 ## [1.30.2] - 2023-09-26
 
