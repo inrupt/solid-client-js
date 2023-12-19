@@ -10,6 +10,8 @@ The following changes are pending, and will be applied on the next major release
 
 The following changes have been implemented but not released yet:
 
+## [2.0.0] - 2023-12-19
+
 ### Breaking Changes
 
 - Use the global `fetch` function instead of `@inrupt/universal-fetch`. This means this library now only works
