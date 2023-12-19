@@ -150,6 +150,8 @@ describe("Authenticated end-to-end", () => {
       // We need to type cast because the buffer definition
       // of Blob does not have the prototype property expected
       // by the lib.dom.ts
+      // See https://github.com/microsoft/TypeScript/issues/53668
+      // and https://github.com/microsoft/TypeScript/issues/52166
       new NodeBlob(["test"], {
         type: "text/plain",
       }) as unknown as globalThis.Blob,
