@@ -316,15 +316,18 @@ describe("Authenticated end-to-end", () => {
 
   it("can customize the fetch to get and set HTTP headers", async () => {
     let headers: Headers = new Headers();
-    const customFetch: typeof fetch = async (...args) => {
-      const response = await fetchOptions.fetch(args[0], {
-        ...args[1],
+    const customFetch: typeof fetch = async (
+      info: Parameters<typeof fetch>[0],
+      init?: Parameters<typeof fetch>[1],
+    ) => {
+      const response = await fetchOptions.fetch(info, {
+        ...init,
         headers: {
-          ...args[1]?.headers,
+          ...init?.headers,
           "User-Agent": "some-user-agent",
         },
       });
-      if (args[0].toString() === sessionResource) {
+      if (info.toString() === sessionResource) {
         headers = response.headers;
       }
       return response;
