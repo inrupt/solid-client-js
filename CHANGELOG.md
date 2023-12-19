@@ -19,9 +19,10 @@ The following changes have been implemented but not released yet:
 - Have `getJsonLdParser` return `void` rather than a Promise so that it now alignsw
 
 the parser returned by `getJsonLdParser` no longer returns a promise when
-  the `parse` method is called. This function's signature had already specified it
-  returns `void`, so no code should rely on a returned value.
- - Remove deprecated ACP APIs
+the `parse` method is called. This function's signature had already specified it
+returns `void`, so no code should rely on a returned value.
+
+- Remove deprecated ACP APIs
 
 ## [1.30.2] - 2023-09-26
 
