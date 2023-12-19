@@ -222,7 +222,7 @@ describe("Authenticated end-to-end ACP V3", () => {
 
     await overwriteFile(
       resourceUrl,
-      Buffer.from("To-be-public Resource", "utf8"),
+      new Blob(["To-be-public Resource"]),
       fetchOptions,
     );
 

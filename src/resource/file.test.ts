@@ -19,7 +19,6 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import { Buffer as NodeBuffer } from "buffer";
 import {
   jest,
   describe,
@@ -347,8 +346,9 @@ describe("Non-RDF data deletion", () => {
 
 describe("Write non-RDF data into a folder", () => {
   const mockBlob = new Blob(["mock blob data"], { type: "binary" });
-  const mockBuffer = Buffer.from("mock blob data");
-  const mockNodeBuffer = NodeBuffer.from("mock blob data");
+  const mockFile = new File(["mock blob data"], "myFile.txt", {
+    type: "binary",
+  });
 
   beforeEach(() => {
     jest.spyOn(globalThis, "fetch").mockImplementation(
@@ -367,9 +367,8 @@ describe("Write non-RDF data into a folder", () => {
 
   describe.each([
     ["blob", mockBlob],
-    ["buffer", mockBuffer],
-    ["nodeBuffer", mockNodeBuffer],
-  ])("support for %s raw data source", (_, data) => {
+    ["file", mockFile],
+  ])("support for %s raw data source", (type, data) => {
     it("should default to the included fetcher if no other is available", async () => {
       await saveFileInContainer("https://some.url", data);
 
@@ -381,8 +380,8 @@ describe("Write non-RDF data into a folder", () => {
       expect(fetch).toHaveBeenCalledTimes(1);
       expect(fetch).toHaveBeenCalledWith("https://some.url", {
         headers: {
-          "Content-Type":
-            mockBlob === data ? "binary" : "application/octet-stream",
+          "Content-Type": "binary",
+          Slug: type === "file" ? "myFile.txt" : undefined,
         },
         method: "POST",
         body: data,
@@ -393,7 +392,7 @@ describe("Write non-RDF data into a folder", () => {
         expect(savedFile).toBeInstanceOf(Blob);
       }
       expect(savedFile!.internal_resourceInfo).toEqual({
-        contentType: mockBlob === data ? "binary" : "application/octet-stream",
+        contentType: "binary",
         sourceIri: "https://some.url/someFileName",
         isRawData: true,
       });
@@ -414,8 +413,8 @@ describe("Write non-RDF data into a folder", () => {
       expect(mockFetch).toHaveBeenCalledTimes(1);
       expect(mockFetch).toHaveBeenCalledWith("https://some.url", {
         headers: {
-          "Content-Type":
-            mockBlob === data ? "binary" : "application/octet-stream",
+          "Content-Type": "binary",
+          Slug: type === "file" ? "myFile.txt" : undefined,
         },
         method: "POST",
         body: data,
@@ -439,8 +438,7 @@ describe("Write non-RDF data into a folder", () => {
       expect(mockFetch).toHaveBeenCalledTimes(1);
       expect(mockFetch).toHaveBeenCalledWith("https://some.url", {
         headers: {
-          "Content-Type":
-            mockBlob === data ? "binary" : "application/octet-stream",
+          "Content-Type": "binary",
           Slug: "someFileName",
         },
         method: "POST",
@@ -546,8 +544,9 @@ describe("Write non-RDF data into a folder", () => {
 
 describe("Write non-RDF data directly into a resource (potentially erasing previous value)", () => {
   const mockBlob = new Blob(["mock blob data"], { type: "binary" });
-  const mockBuffer = Buffer.from("mock blob data");
-  const mockNodeBuffer = NodeBuffer.from("mock blob data");
+  const mockFile = new File(["mock blob data"], "myFile.txt", {
+    type: "binary",
+  });
 
   beforeEach(() => {
     jest.spyOn(globalThis, "fetch").mockImplementation(
@@ -565,9 +564,8 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
 
   describe.each([
     ["blob", mockBlob],
-    ["buffer", mockBuffer],
-    ["nodeBuffer", mockNodeBuffer],
-  ])("support for %s raw data source", (_, data) => {
+    ["file", mockFile],
+  ])("support for %s raw data source", (type, data) => {
     it("should default to the included fetcher if no other fetcher is available", async () => {
       await overwriteFile("https://some.url", data);
 
@@ -587,8 +585,8 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
       expect(fetch).toHaveBeenCalledTimes(1);
       expect(fetch).toHaveBeenCalledWith("https://some.url", {
         headers: {
-          "Content-Type":
-            mockBlob === data ? "binary" : "application/octet-stream",
+          "Content-Type": "binary",
+          Slug: type === "file" ? "myFile.txt" : undefined,
         },
         method: "PUT",
         body: data,
@@ -636,8 +634,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
       expect(mockFetch).toHaveBeenCalledTimes(1);
       expect(mockFetch).toHaveBeenCalledWith("https://some.url", {
         headers: expect.objectContaining({
-          "Content-Type":
-            mockBlob === data ? "binary" : "application/octet-stream",
+          "Content-Type": "binary",
         }),
         method: "PUT",
         body: data,

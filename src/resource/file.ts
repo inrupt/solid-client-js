@@ -19,9 +19,9 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import type { Buffer, File as NodeFile } from "buffer";
+import type { File as NodeFile } from "buffer";
 import type {
-  File,
+  File as BlobFile,
   UploadRequestInit,
   WithResourceInfo,
   Url,
@@ -80,7 +80,7 @@ function containsReserved(header: Record<string, string>): boolean {
 export async function getFile(
   fileUrl: Url | UrlString,
   options?: Partial<GetFileOptions>,
-): Promise<File & WithServerResourceInfo> {
+): Promise<BlobFile & WithServerResourceInfo> {
   const url = internal_toIriString(fileUrl);
   const response = await (options?.fetch ?? fetch)(url, options?.init);
   if (internal_isUnsuccessfulResponse(response)) {
@@ -93,7 +93,7 @@ export async function getFile(
   }
   const resourceInfo = internal_parseResourceInfo(response);
   const data = await response.blob();
-  const fileWithResourceInfo: File & WithServerResourceInfo = Object.assign(
+  const fileWithResourceInfo: BlobFile & WithServerResourceInfo = Object.assign(
     data,
     {
       internal_resourceInfo: resourceInfo,
@@ -200,23 +200,8 @@ type SaveFileOptions = WriteFileOptions & {
  * @param options Additional parameters for file creation (e.g. a slug).
  * @returns A Promise that resolves to the saved file, if available, or `null` if the current user does not have Read access to the newly-saved file. It rejects if saving fails.
  */
-export async function saveFileInContainer<FileExt extends File | NodeFile>(
-  folderUrl: Url | UrlString,
-  file: FileExt,
-  options?: Partial<SaveFileOptions>,
-): Promise<FileExt & WithResourceInfo>;
-/**
- * @deprecated `saveFileInContainer` should only have `File` input
- */
 export async function saveFileInContainer<
-  FileExt extends File | NodeFile | Buffer,
->(
-  folderUrl: Url | UrlString,
-  file: FileExt,
-  options?: Partial<SaveFileOptions>,
-): Promise<FileExt & WithResourceInfo>;
-export async function saveFileInContainer<
-  FileExt extends File | NodeFile | Buffer,
+  FileExt extends File | BlobFile | NodeFile,
 >(
   folderUrl: Url | UrlString,
   file: FileExt,
@@ -304,20 +289,7 @@ export type WriteFileOptions = GetFileOptions & {
  * @param file The file to be written.
  * @param options Additional parameters for file creation (e.g., media type).
  */
-export async function overwriteFile<FileExt extends File | NodeFile>(
-  fileUrl: Url | UrlString,
-  file: FileExt,
-  options?: Partial<WriteFileOptions>,
-): Promise<FileExt & WithResourceInfo>;
-/**
- * @deprecated `overwriteFile` should only have `File` input
- */
-export async function overwriteFile<FileExt extends File | NodeFile | Buffer>(
-  fileUrl: Url | UrlString,
-  file: FileExt,
-  options?: Partial<WriteFileOptions>,
-): Promise<FileExt & WithResourceInfo>;
-export async function overwriteFile<FileExt extends File | NodeFile | Buffer>(
+export async function overwriteFile<FileExt extends File | BlobFile | NodeFile>(
   fileUrl: Url | UrlString,
   file: FileExt,
   options?: Partial<WriteFileOptions>,
@@ -405,22 +377,7 @@ export function flattenHeaders(
  * @param method The HTTP method
  * @param options Additional parameters for file creation (e.g. a slug, or media type)
  */
-async function writeFile<T extends File | NodeFile>(
-  targetUrl: UrlString,
-  file: T,
-  method: "PUT" | "POST",
-  options?: Partial<SaveFileOptions>,
-): Promise<Response>;
-/**
- * @deprecated `writeFile` should only have `File` input
- */
-async function writeFile<T extends File | NodeFile | Buffer>(
-  targetUrl: UrlString,
-  file: T,
-  method: "PUT" | "POST",
-  options?: Partial<SaveFileOptions>,
-): Promise<Response>;
-async function writeFile<T extends File | NodeFile | Buffer>(
+async function writeFile<T extends File | BlobFile | NodeFile>(
   targetUrl: UrlString,
   file: T,
   method: "PUT" | "POST",
@@ -438,6 +395,8 @@ async function writeFile<T extends File | NodeFile | Buffer>(
   // If a slug is in the parameters, set the request headers accordingly
   if (options.slug !== undefined) {
     headers.Slug = options.slug;
+  } else if ("name" in file && file.name !== undefined) {
+    headers.Slug = file.name;
   }
   headers["Content-Type"] = getContentType(file, options.contentType);
 
@@ -447,12 +406,12 @@ async function writeFile<T extends File | NodeFile | Buffer>(
     ...options.init,
     headers,
     method,
-    body: file as File | Buffer,
+    body: file as BlobFile,
   });
 }
 
 function getContentType(
-  file: File | NodeFile | Buffer,
+  file: File | BlobFile | NodeFile,
   contentTypeOverride?: string,
 ): string {
   if (typeof contentTypeOverride === "string") {
