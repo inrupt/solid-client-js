@@ -163,7 +163,6 @@ describe("Authenticated end-to-end", () => {
     await deleteFile(fileUrl, fetchOptions);
   });
 
-  // Blob is only available globally Node 18 and above
   it("can create, delete, and differentiate between RDF and non-RDF Resources using a Blob", async () => {
     const fileUrl = `${sessionResource}.txt`;
 
