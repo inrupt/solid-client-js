@@ -23,12 +23,6 @@ import { jest, describe, it, expect } from "@jest/globals";
 import { getAcrUrl } from "./getAcrUrl";
 import { getLinkedResourceUrlAll } from "../../resource/resource";
 import { getAclServerResourceInfo } from "../../universal/getAclServerResourceInfo";
-import { getAcrUrl as getAcrUrlLegacy } from "./getAcrUrl.legacy";
-
-jest.mock("./getAcrUrl.legacy", () => ({
-  // The legacy ACR URL discovery is mocked to fail, as ESS 1.1 has been deprecated.
-  getAcrUrl: jest.fn().mockImplementation(() => null),
-}));
 
 jest.mock("../../universal/getAclServerResourceInfo");
 
@@ -40,14 +34,6 @@ jest.mock("../../resource/resource", () => ({
 }));
 
 describe("getAcrUrl", () => {
-  it("returns legacy ACR URLs", async () => {
-    (
-      getAcrUrlLegacy as jest.Mocked<typeof getAcrUrlLegacy>
-    ).mockReturnValueOnce("x");
-    const x = await getAcrUrl({} as any);
-    expect(x).toBe("x");
-  });
-
   it("returns null if the ACL resource info can't be fetched", async () => {
     (
       getAclServerResourceInfo as jest.Mocked<typeof getAclServerResourceInfo>

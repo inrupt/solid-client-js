@@ -39,7 +39,6 @@ import {
 } from "@inrupt/internal-test-env";
 import Link from "http-link-header";
 import {
-  acp_v4 as acp,
   acp_ess_2,
   fromRdfJsDataset,
   getSolidDataset,
@@ -50,12 +49,8 @@ import {
 import { getAccessControlUrlAll } from "../../src/acp/accessControl/getAccessControlUrlAll";
 import { getAgentAccess } from "../../src/universal/getAgentAccess";
 import { setAgentAccess } from "../../src/universal/setAgentAccess";
-import { getPublicAccess as latest_getPublicAccess } from "../../src/universal/getPublicAccess";
-import { setPublicAccess as latest_setPublicAccess } from "../../src/universal/setPublicAccess";
-import {
-  setPublicAccess as legacy_setPublicAccess,
-  getPublicAccess as legacy_getPublicAccess,
-} from "../../src/access/universal";
+import { getPublicAccess } from "../../src/universal/getPublicAccess";
+import { setPublicAccess } from "../../src/universal/setPublicAccess";
 import { hasAccessibleAcr } from "../../src/acp/acp";
 import { DataFactory } from "../../src/rdfjs.internal";
 
@@ -130,11 +125,13 @@ describe("An ACP Solid server", () => {
   });
 
   it("advertises its ACLs as ACP AccessControlResources", async () => {
-    expect(await acp.isAcpControlled(sessionResource, fetchOptions)).toBe(true);
+    expect(await acp_ess_2.isAcpControlled(sessionResource, fetchOptions)).toBe(
+      true,
+    );
   });
 
   it("can read ACP access controls", async () => {
-    const resourceWithAcr = await acp.getSolidDatasetWithAcr(
+    const resourceWithAcr = await acp_ess_2.getSolidDatasetWithAcr(
       sessionResource,
       fetchOptions,
     );
@@ -271,41 +268,37 @@ describe("An ACP Solid server", () => {
     ).toStrictEqual(APPEND_ONLY_ACCESS);
   });
 
-  it("can get and set read access for the public", async () => {
-    const setPublicAccess = env.features?.acp
-      ? latest_setPublicAccess
-      : legacy_setPublicAccess;
-    const getPublicAccess = env.features?.acp
-      ? latest_getPublicAccess
-      : legacy_getPublicAccess;
+  (env.features?.acp ? it : it.skip)(
+    "can get and set read access for the public",
+    async () => {
+      await expect(
+        getSolidDataset(sessionResource, fetchOptions),
+      ).resolves.toEqual(expect.objectContaining({ graphs: { default: {} } }));
 
-    await expect(
-      getSolidDataset(sessionResource, fetchOptions),
-    ).resolves.toEqual(expect.objectContaining({ graphs: { default: {} } }));
+      await expect(getSolidDataset(sessionResource)).rejects.toThrow();
 
-    await expect(getSolidDataset(sessionResource)).rejects.toThrow();
-
-    const access = await setPublicAccess(
-      sessionResource,
-      { read: true },
-      fetchOptions,
-    );
-
-    expect(access).toStrictEqual(READ_ONLY_ACCESS);
-    expect(await getPublicAccess(sessionResource, fetchOptions)).toStrictEqual(
-      READ_ONLY_ACCESS,
-    );
-
-    try {
-      await expect(getSolidDataset(sessionResource)).resolves.toEqual(
-        expect.objectContaining({ graphs: { default: {} } }),
+      const access = await setPublicAccess(
+        sessionResource,
+        { read: true },
+        fetchOptions,
       );
-    } catch (e) {
-      console.error(
-        `"Making a resource public with the universal API fails in environment ${env.environment}`,
-      );
-    }
-  });
+
+      expect(access).toStrictEqual(READ_ONLY_ACCESS);
+      expect(
+        await getPublicAccess(sessionResource, fetchOptions),
+      ).toStrictEqual(READ_ONLY_ACCESS);
+
+      try {
+        await expect(getSolidDataset(sessionResource)).resolves.toEqual(
+          expect.objectContaining({ graphs: { default: {} } }),
+        );
+      } catch (e) {
+        console.error(
+          `"Making a resource public with the universal API fails in environment ${env.environment}`,
+        );
+      }
+    },
+  );
 
   it("can get and set full access for an agent", async () => {
     const agent = "https://example.org/alice";

@@ -6,12 +6,6 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 The following changes are pending, and will be applied on the next major release:
 
-- the parser returned by `getJsonLdParser` will no longer return a promise when
-  the `parse` method is called. This function's signature already specifies it
-  returns `void`, so no code should rely on a returned value, but we wanted to
-  give a heads-up to any developers currently relying on this undocumented behavior
-  before making a potentially breaking change.
-
 ## [Unreleased]
 
 The following changes have been implemented but not released yet:
@@ -22,6 +16,9 @@ The following changes have been implemented but not released yet:
   with Node 18 and higher.
 - Due to changes in the rollup config the `umd` output is now found at `dist/index.umd.js` rather than `umd/index.js`.
 - Drop support for `Buffer`s as input to `saveFileInContainer` and `overwriteFile`. Use the file name of inputs to `saveFileInContainer` as the `Slug` name recommendation if no slug is explicitly provided.
+- Have `getJsonLdParser` return `void` rather than a Promise so that it now aligns with
+  the `Parser` type definition.
+- Remove deprecated ACP APIs; including all APIs for ESS 1.1.
 
 ## [1.30.2] - 2023-09-26
 

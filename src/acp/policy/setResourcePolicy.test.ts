@@ -27,8 +27,9 @@ import {
 } from "../mock/constants";
 import { createDatasetFromSubjects } from "../mock/dataset";
 import { mockAccessControlledResource } from "../mock/mockAccessControlledResource";
-import { acp_v4 } from "../v4";
 import { setResourcePolicy } from "./setResourcePolicy";
+import { createResourcePolicyFor } from "../policy";
+import { addAllOfMatcherUrl } from "../matcher";
 
 describe("setResourcePolicy()", () => {
   it("returns a dataset containing the set policy and nothing else", async () => {
@@ -68,8 +69,8 @@ describe("setResourcePolicy()", () => {
       },
     });
 
-    let policy = acp_v4.createResourcePolicyFor(resource, "dacp1");
-    policy = acp_v4.addAllOfMatcherUrl(policy, matcherUrl);
+    let policy = createResourcePolicyFor(resource, "dacp1");
+    policy = addAllOfMatcherUrl(policy, matcherUrl);
 
     expect(
       setResourcePolicy(resource, policy).internal_acp.acr.graphs,
