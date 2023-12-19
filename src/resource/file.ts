@@ -149,6 +149,7 @@ type SaveFileOptions = WriteFileOptions & {
    * This option can be used as a hint to the server in how to name a new file.
    * Note: the server is still free to choose a completely different, unrelated
    * name if it chooses.
+   * @deprecated Provide a `File` input with a `name` property as input to `saveFileInContainer` instead.
    */
   slug?: string;
 };
@@ -161,8 +162,8 @@ type SaveFileOptions = WriteFileOptions & {
  * ```
  * const savedFile = await saveFileInContainer(
  *   "https://pod.example.com/some/existing/container/",
- *   new File(["This is a plain piece of text"], "myFile", { type: "plain/text" }),
- *   { slug: "suggestedFileName.txt", contentType: "text/plain", fetch: fetch }
+ *   new File(["This is a plain piece of text"], "suggestedFileName.txt", { type: "text/plain" }),
+ *   { fetch: fetch }
  * );
  * ```
  *
@@ -266,8 +267,8 @@ export type WriteFileOptions = GetFileOptions & {
  * ```
  * const savedFile = await overwriteFile(
  *   "https://pod.example.com/some/container/myFile.txt",
- *   new File(["This is a plain piece of text"], "myFile", { type: "plain/text" }),
- *   { contentType: "text/plain", fetch: fetch }
+ *   new File(["This is a plain piece of text"], "myFile", { type: "text/plain" }),
+ *   { fetch: fetch }
  * );
  * ```
  *
