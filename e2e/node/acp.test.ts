@@ -124,6 +124,12 @@ describe("An ACP Solid server", () => {
     );
   });
 
+  it("advertises its ACLs as ACP AccessControlResources", async () => {
+    expect(await acp_ess_2.isAcpControlled(sessionResource, fetchOptions)).toBe(
+      true,
+    );
+  });
+
   it("can read ACP access controls", async () => {
     const resourceWithAcr = await acp_ess_2.getSolidDatasetWithAcr(
       sessionResource,
