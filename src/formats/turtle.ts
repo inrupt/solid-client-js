@@ -50,9 +50,8 @@ export const getTurtleParser = (): Parser => {
     onComplete: (callback) => {
       onCompleteCallbacks.push(callback);
     },
-    parse: async (source, resourceInfo) => {
-      const parser = await getParser(getSourceUrl(resourceInfo));
-      parser.parse(source, (error, quad) => {
+    parse: (source, resourceInfo) => {
+      getParser(getSourceUrl(resourceInfo)).parse(source, (error, quad) => {
         if (error) {
           onErrorCallbacks.forEach((callback) => callback(error));
         } else if (quad) {
@@ -65,7 +64,7 @@ export const getTurtleParser = (): Parser => {
   };
 };
 
-async function getParser(baseIri: IriString) {
+function getParser(baseIri: IriString) {
   return new N3Parser({ format: "text/turtle", baseIRI: baseIri });
 }
 

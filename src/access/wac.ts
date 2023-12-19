@@ -45,7 +45,6 @@ import type {
   WebId,
   WithServerResourceInfo,
 } from "../interfaces";
-import type { Access } from "./universal";
 import type {
   Access as AclAccess,
   AclDataset,
@@ -61,6 +60,13 @@ import {
   saveAclFor,
 } from "../acl/acl";
 
+interface Access {
+  read: boolean;
+  append: boolean;
+  write: boolean;
+  controlRead: boolean;
+  controlWrite: boolean;
+}
 export type WacAccess = (
   | { controlRead: true; controlWrite: true }
   | { controlRead: false; controlWrite: false }

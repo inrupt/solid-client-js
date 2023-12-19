@@ -50,8 +50,8 @@ export const getJsonLdParser = (): Parser => {
     // The following returns a Promise that can be awaited, which is undocumented
     // behavior that doesn't match the type signature. It prevents a potentially
     // breaking change, and will be updated on the next major release.
-    parse: async (source, resourceInfo) =>
-      new Promise((res) => {
+    parse: (source, resourceInfo) =>
+      new Promise<void>((res) => {
         const parser = new JsonLdParser({
           baseIRI: getSourceUrl(resourceInfo),
           documentLoader: new FetchDocumentLoader((...args) => fetch(...args)),

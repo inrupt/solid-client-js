@@ -54,7 +54,7 @@ import {
 import {
   getAgentAccess as getAgentAccessUniversal,
   setPublicAccess as setPublicAccessUniversal,
-} from "../../src/access/universal";
+} from "../../src/universal";
 
 const env = getNodeTestingEnvironment();
 const sessionResourcePrefix = "solid-client-tests/node/wac-";

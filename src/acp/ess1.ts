@@ -66,7 +66,6 @@ export {
   isAcpControlled,
 } from "./acp";
 export {
-  acrAsMarkdown,
   addAcrPolicyUrl,
   addMemberAcrPolicyUrl,
   addMemberPolicyUrl,

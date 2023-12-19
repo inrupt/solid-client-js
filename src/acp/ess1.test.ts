@@ -23,7 +23,6 @@ import { it, expect } from "@jest/globals";
 import * as acp_ess_1 from "./ess1";
 
 it("exports Inrupt ESS 1.1 ACP functions", () => {
-  expect(acp_ess_1.acrAsMarkdown).toBeDefined();
   expect(acp_ess_1.addAcrPolicyUrl).toBeDefined();
   expect(acp_ess_1.addAgent).toBeDefined();
   expect(acp_ess_1.addAllOfRuleUrl).toBeDefined();

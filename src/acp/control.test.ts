@@ -24,7 +24,6 @@ import { DataFactory } from "n3";
 
 import type { AccessControlResource, WithLinkedAcr } from "./control";
 import {
-  acrAsMarkdown,
   addAcrPolicyUrl,
   addMemberAcrPolicyUrl,
   addMemberPolicyUrl,
@@ -73,7 +72,6 @@ import { addIri, addUrl } from "../thing/add";
 import { mockSolidDatasetFrom } from "../resource/mock";
 import type { WithAccessibleAcl } from "../acl/acl";
 import { getSourceUrl } from "../resource/resource";
-import { removeControl } from "./v1";
 
 describe("hasLinkedAcr", () => {
   it("returns true if a Resource exposes a URL to an Access Control Resource", () => {
@@ -361,50 +359,6 @@ describe("setControl", () => {
     const withoutAcr = mockSolidDatasetFrom("https://some.pod/resource");
 
     expect(() => internal_setControl(withoutAcr as any, control)).toThrow(
-      "An Access Control Resource for [https://some.pod/resource] is not available. This could be because the current user is not allowed to see it, or because their Pod Server does not support Access Control Resources.",
-    );
-  });
-});
-
-describe("removeControl", () => {
-  it("removes the given Access Control from the given Access Control Resource", () => {
-    const controlUrl =
-      "https://some.pod/access-control-resource.ttl#access-control";
-    const control = setUrl(
-      createThing({ url: controlUrl }),
-      rdf.type,
-      acp.AccessControl,
-    );
-    const accessControlResource = setThing(
-      mockAcrFor("https://some.pod/resource"),
-      control,
-    );
-    const resourceWithAcr = addMockAcrTo(
-      mockSolidDatasetFrom("https://arbitrary.pod/resource"),
-      accessControlResource,
-    );
-
-    const newWithAccessControlResource = removeControl(
-      resourceWithAcr,
-      control,
-    );
-
-    expect(
-      getThing(newWithAccessControlResource.internal_acp.acr, controlUrl),
-    ).toBeNull();
-  });
-
-  it("throws an error if the given Resource does not have an Access Control Resource", () => {
-    const controlUrl =
-      "https://some.pod/access-control-resource.ttl#access-control";
-    const control = setUrl(
-      createThing({ url: controlUrl }),
-      rdf.type,
-      acp.AccessControl,
-    );
-    const withoutAcr = mockSolidDatasetFrom("https://some.pod/resource");
-
-    expect(() => removeControl(withoutAcr as any, control)).toThrow(
       "An Access Control Resource for [https://some.pod/resource] is not available. This could be because the current user is not allowed to see it, or because their Pod Server does not support Access Control Resources.",
     );
   });
@@ -1772,62 +1726,6 @@ describe("removeMemberPolicyUrlAll", () => {
     const controls = getThingAll(accessControlResource);
     expect(getUrlAll(controls[0], acp.applyMembers)).toContain(
       "https://some.pod/policy-resource#policy",
-    );
-  });
-});
-
-describe("acrAsMarkdown", () => {
-  it("shows when an ACR is empty", () => {
-    const accessControlResource = mockAcrFor("https://some.pod/resource");
-    const resourceWithAcr = addMockAcrTo(
-      mockSolidDatasetFrom("https://some.pod/resource"),
-      accessControlResource,
-    );
-
-    expect(acrAsMarkdown(resourceWithAcr)).toBe(
-      "# Access controls for https://some.pod/resource\n" +
-        "\n" +
-        "<no policies specified yet>\n",
-    );
-  });
-
-  it("can list all policies that apply to a resource or its ACR", () => {
-    const accessControlResource = mockAcrFor("https://some.pod/resource");
-    let resourceWithAcr = addMockAcrTo(
-      mockSolidDatasetFrom("https://some.pod/resource"),
-      accessControlResource,
-    );
-    resourceWithAcr = addPolicyUrl(
-      resourceWithAcr,
-      "https://some.pod/policyResource#policy",
-    );
-    resourceWithAcr = addMemberPolicyUrl(
-      resourceWithAcr,
-      "https://some.pod/policyResource#memberPolicy",
-    );
-    resourceWithAcr = addAcrPolicyUrl(
-      resourceWithAcr,
-      "https://some.pod/policyResource#acrPolicy",
-    );
-    resourceWithAcr = addMemberAcrPolicyUrl(
-      resourceWithAcr,
-      "https://some.pod/policyResource#memberAcrPolicy",
-    );
-
-    expect(acrAsMarkdown(resourceWithAcr)).toBe(
-      "# Access controls for https://some.pod/resource\n" +
-        "\n" +
-        "The following policies apply to this resource:\n" +
-        "- https://some.pod/policyResource#policy\n" +
-        "\n" +
-        "The following policies apply to the access control resource for this resource:\n" +
-        "- https://some.pod/policyResource#acrPolicy\n" +
-        "\n" +
-        "The following policies apply to the children of this resource:\n" +
-        "- https://some.pod/policyResource#memberPolicy\n" +
-        "\n" +
-        "The following policies apply to the access control resources for children of this resource:\n" +
-        "- https://some.pod/policyResource#memberAcrPolicy\n",
     );
   });
 });
