@@ -378,7 +378,6 @@ it("exports error classes", () => {
 });
 
 it("exports preview API's for early adopters", () => {
-  expect(access).toBeDefined();
   expect(universalAccess).toBeDefined();
   expect(acp_ess_1).toBeDefined();
   expect(acp_ess_2).toBeDefined();
