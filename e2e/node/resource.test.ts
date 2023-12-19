@@ -72,6 +72,9 @@ if (env.environment === "NSS") {
 
 const TEST_SLUG = "solid-client-test-e2e-resource";
 
+const nodeVersion = process.versions.node.split(".");
+const nodeMajor = Number(nodeVersion[0]);
+
 describe("Authenticated end-to-end", () => {
   let fetchOptions: { fetch: typeof fetch };
   let session: Session;
@@ -187,28 +190,34 @@ describe("Authenticated end-to-end", () => {
   });
 
   // Cannot use file constructor in Node 18 and below
-  it("can create, delete, and differentiate between RDF and non-RDF Resources using a File", async () => {
-    const fileUrl = `${sessionResource}.txt`;
+  (nodeMajor > 18 ? it : it.skip)(
+    "can create, delete, and differentiate between RDF and non-RDF Resources using a File",
+    async () => {
+      const fileUrl = `${sessionResource}.txt`;
 
-    const sessionFile = await overwriteFile(
-      fileUrl,
-      // We need to type cast because the buffer definition
-      // of Blob does not have the prototype property expected
-      // by the lib.dom.ts
-      new File(["test"], fileUrl, { type: "text/plain" }),
-      fetchOptions,
-    );
-    const sessionDataset = await getSolidDataset(sessionResource, fetchOptions);
+      const sessionFile = await overwriteFile(
+        fileUrl,
+        // We need to type cast because the buffer definition
+        // of Blob does not have the prototype property expected
+        // by the lib.dom.ts
+        new File(["test"], fileUrl, { type: "text/plain" }),
+        fetchOptions,
+      );
+      const sessionDataset = await getSolidDataset(
+        sessionResource,
+        fetchOptions,
+      );
 
-    // Eslint isn't detecting the fact that this is inside an it statement
-    // because of the conditional.
-    // eslint-disable-next-line jest/no-standalone-expect
-    expect(isRawData(sessionDataset)).toBe(false);
-    // eslint-disable-next-line jest/no-standalone-expect
-    expect(isRawData(sessionFile)).toBe(true);
+      // Eslint isn't detecting the fact that this is inside an it statement
+      // because of the conditional.
+      // eslint-disable-next-line jest/no-standalone-expect
+      expect(isRawData(sessionDataset)).toBe(false);
+      // eslint-disable-next-line jest/no-standalone-expect
+      expect(isRawData(sessionFile)).toBe(true);
 
-    await deleteFile(fileUrl, fetchOptions);
-  });
+      await deleteFile(fileUrl, fetchOptions);
+    },
+  );
 
   it("can create, delete, and differentiate between RDF and non-RDF Resources using a File from the node Buffer package", async () => {
     const fileUrl = `${sessionResource}.txt`;
