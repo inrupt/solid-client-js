@@ -191,7 +191,6 @@ import {
   FetchError,
   ThingExpectedError,
   universalAccess,
-  acp_ess_1,
   acp_ess_2,
   responseToSolidDataset,
   responseToResourceInfo,
@@ -379,7 +378,6 @@ it("exports error classes", () => {
 
 it("exports preview API's for early adopters", () => {
   expect(universalAccess).toBeDefined();
-  expect(acp_ess_1).toBeDefined();
   expect(acp_ess_2).toBeDefined();
   expect(responseToSolidDataset).toBeDefined();
   expect(responseToResourceInfo).toBeDefined();

@@ -288,18 +288,6 @@ export * as universalAccess from "./universal";
  * recommended for production applications. Because of this, all ACP-related API's are exported on a
  * single object, which does not facilitate tree-shaking: if you use one ACP-related API, all of
  * them will be included in your bundle.
- */
-export * as acp_ess_1 from "./acp/ess1";
-
-/**
- * The Access Control Policies proposal has not yet been reviewed for inclusion in the Solid spec.
- * To enable early experimentation, solid-client exposes a low-level API. However, this API can and
- * will include breaking changes in non-major releases. Additionally, for most applications, a
- * higher-level API that is planned will be more applicable.
- * Thus, the following export is *only* intended for experimentation by early adopters, and is not
- * recommended for production applications. Because of this, all ACP-related API's are exported on a
- * single object, which does not facilitate tree-shaking: if you use one ACP-related API, all of
- * them will be included in your bundle.
  *
  * This version of the APIs contains changes that have not been implemented by a server yet. Only
  * switch to it when servers are updated.

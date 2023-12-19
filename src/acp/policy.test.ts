@@ -49,9 +49,7 @@ import { addMockAcrTo, mockAcrFor } from "./mock";
 import {
   createPolicy,
   createResourcePolicyFor,
-  getAllowModesV1,
   getAllowModesV2,
-  getDenyModesV1,
   getDenyModesV2,
   getPolicy,
   getPolicyAll,
@@ -59,19 +57,15 @@ import {
   getResourceAcrPolicyAll,
   getResourcePolicy,
   getResourcePolicyAll,
-  policyAsMarkdown,
   removePolicy,
   removeResourceAcrPolicy,
   removeResourcePolicy,
-  setAllowModesV1,
   setAllowModesV2,
-  setDenyModesV1,
   setDenyModesV2,
   setPolicy,
   setResourceAcrPolicy,
   setResourcePolicy,
 } from "./policy";
-import { addNoneOfRuleUrl, addAnyOfRuleUrl, addAllOfRuleUrl } from "./rule";
 
 jest.spyOn(globalThis, "fetch").mockImplementation(
   async () =>
@@ -1156,55 +1150,6 @@ describe("setAllowModes", () => {
       internal_accessModeIriStrings.append,
     ]);
   });
-
-  describe("using the deprecated, ACP-specific vocabulary", () => {
-    it("sets the given modes on the Policy", () => {
-      const policy = mockThingFrom(
-        "https://arbitrary.pod/policy-resource#policy",
-      );
-
-      const updatedPolicy = setAllowModesV1(policy, {
-        read: false,
-        append: true,
-        write: true,
-      });
-
-      expect(getIriAll(updatedPolicy, acp.allow)).toEqual([
-        acp.Append,
-        acp.Write,
-      ]);
-    });
-
-    it("replaces existing modes set on the Policy", () => {
-      let policy = mockThingFrom(
-        "https://arbitrary.pod/policy-resource#policy",
-      );
-      policy = addIri(policy, acp.allow, acp.Append);
-
-      const updatedPolicy = setAllowModesV1(policy, {
-        read: true,
-        append: false,
-        write: false,
-      });
-
-      expect(getIriAll(updatedPolicy, acp.allow)).toEqual([acp.Read]);
-    });
-
-    it("does not affect denied modes", () => {
-      let policy = mockThingFrom(
-        "https://arbitrary.pod/policy-resource#policy",
-      );
-      policy = addIri(policy, acp.deny, acp.Append);
-
-      const updatedPolicy = setAllowModesV1(policy, {
-        read: true,
-        append: false,
-        write: false,
-      });
-
-      expect(getIriAll(updatedPolicy, acp.deny)).toEqual([acp.Append]);
-    });
-  });
 });
 
 describe("getAllowModes", () => {
@@ -1224,34 +1169,6 @@ describe("getAllowModes", () => {
     const allowedModes = getAllowModesV2(policy);
 
     expect(allowedModes).toEqual({ read: false, append: false, write: false });
-  });
-
-  describe("using the deprecated, ACP-specific vocabulary", () => {
-    it("returns all modes that are allowed on the Policy", () => {
-      let policy = mockThingFrom(
-        "https://arbitrary.pod/policy-resource#policy",
-      );
-      policy = addIri(policy, acp.allow, acp.Append);
-
-      const allowedModes = getAllowModesV1(policy);
-
-      expect(allowedModes).toEqual({ read: false, append: true, write: false });
-    });
-
-    it("does not return modes that are denied on the Policy", () => {
-      let policy = mockThingFrom(
-        "https://arbitrary.pod/policy-resource#policy",
-      );
-      policy = addIri(policy, acp.deny, acp.Append);
-
-      const allowedModes = getAllowModesV1(policy);
-
-      expect(allowedModes).toEqual({
-        read: false,
-        append: false,
-        write: false,
-      });
-    });
   });
 });
 
@@ -1302,55 +1219,6 @@ describe("setDenyModes", () => {
       internal_accessModeIriStrings.append,
     ]);
   });
-
-  describe("using the deprecated, ACP-specific vocabulary", () => {
-    it("sets the given modes on the Policy", () => {
-      const policy = mockThingFrom(
-        "https://arbitrary.pod/policy-resource#policy",
-      );
-
-      const updatedPolicy = setDenyModesV1(policy, {
-        read: false,
-        append: true,
-        write: true,
-      });
-
-      expect(getIriAll(updatedPolicy, acp.deny)).toEqual([
-        acp.Append,
-        acp.Write,
-      ]);
-    });
-
-    it("replaces existing modes set on the Policy", () => {
-      let policy = mockThingFrom(
-        "https://arbitrary.pod/policy-resource#policy",
-      );
-      policy = addIri(policy, acp.deny, acp.Append);
-
-      const updatedPolicy = setDenyModesV1(policy, {
-        read: true,
-        append: false,
-        write: false,
-      });
-
-      expect(getIriAll(updatedPolicy, acp.deny)).toEqual([acp.Read]);
-    });
-
-    it("does not affect allowed modes", () => {
-      let policy = mockThingFrom(
-        "https://arbitrary.pod/policy-resource#policy",
-      );
-      policy = addIri(policy, acp.allow, acp.Append);
-
-      const updatedPolicy = setDenyModesV1(policy, {
-        read: true,
-        append: false,
-        write: false,
-      });
-
-      expect(getIriAll(updatedPolicy, acp.allow)).toEqual([acp.Append]);
-    });
-  });
 });
 
 describe("getDenyModes", () => {
@@ -1370,111 +1238,5 @@ describe("getDenyModes", () => {
     const allowedModes = getDenyModesV2(policy);
 
     expect(allowedModes).toEqual({ read: false, append: false, write: false });
-  });
-
-  describe("using the deprecated, ACP-specific vocabulary", () => {
-    it("returns all modes that are denied on the Policy", () => {
-      let policy = mockThingFrom(
-        "https://arbitrary.pod/policy-resource#policy",
-      );
-      policy = addIri(policy, acp.deny, acp.Append);
-
-      const allowedModes = getDenyModesV1(policy);
-
-      expect(allowedModes).toEqual({ read: false, append: true, write: false });
-    });
-
-    it("does not return modes that are allowed on the Policy", () => {
-      let policy = mockThingFrom(
-        "https://arbitrary.pod/policy-resource#policy",
-      );
-      policy = addIri(policy, acp.allow, acp.Append);
-
-      const allowedModes = getDenyModesV1(policy);
-
-      expect(allowedModes).toEqual({
-        read: false,
-        append: false,
-        write: false,
-      });
-    });
-  });
-});
-
-describe("policyAsMarkdown", () => {
-  it("lists which access modes are allowed, denied or unspecified", () => {
-    let policy = createPolicy("https://some.pod/policyResource#policy");
-    policy = setAllowModesV1(policy, {
-      read: true,
-      append: false,
-      write: false,
-    });
-    policy = setDenyModesV1(policy, {
-      read: false,
-      append: false,
-      write: true,
-    });
-
-    expect(policyAsMarkdown(policy)).toBe(
-      "## Policy: https://some.pod/policyResource#policy\n" +
-        "\n" +
-        "- Read: allowed\n" +
-        "- Append: unspecified\n" +
-        "- Write: denied\n" +
-        "\n" +
-        "<no rules specified yet>\n",
-    );
-  });
-
-  it("can list individual rules without adding unused types of rules", () => {
-    let policy = createPolicy("https://some.pod/policyResource#policy");
-    policy = addAllOfRuleUrl(
-      policy,
-      "https://some.pod/policyResource#allOfRule",
-    );
-
-    expect(policyAsMarkdown(policy)).toBe(
-      "## Policy: https://some.pod/policyResource#policy\n" +
-        "\n" +
-        "- Read: unspecified\n" +
-        "- Append: unspecified\n" +
-        "- Write: unspecified\n" +
-        "\n" +
-        "All of these rules should match:\n" +
-        "- https://some.pod/policyResource#allOfRule\n",
-    );
-  });
-
-  it("can list all applicable rules", () => {
-    let policy = createPolicy("https://some.pod/policyResource#policy");
-    policy = addAllOfRuleUrl(
-      policy,
-      "https://some.pod/policyResource#allOfRule",
-    );
-    policy = addAnyOfRuleUrl(
-      policy,
-      "https://some.pod/policyResource#anyOfRule",
-    );
-    policy = addNoneOfRuleUrl(
-      policy,
-      "https://some.pod/policyResource#noneOfRule",
-    );
-
-    expect(policyAsMarkdown(policy)).toBe(
-      "## Policy: https://some.pod/policyResource#policy\n" +
-        "\n" +
-        "- Read: unspecified\n" +
-        "- Append: unspecified\n" +
-        "- Write: unspecified\n" +
-        "\n" +
-        "All of these rules should match:\n" +
-        "- https://some.pod/policyResource#allOfRule\n" +
-        "\n" +
-        "At least one of these rules should match:\n" +
-        "- https://some.pod/policyResource#anyOfRule\n" +
-        "\n" +
-        "None of these rules should match:\n" +
-        "- https://some.pod/policyResource#noneOfRule\n",
-    );
   });
 });

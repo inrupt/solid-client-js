@@ -53,11 +53,6 @@ import {
   removePolicyUrl,
 } from "./control";
 import { internal_getAcr, internal_setAcr } from "./control.internal";
-import {
-  getNoneOfRuleUrlAll,
-  getAnyOfRuleUrlAll,
-  getAllOfRuleUrlAll,
-} from "./rule";
 
 /**
  * A Policy can be applied to Resources to grant or deny [[AccessModes]] to users who match the Policy's [[Rule]]s.
@@ -226,40 +221,9 @@ export function setAllowModesV2<P extends Policy | ResourcePolicy>(
   return newPolicy;
 }
 /**
- * ```{note} There is no Access Control Policies specification yet. As such, this
- * function is still experimental and subject to change, even in a non-major release.
- * ```
- *
- * Given a [[Policy]] and a set of [[AccessModes]], return a new Policy based on the given
- * Policy, but with the given Access Modes allowed on it.
- *
- * @param policy The Policy on which to set the modes to allow.
- * @param modes Modes to allow for this Policy.
- * @since 1.6.0
- * @deprecated The Access Control Policies proposal will be updated to use a different vocabulary for allow- and deny-modes. To be compatible with servers that implement that, use [[setAllowModesV2]].
+ * See [[setAllowModesV2]].
  */
-export function setAllowModesV1<P extends Policy | ResourcePolicy>(
-  policy: P,
-  modes: AccessModes,
-): P {
-  let newPolicy = removeAll(policy, acp.allow);
-
-  if (modes.read === true) {
-    newPolicy = addIri(newPolicy, acp.allow, acp.Read);
-  }
-  if (modes.append === true) {
-    newPolicy = addIri(newPolicy, acp.allow, acp.Append);
-  }
-  if (modes.write === true) {
-    newPolicy = addIri(newPolicy, acp.allow, acp.Write);
-  }
-
-  return newPolicy;
-}
-/**
- * See [[setAllowModesV1]]. Will be updated to point to [[setAllowModesV2]] when pod.inrupt.com is transitioned to the updated vocabulary.
- */
-export const setAllowModes = setAllowModesV1;
+export const setAllowModes = setAllowModesV2;
 /**
  * ```{note} There is no Access Control Policies specification yet. As such, this
  * function is still experimental and subject to change, even in a non-major release.
@@ -280,31 +244,11 @@ export function getAllowModesV2<P extends Policy | ResourcePolicy>(
     write: allowedModes.includes(internal_accessModeIriStrings.write),
   };
 }
+
 /**
- * ```{note} There is no Access Control Policies specification yet. As such, this
- * function is still experimental and subject to change, even in a non-major release.
- * ```
- *
- * Given a [[Policy]], return which [[AccessModes]] it allows.
- *
- * @param policy The Policy for which you want to know the Access Modes it allows.
- * @since 1.6.0
- * @deprecated The Access Control Policies proposal will be updated to use a different vocabulary for allow- and deny-modes. To be compatible with servers that implement that, use [[getAllowModesV2]].
+ * See [[getAllowModesV2]].
  */
-export function getAllowModesV1<P extends Policy | ResourcePolicy>(
-  policy: P,
-): AccessModes {
-  const allowedModes = getIriAll(policy, acp.allow);
-  return {
-    read: allowedModes.includes(acp.Read),
-    append: allowedModes.includes(acp.Append),
-    write: allowedModes.includes(acp.Write),
-  };
-}
-/**
- * See [[getAllowModesV1]]. Will be updated to point to [[getAllowModesV2]] when pod.inrupt.com is transitioned to the updated vocabulary.
- */
-export const getAllowModes = getAllowModesV1;
+export const getAllowModes = getAllowModesV2;
 /**
  * ```{note} There is no Access Control Policies specification yet. As such, this
  * function is still experimental and subject to change, even in a non-major release.
@@ -343,41 +287,11 @@ export function setDenyModesV2<P extends Policy | ResourcePolicy>(
 
   return newPolicy;
 }
-/**
- * ```{note} There is no Access Control Policies specification yet. As such, this
- * function is still experimental and subject to change, even in a non-major release.
- * ```
- *
- * Given a [[Policy]] and a set of [[AccessModes]], return a new Policy based on the given
- * Policy, but with the given Access Modes disallowed on it.
- *
- * @param policy The Policy on which to set the modes to disallow.
- * @param modes Modes to disallow for this Policy.
- * @since 1.6.0
- * @deprecated The Access Control Policies proposal will be updated to use a different vocabulary for allow- and deny-modes. To be compatible with servers that implement that, use [[setDenyModesV2]].
- */
-export function setDenyModesV1<P extends Policy | ResourcePolicy>(
-  policy: P,
-  modes: AccessModes,
-): P {
-  let newPolicy = removeAll(policy, acp.deny);
 
-  if (modes.read === true) {
-    newPolicy = addIri(newPolicy, acp.deny, acp.Read);
-  }
-  if (modes.append === true) {
-    newPolicy = addIri(newPolicy, acp.deny, acp.Append);
-  }
-  if (modes.write === true) {
-    newPolicy = addIri(newPolicy, acp.deny, acp.Write);
-  }
-
-  return newPolicy;
-}
 /**
- * See [[setDenyModesV1]]. Will be updated to point to [[setDenyModesV2]] when pod.inrupt.com is transitioned to the updated vocabulary.
+ * See [[setDenyModesV2]].
  */
-export const setDenyModes = setDenyModesV1;
+export const setDenyModes = setDenyModesV2;
 /**
  * ```{note} There is no Access Control Policies specification yet. As such, this
  * function is still experimental and subject to change, even in a non-major release.
@@ -398,31 +312,11 @@ export function getDenyModesV2<P extends Policy | ResourcePolicy>(
     write: deniedModes.includes(internal_accessModeIriStrings.write),
   };
 }
+
 /**
- * ```{note} There is no Access Control Policies specification yet. As such, this
- * function is still experimental and subject to change, even in a non-major release.
- * ```
- *
- * Given a [[Policy]], return which [[AccessModes]] it disallows.
- *
- * @param policy The Policy on which you want to know the Access Modes it disallows.
- * @since 1.6.0
- * @deprecated The Access Control Policies proposal will be updated to use a different vocabulary for allow- and deny-modes. To be compatible with servers that implement that, use [[getDenyModesV2]].
+ * See [[getDenyModesV2]].
  */
-export function getDenyModesV1<P extends Policy | ResourcePolicy>(
-  policy: P,
-): AccessModes {
-  const deniedModes = getIriAll(policy, acp.deny);
-  return {
-    read: deniedModes.includes(acp.Read),
-    append: deniedModes.includes(acp.Append),
-    write: deniedModes.includes(acp.Write),
-  };
-}
-/**
- * See [[getDenyModesV1]]. Will be updated to point to [[getDenyModesV2]] when pod.inrupt.com is transitioned to the updated vocabulary.
- */
-export const getDenyModes = getDenyModesV1;
+export const getDenyModes = getDenyModesV2;
 
 /**
  * ```{note} There is no Access Control Policies specification yet. As such, this
@@ -714,58 +608,4 @@ export function setResourceAcrPolicy<ResourceExt extends WithAccessibleAcr>(
   const updatedResource = internal_setAcr(resourceWithAcr, updatedAcr);
   const policyUrl = asUrl(policy, getSourceUrl(acr));
   return addAcrPolicyUrl(updatedResource, policyUrl);
-}
-
-/**
- * Gets a human-readable representation of the given [[Policy]] to aid debugging.
- *
- * Note that changes to the exact format of the return value are not considered a breaking change;
- * it is intended to aid in debugging, not as a serialisation method that can be reliably parsed.
- *
- * @param policy The Policy to get a human-readable representation of.
- * @since 1.6.0
- * @deprecated
- */
-export function policyAsMarkdown(policy: Policy | ResourcePolicy): string {
-  function getStatus(allow: boolean, deny: boolean): string {
-    if (deny) {
-      return "denied";
-    }
-    if (allow) {
-      return "allowed";
-    }
-    return "unspecified";
-  }
-  const allowModes = getAllowModesV1(policy);
-  const denyModes = getDenyModesV1(policy);
-  let markdown = `## Policy: ${asUrl(policy)}\n\n`;
-  markdown += `- Read: ${getStatus(allowModes.read, denyModes.read)}\n`;
-  markdown += `- Append: ${getStatus(allowModes.append, denyModes.append)}\n`;
-  markdown += `- Write: ${getStatus(allowModes.write, denyModes.write)}\n`;
-
-  const allOfRules = getAllOfRuleUrlAll(policy);
-  const anyOfRules = getAnyOfRuleUrlAll(policy);
-  const noneOfRules = getNoneOfRuleUrlAll(policy);
-
-  if (
-    allOfRules.length === 0 &&
-    anyOfRules.length === 0 &&
-    noneOfRules.length === 0
-  ) {
-    markdown += "\n<no rules specified yet>\n";
-  }
-  if (allOfRules.length > 0) {
-    markdown += "\nAll of these rules should match:\n";
-    markdown += `- ${allOfRules.join("\n- ")}\n`;
-  }
-  if (anyOfRules.length > 0) {
-    markdown += "\nAt least one of these rules should match:\n";
-    markdown += `- ${anyOfRules.join("\n- ")}\n`;
-  }
-  if (noneOfRules.length > 0) {
-    markdown += "\nNone of these rules should match:\n";
-    markdown += `- ${noneOfRules.join("\n- ")}\n`;
-  }
-
-  return markdown;
 }

@@ -18,7 +18,7 @@ The following changes have been implemented but not released yet:
 - Drop support for `Buffer`s as input to `saveFileInContainer` and `overwriteFile`. Use the file name of inputs to `saveFileInContainer` as the `Slug` name recommendation if no slug is explicitly provided.
 - Have `getJsonLdParser` return `void` rather than a Promise so that it now aligns with
   the `Parser` type definition.
-- Remove deprecated ACP APIs.
+- Remove deprecated ACP APIs; including all APIs for ESS 1.1.
 
 ## [1.30.2] - 2023-09-26
 

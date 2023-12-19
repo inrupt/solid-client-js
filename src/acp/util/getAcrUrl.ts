@@ -24,7 +24,6 @@ import type { DefaultOptions } from "../type/DefaultOptions";
 import { ACP } from "../constants";
 import { getLinkedResourceUrlAll, getSourceUrl } from "../../resource/resource";
 import { getAclServerResourceInfo } from "../../universal/getAclServerResourceInfo";
-import { getAcrUrl as getAcrUrlLegacy } from "./getAcrUrl.legacy";
 
 /**
  * Retrieve the URL of an Access Control Resource as per the ACP Draft
@@ -38,12 +37,6 @@ export async function getAcrUrl(
   resource: WithServerResourceInfo,
   options?: DefaultOptions,
 ): Promise<UrlString | null> {
-  // TODO: Remove as soon as ESS 1.1 is phased out
-  const legacyAcrUrl = getAcrUrlLegacy(resource);
-  if (legacyAcrUrl !== null) {
-    return legacyAcrUrl;
-  }
-
   // The ACP Draft mandates a link rel="type" header identifies Access Control Resources
   const aclServerResourceInfo = await getAclServerResourceInfo(
     resource,
