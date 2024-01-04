@@ -175,7 +175,7 @@
     "@inrupt/internal-playwright-helpers": "^3.0.1",
     "@inrupt/internal-test-env": "^3.0.1",
     "@inrupt/jest-jsdom-polyfills": "^3.0.1",
-    "@inrupt/solid-client-authn-node": "^1.17.5",
+    "@inrupt/solid-client-authn-node": "^2.0.0",
     "@playwright/test": "^1.40.1",
     "@rdfjs/types": "^1.1.0",
     "@rushstack/eslint-patch": "^1.6.1",
