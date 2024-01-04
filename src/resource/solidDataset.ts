@@ -43,7 +43,7 @@ import type {
   LocalNode,
 } from "../interfaces";
 import { hasResourceInfo, hasChangelog } from "../interfaces";
-import { internal_toIriString } from "../interfaces.internal";
+import { internal_toIriString, normalizeUrl } from "../interfaces.internal";
 import {
   getSourceUrl,
   getResourceInfo,
@@ -415,17 +415,19 @@ export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
     { fetch?: typeof fetch } & { prefixes: Record<string, string> }
   >,
 ): Promise<Dataset & WithServerResourceInfo & WithChangeLog> {
-  url = internal_toIriString(url);
+  const targetUrl = normalizeUrl(internal_toIriString(url), {
+    trailingSlash: false,
+  });
   const datasetWithChangelog = internal_withChangeLog(solidDataset);
 
-  const requestInit = isUpdate(datasetWithChangelog, url)
+  const requestInit = isUpdate(datasetWithChangelog, targetUrl)
     ? await prepareSolidDatasetUpdate(datasetWithChangelog)
     : await prepareSolidDatasetCreation(datasetWithChangelog, options);
 
-  const response = await (options?.fetch ?? fetch)(url, requestInit);
+  const response = await (options?.fetch ?? fetch)(targetUrl, requestInit);
 
   if (internal_isUnsuccessfulResponse(response)) {
-    const diagnostics = isUpdate(datasetWithChangelog, url)
+    const diagnostics = isUpdate(datasetWithChangelog, targetUrl)
       ? `The changes that were sent to the Pod are listed below.\n\n${changeLogAsMarkdown(
           datasetWithChangelog,
         )}`
@@ -433,7 +435,7 @@ export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
           datasetWithChangelog,
         )}`;
     throw new FetchError(
-      `Storing the Resource at [${url}] failed: [${response.status}] [${
+      `Storing the Resource at [${targetUrl}] failed: [${response.status}] [${
         response.statusText
       }] ${await response.text()}.\n\n${diagnostics}`,
       response,

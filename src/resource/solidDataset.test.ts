@@ -839,6 +839,38 @@ describe("saveSolidDatasetAt", () => {
     expect(mockFetch.mock.calls).toHaveLength(1);
   });
 
+  describe("normalizing the target URL", () => {
+    const mockFetch = jest
+      .fn<typeof fetch>()
+      .mockReturnValue(Promise.resolve(new Response()));
+
+    it("removes double slashes from path", async () => {
+      await saveSolidDatasetAt(
+        "https://some.pod//resource//path",
+        createSolidDataset(),
+        {
+          fetch: mockFetch,
+        },
+      );
+
+      expect(mockFetch.mock.calls).toHaveLength(1);
+      expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource/path");
+    });
+
+    it("removes trailing slashes", async () => {
+      await saveSolidDatasetAt(
+        "https://some.pod/resource/",
+        createSolidDataset(),
+        {
+          fetch: mockFetch,
+        },
+      );
+
+      expect(mockFetch.mock.calls).toHaveLength(1);
+      expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
+    });
+  });
+
   describe("when saving a new resource", () => {
     it("sends the given SolidDataset to the Pod", async () => {
       const mockFetch = jest

@@ -25,3 +25,15 @@ import type { Iri, IriString } from "./interfaces";
 export function internal_toIriString(iri: Iri | IriString): IriString {
   return typeof iri === "string" ? iri : iri.value;
 }
+
+export function normalizeUrl(
+  inputUrl: IriString,
+  options: { trailingSlash: boolean },
+): IriString {
+  const url = new URL(inputUrl);
+  url.pathname = url.pathname.replace(/\/\/+/g, "/");
+  if (!options.trailingSlash && url.pathname.slice(-1) === "/") {
+    url.pathname = url.pathname.slice(0, url.pathname.length - 1);
+  }
+  return url.href;
+}
