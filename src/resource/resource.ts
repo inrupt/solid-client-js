@@ -34,7 +34,7 @@ import {
   hasServerResourceInfo,
   SolidClientError,
 } from "../interfaces";
-import { internal_toIriString } from "../interfaces.internal";
+import { internal_toIriString, normalizeUrl } from "../interfaces.internal";
 import {
   internal_isAuthenticationFailureResponse,
   internal_isUnsuccessfulResponse,
@@ -58,7 +58,9 @@ export async function getResourceInfo(
     ignoreAuthenticationErrors?: boolean;
   },
 ): Promise<WithServerResourceInfo> {
-  const response = await (options?.fetch ?? fetch)(url, { method: "HEAD" });
+  const response = await (options?.fetch ?? fetch)(normalizeUrl(url), {
+    method: "HEAD",
+  });
   return responseToResourceInfo(response, {
     ignoreAuthenticationErrors: options?.ignoreAuthenticationErrors ?? false,
   });

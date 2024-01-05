@@ -470,12 +470,10 @@ describe("getSolidDataset", () => {
   });
 
   it("uses the given fetcher if provided", async () => {
-    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
-      Promise.resolve(
-        new Response(undefined, {
-          headers: { "Content-Type": "text/turtle" },
-        }),
-      ),
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+      new Response(undefined, {
+        headers: { "Content-Type": "text/turtle" },
+      }),
     );
 
     await getSolidDataset("https://some.pod/resource", { fetch: mockFetch });
@@ -484,12 +482,10 @@ describe("getSolidDataset", () => {
   });
 
   describe("normalizing the target URL", () => {
-    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
-      Promise.resolve(
-        new Response(undefined, {
-          headers: { "Content-Type": "text/turtle" },
-        }),
-      ),
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+      new Response(undefined, {
+        headers: { "Content-Type": "text/turtle" },
+      }),
     );
 
     it("removes double slashes from path", async () => {
@@ -525,12 +521,10 @@ describe("getSolidDataset", () => {
   });
 
   it("adds an Accept header accepting turtle by default", async () => {
-    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
-      Promise.resolve(
-        new Response(undefined, {
-          headers: { "Content-Type": "text/turtle" },
-        }),
-      ),
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+      new Response(undefined, {
+        headers: { "Content-Type": "text/turtle" },
+      }),
     );
 
     await getSolidDataset("https://some.pod/resource", { fetch: mockFetch });
@@ -543,12 +537,10 @@ describe("getSolidDataset", () => {
   });
 
   it("advertises all formats supported by given parsers in the Accept header", async () => {
-    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
-      Promise.resolve(
-        new Response(undefined, {
-          headers: { "Content-Type": "text/turtle" },
-        }),
-      ),
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+      new Response(undefined, {
+        headers: { "Content-Type": "text/turtle" },
+      }),
     );
 
     const mockParser: Parser = {
@@ -669,15 +661,13 @@ describe("getSolidDataset", () => {
   });
 
   it("provides the relevant access permissions to the Resource, if available", async () => {
-    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
-      Promise.resolve(
-        new Response(undefined, {
-          headers: {
-            "wac-aLLOW": 'public="read",user="read write append control"',
-            "Content-Type": "text/turtle",
-          },
-        }),
-      ),
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+      new Response(undefined, {
+        headers: {
+          "wac-aLLOW": 'public="read",user="read write append control"',
+          "Content-Type": "text/turtle",
+        },
+      }),
     );
 
     const solidDataset = await getSolidDataset(
@@ -702,16 +692,14 @@ describe("getSolidDataset", () => {
   });
 
   it("defaults permissions to false if they are not set, or are set with invalid syntax", async () => {
-    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
-      Promise.resolve(
-        new Response(undefined, {
-          headers: {
-            // Public permissions are missing double quotes, user permissions are absent:
-            "WAC-Allow": "public=read",
-            "Content-Type": "text/turtle",
-          },
-        }),
-      ),
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+      new Response(undefined, {
+        headers: {
+          // Public permissions are missing double quotes, user permissions are absent:
+          "WAC-Allow": "public=read",
+          "Content-Type": "text/turtle",
+        },
+      }),
     );
 
     const solidDataset = await getSolidDataset(
@@ -736,14 +724,12 @@ describe("getSolidDataset", () => {
   });
 
   it("does not provide the resource's access permissions if not provided by the server", async () => {
-    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
-      Promise.resolve(
-        new Response(undefined, {
-          headers: {
-            "Content-Type": "text/turtle",
-          },
-        }),
-      ),
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+      new Response(undefined, {
+        headers: {
+          "Content-Type": "text/turtle",
+        },
+      }),
     );
 
     const solidDataset = await getSolidDataset(
@@ -769,13 +755,11 @@ describe("getSolidDataset", () => {
     `;
     const mockFetch = jest
       .fn<typeof fetch>()
-      .mockReturnValue(
-        Promise.resolve(
-          mockResponse(
-            turtle,
-            { headers: { "Content-Type": "text/turtle" } },
-            "https://arbitrary.pod/resource",
-          ),
+      .mockResolvedValue(
+        mockResponse(
+          turtle,
+          { headers: { "Content-Type": "text/turtle" } },
+          "https://arbitrary.pod/resource",
         ),
       );
 
@@ -792,10 +776,8 @@ describe("getSolidDataset", () => {
   it("returns a meaningful error when the server returns a 403", async () => {
     const mockFetch = jest
       .fn<typeof fetch>()
-      .mockReturnValue(
-        Promise.resolve(
-          new Response("Not allowed", { status: 403, statusText: "Forbidden" }),
-        ),
+      .mockResolvedValue(
+        new Response("Not allowed", { status: 403, statusText: "Forbidden" }),
       );
 
     const fetchPromise = getSolidDataset("https://some.pod/resource", {
@@ -810,10 +792,8 @@ describe("getSolidDataset", () => {
   it("returns a meaningful error when the server returns a 404", async () => {
     const mockFetch = jest
       .fn<typeof fetch>()
-      .mockReturnValue(
-        Promise.resolve(
-          new Response("Not found", { status: 404, statusText: "Not Found" }),
-        ),
+      .mockResolvedValue(
+        new Response("Not found", { status: 404, statusText: "Not Found" }),
       );
 
     const fetchPromise = getSolidDataset("https://some.pod/resource", {
@@ -826,13 +806,11 @@ describe("getSolidDataset", () => {
   });
 
   it("includes the status code, status message and response body when a request failed", async () => {
-    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
-      Promise.resolve(
-        new Response("Teapots don't make coffee", {
-          status: 418,
-          statusText: "I'm a teapot!",
-        }),
-      ),
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+      new Response("Teapots don't make coffee", {
+        status: 418,
+        statusText: "I'm a teapot!",
+      }),
     );
 
     const fetchPromise = getSolidDataset("https://arbitrary.pod/resource", {
@@ -1154,13 +1132,11 @@ describe("saveSolidDatasetAt", () => {
     });
 
     it("returns a meaningful error when the server returns a 403", async () => {
-      const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
-        Promise.resolve(
-          new Response("Not allowed", {
-            status: 403,
-            statusText: "Forbidden",
-          }),
-        ),
+      const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+        new Response("Not allowed", {
+          status: 403,
+          statusText: "Forbidden",
+        }),
       );
 
       const fetchPromise = saveSolidDatasetAt(
@@ -1179,10 +1155,8 @@ describe("saveSolidDatasetAt", () => {
     it("returns a meaningful error when the server returns a 404", async () => {
       const mockFetch = jest
         .fn<typeof fetch>()
-        .mockReturnValue(
-          Promise.resolve(
-            new Response("Not found", { status: 404, statusText: "Not Found" }),
-          ),
+        .mockResolvedValue(
+          new Response("Not found", { status: 404, statusText: "Not Found" }),
         );
 
       const fetchPromise = saveSolidDatasetAt(
@@ -1199,13 +1173,11 @@ describe("saveSolidDatasetAt", () => {
     });
 
     it("includes the status code, status message and error body when a request failed", async () => {
-      const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
-        Promise.resolve(
-          new Response("Teapots don't make coffee.", {
-            status: 418,
-            statusText: "I'm a teapot!",
-          }),
-        ),
+      const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+        new Response("Teapots don't make coffee.", {
+          status: 418,
+          statusText: "I'm a teapot!",
+        }),
       );
 
       const fetchPromise = saveSolidDatasetAt(
@@ -1638,13 +1610,11 @@ describe("saveSolidDatasetAt", () => {
     });
 
     it("returns a meaningful error when the server returns a 403", async () => {
-      const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
-        Promise.resolve(
-          new Response("Not allowed", {
-            status: 403,
-            statusText: "Forbidden",
-          }),
-        ),
+      const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+        new Response("Not allowed", {
+          status: 403,
+          statusText: "Forbidden",
+        }),
       );
 
       const mockDataset = getMockUpdatedDataset(
@@ -1685,10 +1655,8 @@ describe("saveSolidDatasetAt", () => {
     it("returns a meaningful error when the server returns a 404", async () => {
       const mockFetch = jest
         .fn<typeof fetch>()
-        .mockReturnValue(
-          Promise.resolve(
-            new Response("Not found", { status: 404, statusText: "Not Found" }),
-          ),
+        .mockResolvedValue(
+          new Response("Not found", { status: 404, statusText: "Not Found" }),
         );
 
       const mockDataset = getMockUpdatedDataset(
@@ -1726,13 +1694,11 @@ describe("saveSolidDatasetAt", () => {
       );
     });
     it("includes the status code and status message when a request failed", async () => {
-      const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
-        Promise.resolve(
-          new Response("I'm a teapot!", {
-            status: 418,
-            statusText: "I'm a teapot!",
-          }),
-        ),
+      const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+        new Response("I'm a teapot!", {
+          status: 418,
+          statusText: "I'm a teapot!",
+        }),
       );
 
       const mockDataset = getMockUpdatedDataset(
@@ -1995,10 +1961,8 @@ describe("createContainerAt", () => {
   it("keeps track of what URL the Container was saved to", async () => {
     const mockFetch = jest
       .fn<typeof fetch>()
-      .mockReturnValue(
-        Promise.resolve(
-          mockResponse(undefined, {}, "https://some.pod/container/"),
-        ),
+      .mockResolvedValue(
+        mockResponse(undefined, {}, "https://some.pod/container/"),
       );
 
     const solidDataset = await createContainerAt(
@@ -2014,18 +1978,16 @@ describe("createContainerAt", () => {
   });
 
   it("provides the IRI of the relevant ACL resource, if provided", async () => {
-    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
-      Promise.resolve(
-        mockResponse(
-          undefined,
-          {
-            headers: {
-              Link: '<aclresource.acl>; rel="acl"',
-              "Content-Type": "text/turtle",
-            },
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+      mockResponse(
+        undefined,
+        {
+          headers: {
+            Link: '<aclresource.acl>; rel="acl"',
+            "Content-Type": "text/turtle",
           },
-          "https://some.pod/container/",
-        ),
+        },
+        "https://some.pod/container/",
       ),
     );
 
@@ -2061,14 +2023,12 @@ describe("createContainerAt", () => {
   });
 
   it("provides the relevant access permissions to the Resource, if available", async () => {
-    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
-      Promise.resolve(
-        new Response(undefined, {
-          headers: {
-            "Wac-Allow": 'public="read",user="read write append control"',
-          },
-        }),
-      ),
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+      new Response(undefined, {
+        headers: {
+          "Wac-Allow": 'public="read",user="read write append control"',
+        },
+      }),
     );
 
     const solidDataset = await createContainerAt(
@@ -2093,15 +2053,13 @@ describe("createContainerAt", () => {
   });
 
   it("defaults permissions to false if they are not set, or are set with invalid syntax", async () => {
-    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
-      Promise.resolve(
-        new Response(undefined, {
-          headers: {
-            // Public permissions are missing double quotes, user permissions are absent:
-            "WAC-Allow": "public=read",
-          },
-        }),
-      ),
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+      new Response(undefined, {
+        headers: {
+          // Public permissions are missing double quotes, user permissions are absent:
+          "WAC-Allow": "public=read",
+        },
+      }),
     );
 
     const solidDataset = await createContainerAt(
@@ -2126,12 +2084,10 @@ describe("createContainerAt", () => {
   });
 
   it("does not provide the resource's access permissions if not provided by the server", async () => {
-    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
-      Promise.resolve(
-        new Response(undefined, {
-          headers: {},
-        }),
-      ),
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+      new Response(undefined, {
+        headers: {},
+      }),
     );
 
     const solidDataset = await createContainerAt(
@@ -2145,10 +2101,8 @@ describe("createContainerAt", () => {
   it("returns an empty SolidDataset", async () => {
     const mockFetch = jest
       .fn<typeof fetch>()
-      .mockReturnValue(
-        Promise.resolve(
-          mockResponse(undefined, {}, "https://arbitrary.pod/container/"),
-        ),
+      .mockResolvedValue(
+        mockResponse(undefined, {}, "https://arbitrary.pod/container/"),
       );
 
     const solidDataset = await createContainerAt(
@@ -2164,10 +2118,8 @@ describe("createContainerAt", () => {
   it("returns a meaningful error when the server returns a 403", async () => {
     const mockFetch = jest
       .fn<typeof fetch>()
-      .mockReturnValue(
-        Promise.resolve(
-          new Response("Not allowed", { status: 403, statusText: "Forbidden" }),
-        ),
+      .mockResolvedValue(
+        new Response("Not allowed", { status: 403, statusText: "Forbidden" }),
       );
 
     const fetchPromise = createContainerAt("https://some.pod/container/", {
@@ -2180,13 +2132,11 @@ describe("createContainerAt", () => {
   });
 
   it("includes the status code, status message and response body when a request failed", async () => {
-    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
-      Promise.resolve(
-        new Response("Teapots don't make coffee", {
-          status: 418,
-          statusText: "I'm a teapot!",
-        }),
-      ),
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+      new Response("Teapots don't make coffee", {
+        status: 418,
+        statusText: "I'm a teapot!",
+      }),
     );
 
     const fetchPromise = createContainerAt("https://arbitrary.pod/container/", {
@@ -2204,10 +2154,8 @@ describe("createContainerAt", () => {
     it("returns an non-empty SolidDataset if one is provided", async () => {
       const mockFetch = jest
         .fn<typeof fetch>()
-        .mockReturnValue(
-          Promise.resolve(
-            mockResponse(undefined, {}, "https://arbitrary.pod/container/"),
-          ),
+        .mockResolvedValue(
+          mockResponse(undefined, {}, "https://arbitrary.pod/container/"),
         );
 
       const mockThing = addUrl(
@@ -2240,9 +2188,7 @@ describe("createContainerAt", () => {
       const mockFetch = jest
         .fn<typeof fetch>()
         // Mock an error response to the request.
-        .mockReturnValueOnce(
-          Promise.resolve(new Response("Forbidden", { status: 403 })),
-        );
+        .mockResolvedValueOnce(new Response("Forbidden", { status: 403 }));
 
       const mockThing = addUrl(
         createThing({ url: "https://arbitrary.vocab/subject" }),
@@ -2290,12 +2236,10 @@ describe("saveSolidDatasetInContainer", () => {
   });
 
   describe("normalizing the target URL", () => {
-    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
-      Promise.resolve(
-        new Response(undefined, {
-          headers: { Location: "https://arbitrary.pod/resource" },
-        }),
-      ),
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+      new Response(undefined, {
+        headers: { Location: "https://arbitrary.pod/resource" },
+      }),
     );
 
     it("removes double slashes from path", async () => {
@@ -2616,12 +2560,10 @@ describe("createContainerInContainer", () => {
   });
 
   describe("normalizing the target URL", () => {
-    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
-      Promise.resolve(
-        new Response(undefined, {
-          headers: { Location: "https://arbitrary.pod/resource" },
-        }),
-      ),
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+      new Response(undefined, {
+        headers: { Location: "https://arbitrary.pod/resource" },
+      }),
     );
 
     it("removes double slashes from path", async () => {
@@ -2887,12 +2829,10 @@ describe("deleteContainer", () => {
   });
 
   describe("normalizing the target URL", () => {
-    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
-      Promise.resolve(
-        new Response(undefined, {
-          headers: { Location: "https://arbitrary.pod/resource" },
-        }),
-      ),
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+      new Response(undefined, {
+        headers: { Location: "https://arbitrary.pod/resource" },
+      }),
     );
 
     it("removes double slashes from path", async () => {
