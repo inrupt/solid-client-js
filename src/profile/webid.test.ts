@@ -50,7 +50,7 @@ import {
 } from "./webid";
 import { mockResponse } from "../tests.internal";
 
-const MOCK_WEBID = "https://some.webid";
+const MOCK_WEBID = "https://example.org/some.webid";
 const MOCK_PROFILE = setThing(
   createSolidDataset(),
   setStringNoLocale(
@@ -161,7 +161,7 @@ describe("getAltProfileUrlAllFrom", () => {
 });
 
 const profileFn: typeof fetch = async (url) => {
-  const profileContent = buildThing({ url: "https://some.profile" })
+  const profileContent = buildThing({ url: "https://example.org/some.profile" })
     .addIri(foaf.primaryTopic, MOCK_WEBID)
     .build();
 
@@ -171,12 +171,12 @@ const profileFn: typeof fetch = async (url) => {
   );
 
   const mapping = {
-    "https://some.profile": MOCK_PROFILE,
+    "https://example.org/some.profile": MOCK_PROFILE,
     [MOCK_WEBID]: webIdProfile,
   };
 
   if (!Object.keys(mapping).includes(url.toString())) {
-    throw new Error("Unexpected URL");
+    throw new Error(`Unexpected URL: ${url.toString()}`);
   }
 
   return new Response(
@@ -210,7 +210,7 @@ describe("getProfileAll", () => {
     expect(fetchSpy).toHaveBeenNthCalledWith(1, MOCK_WEBID, expect.anything());
     expect(fetchSpy).toHaveBeenNthCalledWith(
       2,
-      "https://some.profile",
+      "https://example.org/some.profile",
       expect.anything(),
     );
   });
@@ -489,7 +489,9 @@ describe("getPodUrlAll", () => {
 
   it("does not use the provided fetch to dereference the WebID", async () => {
     const mockedFetch = jest.fn<typeof fetch>();
-    await getPodUrlAll("https://some.profile", { fetch: mockedFetch });
+    await getPodUrlAll("https://example.org/some.profile", {
+      fetch: mockedFetch,
+    });
     expect(mockedFetch).not.toHaveBeenCalled();
     expect(fetchSpy).toHaveBeenCalled();
   });
@@ -538,8 +540,8 @@ describe("getPodUrlAll", () => {
 
     const profileContent = buildThing({ url: MOCK_WEBID })
       // This will point to an alt profile, prompting the authenticated fetch.
-      .addIri(rdfs.seeAlso, "https://some.profile")
-      .addIri(foaf.isPrimaryTopicOf, "https://some.other.profile")
+      .addIri(rdfs.seeAlso, "https://example.org/some.profile")
+      .addIri(foaf.isPrimaryTopicOf, "https://example.org/some.other.profile")
       .build();
 
     const webIdProfile = setThing(
@@ -559,11 +561,11 @@ describe("getPodUrlAll", () => {
     // The provided authenticated fetch should have been used to fetch the alt profile.
     expect(mockedAuthFetch).toHaveBeenCalledTimes(2);
     expect(mockedAuthFetch).toHaveBeenCalledWith(
-      "https://some.profile",
+      "https://example.org/some.profile",
       expect.anything(),
     );
     expect(mockedAuthFetch).toHaveBeenCalledWith(
-      "https://some.other.profile",
+      "https://example.org/some.other.profile",
       expect.anything(),
     );
     // The unauthenticated fetch should have been used to fetch the webid profile.

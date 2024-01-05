@@ -292,22 +292,22 @@ export async function getSolidDataset(
   url: UrlString | Url,
   options?: Partial<{ fetch: typeof fetch } & ParseOptions>,
 ): Promise<SolidDataset & WithServerResourceInfo> {
-  url = internal_toIriString(url);
+  const normalizedUrl = normalizeUrl(internal_toIriString(url));
   const parserContentTypes = Object.keys(options?.parsers ?? {});
   const acceptedContentTypes =
     parserContentTypes.length > 0
       ? parserContentTypes.join(", ")
       : "text/turtle";
-  const response = await (options?.fetch ?? fetch)(url, {
+  const response = await (options?.fetch ?? fetch)(normalizedUrl, {
     headers: {
       Accept: acceptedContentTypes,
     },
   });
   if (internal_isUnsuccessfulResponse(response)) {
     throw new FetchError(
-      `Fetching the Resource at [${url}] failed: [${response.status}] [${
-        response.statusText
-      }] ${await response.text()}.`,
+      `Fetching the Resource at [${normalizedUrl}] failed: [${
+        response.status
+      }] [${response.statusText}] ${await response.text()}.`,
       response,
     );
   }
@@ -415,9 +415,7 @@ export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
     { fetch?: typeof fetch } & { prefixes: Record<string, string> }
   >,
 ): Promise<Dataset & WithServerResourceInfo & WithChangeLog> {
-  const targetUrl = normalizeUrl(internal_toIriString(url), {
-    trailingSlash: false,
-  });
+  const targetUrl = normalizeUrl(internal_toIriString(url));
   const datasetWithChangelog = internal_withChangeLog(solidDataset);
 
   const requestInit = isUpdate(datasetWithChangelog, targetUrl)
@@ -473,7 +471,7 @@ export async function deleteSolidDataset(
 ): Promise<void> {
   const url = hasResourceInfo(solidDataset)
     ? internal_toIriString(getSourceUrl(solidDataset))
-    : internal_toIriString(solidDataset);
+    : normalizeUrl(internal_toIriString(solidDataset));
   const response = await (options?.fetch ?? fetch)(url, { method: "DELETE" });
 
   if (internal_isUnsuccessfulResponse(response)) {
@@ -509,9 +507,10 @@ export async function createContainerAt(
     initialContent?: SolidDataset;
   } = {},
 ): Promise<SolidDataset & WithServerResourceInfo> {
-  url = internal_toIriString(url);
-  url = url.endsWith("/") ? url : `${url}/`;
-  const response = await (options.fetch ?? fetch)(url, {
+  const normalizedUrl = normalizeUrl(internal_toIriString(url), {
+    trailingSlash: true,
+  });
+  const response = await (options.fetch ?? fetch)(normalizedUrl, {
     method: "PUT",
     body: options.initialContent
       ? await triplesToTurtle(
@@ -605,7 +604,9 @@ export async function saveSolidDatasetInContainer(
   solidDataset: SolidDataset,
   options?: SaveInContainerOptions,
 ): Promise<SolidDataset & WithResourceInfo> {
-  containerUrl = internal_toIriString(containerUrl);
+  const normalizedUrl = normalizeUrl(internal_toIriString(containerUrl), {
+    trailingSlash: true,
+  });
 
   const rawTurtle = await triplesToTurtle(
     toRdfJsQuads(solidDataset).map(getNamedNodesForLocalNodes),
@@ -617,7 +618,7 @@ export async function saveSolidDatasetInContainer(
   if (options?.slugSuggestion) {
     headers.slug = options.slugSuggestion;
   }
-  const response = await (options?.fetch ?? fetch)(containerUrl, {
+  const response = await (options?.fetch ?? fetch)(normalizedUrl, {
     method: "POST",
     body: rawTurtle,
     headers,
@@ -625,7 +626,7 @@ export async function saveSolidDatasetInContainer(
 
   if (internal_isUnsuccessfulResponse(response)) {
     throw new FetchError(
-      `Storing the Resource in the Container at [${containerUrl}] failed: [${
+      `Storing the Resource in the Container at [${normalizedUrl}] failed: [${
         response.status
       }] [${response.statusText}] ${await response.text()}.\n\n` +
         `The SolidDataset that was sent to the Pod is listed below.\n\n${solidDatasetAsMarkdown(
@@ -705,7 +706,9 @@ export async function createContainerInContainer(
   containerUrl: UrlString | Url,
   options?: SaveInContainerOptions,
 ): Promise<SolidDataset & WithResourceInfo> {
-  containerUrl = internal_toIriString(containerUrl);
+  const normalizedUrl = normalizeUrl(internal_toIriString(containerUrl), {
+    trailingSlash: true,
+  });
   const headers: RequestInit["headers"] = {
     "Content-Type": "text/turtle",
     Link: `<${ldp.BasicContainer}>; rel="type"`,
@@ -713,14 +716,14 @@ export async function createContainerInContainer(
   if (options?.slugSuggestion) {
     headers.slug = options.slugSuggestion;
   }
-  const response = await (options?.fetch ?? fetch)(containerUrl, {
+  const response = await (options?.fetch ?? fetch)(normalizedUrl, {
     method: "POST",
     headers,
   });
 
   if (internal_isUnsuccessfulResponse(response)) {
     throw new FetchError(
-      `Creating an empty Container in the Container at [${containerUrl}] failed: [${
+      `Creating an empty Container in the Container at [${normalizedUrl}] failed: [${
         response.status
       }] [${response.statusText}] ${await response.text()}.`,
       response,
@@ -768,22 +771,25 @@ export async function deleteContainer(
   container: Url | UrlString | WithResourceInfo,
   options?: { fetch?: typeof fetch },
 ): Promise<void> {
-  const url = hasResourceInfo(container)
+  const normalizedUrl = hasResourceInfo(container)
     ? internal_toIriString(getSourceUrl(container))
-    : internal_toIriString(container);
+    : normalizeUrl(internal_toIriString(container));
+
   if (!isContainer(container)) {
     throw new Error(
-      `You're trying to delete the Container at [${url}], but Container URLs should end in a \`/\`. Are you sure this is a Container?`,
+      `You're trying to delete the Container at [${normalizedUrl}], but Container URLs should end in a \`/\`. Are you sure this is a Container?`,
     );
   }
 
-  const response = await (options?.fetch ?? fetch)(url, { method: "DELETE" });
+  const response = await (options?.fetch ?? fetch)(normalizedUrl, {
+    method: "DELETE",
+  });
 
   if (internal_isUnsuccessfulResponse(response)) {
     throw new FetchError(
-      `Deleting the Container at [${url}] failed: [${response.status}] [${
-        response.statusText
-      }] ${await response.text()}.`,
+      `Deleting the Container at [${normalizedUrl}] failed: [${
+        response.status
+      }] [${response.statusText}] ${await response.text()}.`,
       response,
     );
   }

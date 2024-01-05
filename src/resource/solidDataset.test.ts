@@ -483,6 +483,47 @@ describe("getSolidDataset", () => {
     expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
   });
 
+  describe("normalizing the target URL", () => {
+    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
+      Promise.resolve(
+        new Response(undefined, {
+          headers: { "Content-Type": "text/turtle" },
+        }),
+      ),
+    );
+
+    it("removes double slashes from path", async () => {
+      await getSolidDataset("https://some.pod//resource//path", {
+        fetch: mockFetch,
+      });
+
+      expect(mockFetch.mock.calls).toHaveLength(1);
+      expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource/path");
+    });
+
+    it("doesn't change the provided URL trailing slash", async () => {
+      await getSolidDataset("https://some.pod/container/", {
+        fetch: mockFetch,
+      });
+
+      await getSolidDataset("https://some.pod/resource", {
+        fetch: mockFetch,
+      });
+
+      expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/container/");
+      expect(mockFetch.mock.calls[1][0]).toBe("https://some.pod/resource");
+    });
+
+    it("removes relative path components", async () => {
+      await getSolidDataset("https://some.pod/././test/../resource", {
+        fetch: mockFetch,
+      });
+
+      expect(mockFetch.mock.calls).toHaveLength(1);
+      expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
+    });
+  });
+
   it("adds an Accept header accepting turtle by default", async () => {
     const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
       Promise.resolve(
@@ -857,9 +898,31 @@ describe("saveSolidDatasetAt", () => {
       expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource/path");
     });
 
-    it("removes trailing slashes", async () => {
+    it("leaves input trailing slashes unchanged", async () => {
       await saveSolidDatasetAt(
-        "https://some.pod/resource/",
+        "https://some.pod/resource",
+        createSolidDataset(),
+        {
+          fetch: mockFetch,
+        },
+      );
+
+      await saveSolidDatasetAt(
+        "https://some.pod/container/",
+        createSolidDataset(),
+        {
+          fetch: mockFetch,
+        },
+      );
+
+      expect(mockFetch.mock.calls).toHaveLength(2);
+      expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
+      expect(mockFetch.mock.calls[1][0]).toBe("https://some.pod/container/");
+    });
+
+    it("removes relative path components", async () => {
+      await saveSolidDatasetAt(
+        "https://some.pod/././test/../resource",
         createSolidDataset(),
         {
           fetch: mockFetch,
@@ -1704,9 +1767,9 @@ describe("deleteSolidDataset", () => {
         new Response(undefined, { status: 200, statusText: "Deleted" }),
       );
 
-    const response = await deleteSolidDataset("https://some.url");
+    const response = await deleteSolidDataset("https://example.org/resource");
 
-    expect(fetch).toHaveBeenCalledWith("https://some.url", {
+    expect(fetch).toHaveBeenCalledWith("https://example.org/resource", {
       method: "DELETE",
     });
     expect(response).toBeUndefined();
@@ -1719,19 +1782,57 @@ describe("deleteSolidDataset", () => {
         new Response(undefined, { status: 200, statusText: "Deleted" }),
       );
 
-    const response = await deleteSolidDataset("https://some.url", {
+    const response = await deleteSolidDataset("https://example.org/resource", {
       fetch: mockFetch,
     });
 
     expect(mockFetch.mock.calls).toEqual([
       [
-        "https://some.url",
+        "https://example.org/resource",
         {
           method: "DELETE",
         },
       ],
     ]);
     expect(response).toBeUndefined();
+  });
+
+  describe("normalizing the target URL", () => {
+    const mockFetch = jest
+      .fn<typeof fetch>()
+      .mockReturnValue(Promise.resolve(new Response()));
+
+    it("removes double slashes from path", async () => {
+      await deleteSolidDataset("https://some.pod//resource//path", {
+        fetch: mockFetch,
+      });
+
+      expect(mockFetch.mock.calls).toHaveLength(1);
+      expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource/path");
+    });
+
+    it("leaves input trailing slashes unchanged", async () => {
+      await deleteSolidDataset("https://some.pod/resource", {
+        fetch: mockFetch,
+      });
+
+      await deleteSolidDataset("https://some.pod/container/", {
+        fetch: mockFetch,
+      });
+
+      expect(mockFetch.mock.calls).toHaveLength(2);
+      expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
+      expect(mockFetch.mock.calls[1][0]).toBe("https://some.pod/container/");
+    });
+
+    it("removes relative path components", async () => {
+      await deleteSolidDataset("https://some.pod/././container/test/../", {
+        fetch: mockFetch,
+      });
+
+      expect(mockFetch.mock.calls).toHaveLength(1);
+      expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/container/");
+    });
   });
 
   it("should accept a fetched SolidDataset as target", async () => {
@@ -1766,12 +1867,12 @@ describe("deleteSolidDataset", () => {
       }),
     );
 
-    const deletionPromise = deleteSolidDataset("https://some.url", {
+    const deletionPromise = deleteSolidDataset("https://example.org/resource", {
       fetch: mockFetch,
     });
 
     await expect(deletionPromise).rejects.toThrow(
-      "Deleting the SolidDataset at [https://some.url] failed: [400] [Bad request]",
+      "Deleting the SolidDataset at [https://example.org/resource] failed: [400] [Bad request]",
     );
   });
 
@@ -1832,16 +1933,38 @@ describe("createContainerAt", () => {
     expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/container/");
   });
 
-  it("appends a trailing slash if not provided", async () => {
+  describe("normalizing the target URL", () => {
     const mockFetch = jest
       .fn<typeof fetch>()
       .mockReturnValue(Promise.resolve(new Response()));
 
-    await createContainerAt("https://some.pod/container", {
-      fetch: mockFetch,
+    it("removes double slashes from path", async () => {
+      await createContainerAt("https://some.pod//container//path///", {
+        fetch: mockFetch,
+      });
+
+      expect(mockFetch.mock.calls).toHaveLength(1);
+      expect(mockFetch.mock.calls[0][0]).toBe(
+        "https://some.pod/container/path/",
+      );
     });
 
-    expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/container/");
+    it("appends a trailing slash if not provided", async () => {
+      await createContainerAt("https://some.pod/container", {
+        fetch: mockFetch,
+      });
+
+      expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/container/");
+    });
+
+    it("removes relative path components", async () => {
+      await createContainerAt("https://some.pod/././container/test/../", {
+        fetch: mockFetch,
+      });
+
+      expect(mockFetch.mock.calls).toHaveLength(1);
+      expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/container/");
+    });
   });
 
   it("sets the right headers to create a Container", async () => {
@@ -2166,6 +2289,57 @@ describe("saveSolidDatasetInContainer", () => {
     expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 
+  describe("normalizing the target URL", () => {
+    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
+      Promise.resolve(
+        new Response(undefined, {
+          headers: { Location: "https://arbitrary.pod/resource" },
+        }),
+      ),
+    );
+
+    it("removes double slashes from path", async () => {
+      await saveSolidDatasetInContainer(
+        "https://some.pod//container//path///",
+        createSolidDataset(),
+        {
+          fetch: mockFetch,
+        },
+      );
+
+      expect(mockFetch.mock.calls).toHaveLength(1);
+      expect(mockFetch.mock.calls[0][0]).toBe(
+        "https://some.pod/container/path/",
+      );
+    });
+
+    it("enforces a trailing slash is present", async () => {
+      await saveSolidDatasetInContainer(
+        "https://some.pod/container",
+        createSolidDataset(),
+        {
+          fetch: mockFetch,
+        },
+      );
+
+      expect(mockFetch.mock.calls).toHaveLength(1);
+      expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/container/");
+    });
+
+    it("removes relative path components", async () => {
+      await saveSolidDatasetInContainer(
+        "https://some.pod/././container/test/../",
+        createSolidDataset(),
+        {
+          fetch: mockFetch,
+        },
+      );
+
+      expect(mockFetch.mock.calls).toHaveLength(1);
+      expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/container/");
+    });
+  });
+
   it("returns a meaningful error when the server returns a 403", async () => {
     const fetchPromise = saveSolidDatasetInContainer(
       "https://some.pod/container/",
@@ -2441,6 +2615,48 @@ describe("createContainerInContainer", () => {
     expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 
+  describe("normalizing the target URL", () => {
+    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
+      Promise.resolve(
+        new Response(undefined, {
+          headers: { Location: "https://arbitrary.pod/resource" },
+        }),
+      ),
+    );
+
+    it("removes double slashes from path", async () => {
+      await createContainerInContainer("https://some.pod//container//path///", {
+        fetch: mockFetch,
+      });
+
+      expect(mockFetch.mock.calls).toHaveLength(1);
+      expect(mockFetch.mock.calls[0][0]).toBe(
+        "https://some.pod/container/path/",
+      );
+    });
+
+    it("enforces a trailing slash is present", async () => {
+      await createContainerInContainer("https://some.pod/container", {
+        fetch: mockFetch,
+      });
+
+      expect(mockFetch.mock.calls).toHaveLength(1);
+      expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/container/");
+    });
+
+    it("removes relative path components", async () => {
+      await createContainerInContainer(
+        "https://some.pod/././container/test/../",
+        {
+          fetch: mockFetch,
+        },
+      );
+
+      expect(mockFetch.mock.calls).toHaveLength(1);
+      expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/container/");
+    });
+  });
+
   it("returns a meaningful error when the server returns a 403", async () => {
     const fetchPromise = createContainerInContainer(
       "https://some.pod/parent-container/",
@@ -2668,6 +2884,36 @@ describe("deleteContainer", () => {
       ],
     ]);
     expect(response).toBeUndefined();
+  });
+
+  describe("normalizing the target URL", () => {
+    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
+      Promise.resolve(
+        new Response(undefined, {
+          headers: { Location: "https://arbitrary.pod/resource" },
+        }),
+      ),
+    );
+
+    it("removes double slashes from path", async () => {
+      await deleteContainer("https://some.pod//container//path///", {
+        fetch: mockFetch,
+      });
+
+      expect(mockFetch.mock.calls).toHaveLength(1);
+      expect(mockFetch.mock.calls[0][0]).toBe(
+        "https://some.pod/container/path/",
+      );
+    });
+
+    it("removes relative path components", async () => {
+      await deleteContainer("https://some.pod/././container/test/../", {
+        fetch: mockFetch,
+      });
+
+      expect(mockFetch.mock.calls).toHaveLength(1);
+      expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/container/");
+    });
   });
 
   it("should accept a fetched Container as target", async () => {

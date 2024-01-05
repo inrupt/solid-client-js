@@ -26,14 +26,39 @@ export function internal_toIriString(iri: Iri | IriString): IriString {
   return typeof iri === "string" ? iri : iri.value;
 }
 
+/**
+ * @hidden
+ * @param inputUrl The URL to normalize
+ * @param options If trailingSlash is set, a trailing slash will be respectively added/removed.
+ * The input URL trailing slash is left unchanged if trailingSlash is undefined.
+ * @returns the normalized URL, without relative components, slash sequences, and proper trailing slash.
+ */
 export function normalizeUrl(
   inputUrl: IriString,
-  options: { trailingSlash: boolean },
+  options: { trailingSlash?: boolean } = {},
 ): IriString {
-  const url = new URL(inputUrl);
-  url.pathname = url.pathname.replace(/\/\/+/g, "/");
-  if (!options.trailingSlash && url.pathname.slice(-1) === "/") {
-    url.pathname = url.pathname.slice(0, url.pathname.length - 1);
+  // Normalize relative components.
+  const normalizedUrl = new URL(inputUrl);
+
+  // Collapse slash sequences.
+  normalizedUrl.pathname = normalizedUrl.pathname.replace(/\/\/+/g, "/");
+
+  // Enforce a trailing slash is present/absent.
+  if (
+    options.trailingSlash === false &&
+    normalizedUrl.pathname.slice(-1) === "/"
+  ) {
+    normalizedUrl.pathname = normalizedUrl.pathname.slice(
+      0,
+      normalizedUrl.pathname.length - 1,
+    );
   }
-  return url.href;
+  if (
+    options.trailingSlash === true &&
+    normalizedUrl.pathname.slice(-1) !== "/"
+  ) {
+    normalizedUrl.pathname = `${normalizedUrl.pathname}/`;
+  }
+
+  return normalizedUrl.href;
 }
