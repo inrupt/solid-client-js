@@ -10,6 +10,10 @@ The following changes are pending, and will be applied on the next major release
 
 The following changes have been implemented but not released yet:
 
+### Patch changes
+
+- Input URLs are now normalized by collapsing slash sequences (`foo///bar` becomes `foo/bar`), and resolving relative URL segments (`foo/bar/..` becomes `foo/`).
+
 ## [2.0.0] - 2023-12-19
 
 ### Breaking Changes
