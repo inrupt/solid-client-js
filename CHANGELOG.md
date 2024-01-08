@@ -12,7 +12,7 @@ The following changes have been implemented but not released yet:
 
 ### Patch changes
 
-- Input URLs are now normalized by collapsing slash sequences (`foo///bar` becomes `foo/bar`), and resolving relative URL segments (`foo/bar/..` becomes `foo/`).
+- Normalize input URLs for `getSolidDataset`, `getFile`, `saveSolidDatasetAt`, `overwriteFile`, `createContainerAt`, `deleteSolidDataset`, `deleteFile`, `deleteContainer`, `saveSolidDatasetInContainer`, `createContainerInContainer`, `saveFileInContainer`, `getResourceInfo`: Input URLs are now normalized by collapsing slash sequences (`foo///bar` becomes `foo/bar`), and resolving relative URL segments (`foo/bar/..` becomes `foo/`).
 
 ## [2.0.0] - 2023-12-19
 
