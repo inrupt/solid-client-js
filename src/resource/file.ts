@@ -218,8 +218,6 @@ export async function saveFileInContainer<
   });
   const response = await writeFile(folderUrlString, file, "POST", options);
 
-  console.log(response);
-
   if (internal_isUnsuccessfulResponse(response)) {
     throw new FetchError(
       `Saving the file in [${folderUrl}] failed: [${response.status}] [${
