@@ -25,3 +25,40 @@ import type { Iri, IriString } from "./interfaces";
 export function internal_toIriString(iri: Iri | IriString): IriString {
   return typeof iri === "string" ? iri : iri.value;
 }
+
+/**
+ * @hidden
+ * @param inputUrl The URL to normalize
+ * @param options If trailingSlash is set, a trailing slash will be respectively added/removed.
+ * The input URL trailing slash is left unchanged if trailingSlash is undefined.
+ * @returns the normalized URL, without relative components, slash sequences, and proper trailing slash.
+ */
+export function normalizeUrl(
+  inputUrl: IriString,
+  options: { trailingSlash?: boolean } = {},
+): IriString {
+  // Normalize relative components.
+  const normalizedUrl = new URL(inputUrl);
+
+  // Collapse slash sequences.
+  normalizedUrl.pathname = normalizedUrl.pathname.replace(/\/\/+/g, "/");
+
+  // Enforce a trailing slash is present/absent.
+  if (
+    options.trailingSlash === false &&
+    normalizedUrl.pathname.slice(-1) === "/"
+  ) {
+    normalizedUrl.pathname = normalizedUrl.pathname.slice(
+      0,
+      normalizedUrl.pathname.length - 1,
+    );
+  }
+  if (
+    options.trailingSlash === true &&
+    normalizedUrl.pathname.slice(-1) !== "/"
+  ) {
+    normalizedUrl.pathname = `${normalizedUrl.pathname}/`;
+  }
+
+  return normalizedUrl.href;
+}

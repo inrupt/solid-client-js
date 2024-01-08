@@ -29,7 +29,7 @@ import type {
   WithServerResourceInfo,
 } from "../interfaces";
 import { hasResourceInfo } from "../interfaces";
-import { internal_toIriString } from "../interfaces.internal";
+import { internal_toIriString, normalizeUrl } from "../interfaces.internal";
 import { getSourceIri, FetchError } from "./resource";
 import {
   internal_cloneResource,
@@ -81,8 +81,13 @@ export async function getFile(
   fileUrl: Url | UrlString,
   options?: Partial<GetFileOptions>,
 ): Promise<BlobFile & WithServerResourceInfo> {
-  const url = internal_toIriString(fileUrl);
-  const response = await (options?.fetch ?? fetch)(url, options?.init);
+  const normalizedUrl = normalizeUrl(internal_toIriString(fileUrl), {
+    trailingSlash: false,
+  });
+  const response = await (options?.fetch ?? fetch)(
+    normalizedUrl,
+    options?.init,
+  );
   if (internal_isUnsuccessfulResponse(response)) {
     throw new FetchError(
       `Fetching the File failed: [${response.status}] [${
@@ -123,7 +128,7 @@ export async function deleteFile(
 ): Promise<void> {
   const url = hasResourceInfo(file)
     ? internal_toIriString(getSourceIri(file))
-    : internal_toIriString(file);
+    : normalizeUrl(internal_toIriString(file), { trailingSlash: false });
   const response = await (options?.fetch ?? fetch)(url, {
     ...options?.init,
     method: "DELETE",
@@ -208,7 +213,9 @@ export async function saveFileInContainer<
   file: FileExt,
   options?: Partial<SaveFileOptions>,
 ): Promise<FileExt & WithResourceInfo> {
-  const folderUrlString = internal_toIriString(folderUrl);
+  const folderUrlString = normalizeUrl(internal_toIriString(folderUrl), {
+    trailingSlash: true,
+  });
   const response = await writeFile(folderUrlString, file, "POST", options);
 
   if (internal_isUnsuccessfulResponse(response)) {
@@ -401,9 +408,7 @@ async function writeFile<T extends File | BlobFile | NodeFile>(
   }
   headers["Content-Type"] = getContentType(file, options.contentType);
 
-  const targetUrlString = internal_toIriString(targetUrl);
-
-  return (options.fetch ?? fetch)(targetUrlString, {
+  return (options.fetch ?? fetch)(targetUrl, {
     ...options.init,
     headers,
     method,

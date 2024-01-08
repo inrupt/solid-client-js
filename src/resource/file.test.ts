@@ -95,25 +95,70 @@ describe("getFile", () => {
       .mockResolvedValueOnce(
         new Response("Some data", { status: 200, statusText: "OK" }),
       );
-    await getFile("https://some.url");
-    expect(fetch).toHaveBeenCalledWith("https://some.url", undefined);
+    await getFile("https://example.org/resource");
+    expect(fetch).toHaveBeenCalledWith(
+      "https://example.org/resource",
+      undefined,
+    );
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 
   it("should GET a remote resource using the provided fetcher", async () => {
     const mockFetch = jest
       .fn<typeof fetch>()
-      .mockReturnValue(
-        Promise.resolve(
-          new Response("Some data", { status: 200, statusText: "OK" }),
-        ),
+      .mockResolvedValue(
+        new Response("Some data", { status: 200, statusText: "OK" }),
       );
 
-    await getFile("https://some.url", {
+    await getFile("https://example.org/resource", {
       fetch: mockFetch,
     });
 
-    expect(mockFetch.mock.calls).toEqual([["https://some.url", undefined]]);
+    expect(mockFetch.mock.calls).toEqual([
+      ["https://example.org/resource", undefined],
+    ]);
+  });
+
+  describe("normalizing the target URL", () => {
+    const mockFetch = jest
+      .fn<typeof fetch>()
+      // Mock the implementation instead of the resolved value
+      // so that the body isn't consumed.
+      .mockImplementation(
+        async () =>
+          new Response("Some data", { status: 200, statusText: "OK" }),
+      );
+
+    it("removes double slashes from path", async () => {
+      await getFile("https://some.pod//resource//path", {
+        fetch: mockFetch,
+      });
+
+      expect(mockFetch.mock.calls).toHaveLength(1);
+      expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource/path");
+    });
+
+    it("enforces the target URL doesn't have a trailing slash", async () => {
+      await getFile("https://some.pod/container/", {
+        fetch: mockFetch,
+      });
+
+      await getFile("https://some.pod/resource", {
+        fetch: mockFetch,
+      });
+
+      expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/container");
+      expect(mockFetch.mock.calls[1][0]).toBe("https://some.pod/resource");
+    });
+
+    it("removes relative path components", async () => {
+      await getFile("https://some.pod/././test/../resource", {
+        fetch: mockFetch,
+      });
+
+      expect(mockFetch.mock.calls).toHaveLength(1);
+      expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
+    });
   });
 
   it("should return the fetched data as a blob", async () => {
@@ -123,17 +168,19 @@ describe("getFile", () => {
     });
     jest
       .spyOn(mockedResponse, "url", "get")
-      .mockReturnValue("https://some.url");
+      .mockReturnValue("https://example.org/resource");
 
     const mockFetch = jest
       .fn<typeof fetch>()
       .mockReturnValue(Promise.resolve(mockedResponse));
 
-    const file = await getFile("https://some.url", {
+    const file = await getFile("https://example.org/resource", {
       fetch: mockFetch,
     });
 
-    expect(file.internal_resourceInfo.sourceIri).toBe("https://some.url");
+    expect(file.internal_resourceInfo.sourceIri).toBe(
+      "https://example.org/resource",
+    );
     expect(file.internal_resourceInfo.contentType).toContain("text/plain");
     expect(file.internal_resourceInfo.isRawData).toBe(true);
 
@@ -144,13 +191,11 @@ describe("getFile", () => {
   it("should pass the request headers through", async () => {
     const mockFetch = jest
       .fn<typeof fetch>()
-      .mockReturnValue(
-        Promise.resolve(
-          new Response("Some data", { status: 200, statusText: "OK" }),
-        ),
+      .mockResolvedValue(
+        new Response("Some data", { status: 200, statusText: "OK" }),
       );
 
-    await getFile("https://some.url", {
+    await getFile("https://example.org/resource", {
       init: {
         headers: new Headers({ Accept: "text/turtle" }),
       },
@@ -159,7 +204,7 @@ describe("getFile", () => {
 
     expect(mockFetch.mock.calls).toEqual([
       [
-        "https://some.url",
+        "https://example.org/resource",
         {
           headers: new Headers({ Accept: "text/turtle" }),
         },
@@ -170,13 +215,11 @@ describe("getFile", () => {
   it("should throw on failure", async () => {
     const mockFetch = jest
       .fn<typeof fetch>()
-      .mockReturnValue(
-        Promise.resolve(
-          new Response(undefined, { status: 400, statusText: "Bad request" }),
-        ),
+      .mockResolvedValue(
+        new Response(undefined, { status: 400, statusText: "Bad request" }),
       );
 
-    const response = getFile("https://some.url", {
+    const response = getFile("https://example.org/resource", {
       fetch: mockFetch,
     });
     await expect(response).rejects.toThrow(
@@ -185,13 +228,11 @@ describe("getFile", () => {
   });
 
   it("includes the status code, status text and response body when a request failed", async () => {
-    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
-      Promise.resolve(
-        new Response("Teapots don't make coffee.", {
-          status: 418,
-          statusText: "I'm a teapot!",
-        }),
-      ),
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+      new Response("Teapots don't make coffee.", {
+        status: 418,
+        statusText: "I'm a teapot!",
+      }),
     );
 
     const response = getFile("https://arbitrary.url", {
@@ -209,15 +250,13 @@ describe("Non-RDF data deletion", () => {
   it("should DELETE a remote resource using the included fetcher if no other fetcher is available", async () => {
     jest
       .spyOn(globalThis, "fetch")
-      .mockReturnValueOnce(
-        Promise.resolve(
-          new Response(undefined, { status: 200, statusText: "Deleted" }),
-        ),
+      .mockResolvedValueOnce(
+        new Response(undefined, { status: 200, statusText: "Deleted" }),
       );
 
-    const response = await deleteFile("https://some.url");
+    const response = await deleteFile("https://example.org/resource");
 
-    expect(fetch).toHaveBeenCalledWith("https://some.url", {
+    expect(fetch).toHaveBeenCalledWith("https://example.org/resource", {
       method: "DELETE",
     });
     expect(response).toBeUndefined();
@@ -226,19 +265,17 @@ describe("Non-RDF data deletion", () => {
   it("should DELETE a remote resource using the provided fetcher", async () => {
     const mockFetch = jest
       .fn<typeof fetch>()
-      .mockReturnValue(
-        Promise.resolve(
-          new Response(undefined, { status: 200, statusText: "Deleted" }),
-        ),
+      .mockResolvedValue(
+        new Response(undefined, { status: 200, statusText: "Deleted" }),
       );
 
-    const response = await deleteFile("https://some.url", {
+    const response = await deleteFile("https://example.org/resource", {
       fetch: mockFetch,
     });
 
     expect(mockFetch.mock.calls).toEqual([
       [
-        "https://some.url",
+        "https://example.org/resource",
         {
           method: "DELETE",
         },
@@ -247,19 +284,59 @@ describe("Non-RDF data deletion", () => {
     expect(response).toBeUndefined();
   });
 
+  describe("normalizing the target URL", () => {
+    const mockFetch = jest
+      .fn<typeof fetch>()
+      // Mock the implementation instead of the resolved value
+      // so that the body isn't consumed.
+      .mockImplementation(
+        async () =>
+          new Response("Some data", { status: 200, statusText: "OK" }),
+      );
+
+    it("removes double slashes from path", async () => {
+      await deleteFile("https://some.pod//resource//path", {
+        fetch: mockFetch,
+      });
+
+      expect(mockFetch.mock.calls).toHaveLength(1);
+      expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource/path");
+    });
+
+    it("enforces the target URL doesn't have a trailing slash", async () => {
+      await deleteFile("https://some.pod/container/", {
+        fetch: mockFetch,
+      });
+
+      await deleteFile("https://some.pod/resource", {
+        fetch: mockFetch,
+      });
+
+      expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/container");
+      expect(mockFetch.mock.calls[1][0]).toBe("https://some.pod/resource");
+    });
+
+    it("removes relative path components", async () => {
+      await deleteFile("https://some.pod/././test/../resource", {
+        fetch: mockFetch,
+      });
+
+      expect(mockFetch.mock.calls).toHaveLength(1);
+      expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
+    });
+  });
+
   it("should accept a fetched File as target", async () => {
     const mockFetch = jest
       .fn<typeof fetch>()
-      .mockReturnValue(
-        Promise.resolve(
-          new Response(undefined, { status: 200, statusText: "Deleted" }),
-        ),
+      .mockResolvedValue(
+        new Response(undefined, { status: 200, statusText: "Deleted" }),
       );
 
     const mockFile: WithResourceInfo = {
       internal_resourceInfo: {
         isRawData: true,
-        sourceIri: "https://some.url",
+        sourceIri: "https://example.org/resource",
       },
     };
 
@@ -269,7 +346,7 @@ describe("Non-RDF data deletion", () => {
 
     expect(mockFetch.mock.calls).toEqual([
       [
-        "https://some.url",
+        "https://example.org/resource",
         {
           method: "DELETE",
         },
@@ -281,13 +358,11 @@ describe("Non-RDF data deletion", () => {
   it("should pass through the request init if it is set by the user", async () => {
     const mockFetch = jest
       .fn<typeof fetch>()
-      .mockReturnValue(
-        Promise.resolve(
-          new Response(undefined, { status: 200, statusText: "Deleted" }),
-        ),
+      .mockResolvedValue(
+        new Response(undefined, { status: 200, statusText: "Deleted" }),
       );
 
-    await deleteFile("https://some.url", {
+    await deleteFile("https://example.org/resource", {
       fetch: mockFetch,
       init: {
         mode: "same-origin",
@@ -296,7 +371,7 @@ describe("Non-RDF data deletion", () => {
 
     expect(mockFetch.mock.calls).toEqual([
       [
-        "https://some.url",
+        "https://example.org/resource",
         {
           method: "DELETE",
           mode: "same-origin",
@@ -305,31 +380,27 @@ describe("Non-RDF data deletion", () => {
     ]);
   });
   it("should throw an error on a failed request", async () => {
-    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
-      Promise.resolve(
-        new Response(undefined, {
-          status: 400,
-          statusText: "Bad request",
-        }),
-      ),
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+      new Response(undefined, {
+        status: 400,
+        statusText: "Bad request",
+      }),
     );
 
-    const deletionPromise = deleteFile("https://some.url", {
+    const deletionPromise = deleteFile("https://example.org/resource", {
       fetch: mockFetch,
     });
 
     await expect(deletionPromise).rejects.toThrow(
-      "Deleting the file at [https://some.url] failed: [400] [Bad request]",
+      "Deleting the file at [https://example.org/resource] failed: [400] [Bad request]",
     );
   });
   it("includes the status code, status message and response body when a request failed", async () => {
-    const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
-      Promise.resolve(
-        new Response("Teapots don't make coffee", {
-          status: 418,
-          statusText: "I'm a teapot!",
-        }),
-      ),
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+      new Response("Teapots don't make coffee", {
+        status: 418,
+        statusText: "I'm a teapot!",
+      }),
     );
 
     const deletionPromise = deleteFile("https://arbitrary.url", {
@@ -352,11 +423,11 @@ describe("Write non-RDF data into a folder", () => {
 
   beforeEach(() => {
     jest.spyOn(globalThis, "fetch").mockImplementation(
-      async () =>
+      async (info) =>
         new Response(undefined, {
           status: 201,
           statusText: "Created",
-          headers: { Location: "someFileName" },
+          headers: { Location: new URL("someFileName", info.toString()).href },
         }),
     );
   });
@@ -370,15 +441,18 @@ describe("Write non-RDF data into a folder", () => {
     ["file", mockFile],
   ])("support for %s raw data source", (type, data) => {
     it("should default to the included fetcher if no other is available", async () => {
-      await saveFileInContainer("https://some.url", data);
+      await saveFileInContainer("https://example.org/resource", data);
 
       expect(fetch).toHaveBeenCalledTimes(1);
     });
 
     it("should POST to a remote resource using the included fetcher, and return the saved file", async () => {
-      const savedFile = await saveFileInContainer("https://some.url", data);
+      const savedFile = await saveFileInContainer(
+        "https://example.org/container/",
+        data,
+      );
       expect(fetch).toHaveBeenCalledTimes(1);
-      expect(fetch).toHaveBeenCalledWith("https://some.url", {
+      expect(fetch).toHaveBeenCalledWith("https://example.org/container/", {
         headers: {
           "Content-Type": "binary",
           Slug: type === "file" ? "myFile.txt" : undefined,
@@ -393,7 +467,7 @@ describe("Write non-RDF data into a folder", () => {
       }
       expect(savedFile!.internal_resourceInfo).toEqual({
         contentType: "binary",
-        sourceIri: "https://some.url/someFileName",
+        sourceIri: "https://example.org/container/someFileName",
         isRawData: true,
       });
     });
@@ -406,12 +480,12 @@ describe("Write non-RDF data into a folder", () => {
           }),
       );
 
-      await saveFileInContainer("https://some.url", data, {
+      await saveFileInContainer("https://example.org/container/", data, {
         fetch: mockFetch,
       });
 
       expect(mockFetch).toHaveBeenCalledTimes(1);
-      expect(mockFetch).toHaveBeenCalledWith("https://some.url", {
+      expect(mockFetch).toHaveBeenCalledWith("https://example.org/container/", {
         headers: {
           "Content-Type": "binary",
           Slug: type === "file" ? "myFile.txt" : undefined,
@@ -422,6 +496,63 @@ describe("Write non-RDF data into a folder", () => {
       expect(fetch).not.toHaveBeenCalled();
     });
 
+    describe("normalizing the target URL", () => {
+      it("removes double slashes from path", async () => {
+        const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+          new Response(undefined, {
+            headers: { Location: "https://arbitrary.pod/resource" },
+          }),
+        );
+
+        await saveFileInContainer(
+          "https://some.pod//container//path///",
+          data,
+          {
+            fetch: mockFetch,
+          },
+        );
+
+        expect(mockFetch.mock.calls).toHaveLength(1);
+        expect(mockFetch.mock.calls[0][0]).toBe(
+          "https://some.pod/container/path/",
+        );
+      });
+
+      it("enforces a trailing slash is present", async () => {
+        const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+          new Response(undefined, {
+            headers: { Location: "https://arbitrary.pod/resource" },
+          }),
+        );
+
+        await saveFileInContainer("https://some.pod/container", data, {
+          fetch: mockFetch,
+        });
+
+        expect(mockFetch.mock.calls).toHaveLength(1);
+        expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/container/");
+      });
+
+      it("removes relative path components", async () => {
+        const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+          new Response(undefined, {
+            headers: { Location: "https://arbitrary.pod/resource" },
+          }),
+        );
+
+        await saveFileInContainer(
+          "https://some.pod/././container/test/../",
+          data,
+          {
+            fetch: mockFetch,
+          },
+        );
+
+        expect(mockFetch.mock.calls).toHaveLength(1);
+        expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/container/");
+      });
+    });
+
     it("should pass the suggested slug through", async () => {
       const mockFetch = jest.fn<typeof fetch>(
         async () =>
@@ -430,13 +561,13 @@ describe("Write non-RDF data into a folder", () => {
           }),
       );
 
-      await saveFileInContainer("https://some.url", data, {
+      await saveFileInContainer("https://example.org/container/", data, {
         fetch: mockFetch,
         slug: "someFileName",
       });
 
       expect(mockFetch).toHaveBeenCalledTimes(1);
-      expect(mockFetch).toHaveBeenCalledWith("https://some.url", {
+      expect(mockFetch).toHaveBeenCalledWith("https://example.org/container/", {
         headers: {
           "Content-Type": "binary",
           Slug: "someFileName",
@@ -449,7 +580,7 @@ describe("Write non-RDF data into a folder", () => {
 
     it("throws when a reserved header is passed", async () => {
       await expect(
-        saveFileInContainer("https://some.url", data, {
+        saveFileInContainer("https://example.org/container/", data, {
           fetch: async () => new Response(),
           init: {
             headers: {
@@ -462,18 +593,18 @@ describe("Write non-RDF data into a folder", () => {
 
     it("throws when saving failed", async () => {
       await expect(
-        saveFileInContainer("https://some.url", data, {
+        saveFileInContainer("https://example.org/container/", data, {
           fetch: async () =>
             new Response(undefined, { status: 403, statusText: "Forbidden" }),
         }),
       ).rejects.toThrow(
-        "Saving the file in [https://some.url] failed: [403] [Forbidden]",
+        "Saving the file in [https://example.org/container/] failed: [403] [Forbidden]",
       );
     });
 
     it("throws when the server did not return the location of the newly-saved file", async () => {
       await expect(
-        saveFileInContainer("https://some.url", data, {
+        saveFileInContainer("https://example.org/container/", data, {
           fetch: async () =>
             new Response(undefined, { status: 201, statusText: "Created" }),
         }),
@@ -504,7 +635,7 @@ describe("Write non-RDF data into a folder", () => {
       type: "text/plain",
     });
     const savedFile = await saveFileInContainer(
-      "https://some.url",
+      "https://example.org/container/",
       mockTextBlob,
     );
 
@@ -517,7 +648,7 @@ describe("Write non-RDF data into a folder", () => {
       type: "text/plain",
     });
     const savedFile = await saveFileInContainer(
-      "https://some.url",
+      "https://example.org/container/",
       mockTextBlob,
       {
         contentType: "text/csv",
@@ -531,7 +662,7 @@ describe("Write non-RDF data into a folder", () => {
   it("defaults the Content Type to `application/octet-stream` if none is known", async () => {
     const mockTextBlob = new Blob(["mock blob data"]);
     const savedFile = await saveFileInContainer(
-      "https://some.url",
+      "https://example.org/container/",
       mockTextBlob,
     );
 
@@ -567,7 +698,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
     ["file", mockFile],
   ])("support for %s raw data source", (type, data) => {
     it("should default to the included fetcher if no other fetcher is available", async () => {
-      await overwriteFile("https://some.url", data);
+      await overwriteFile("https://example.org/resource", data);
 
       expect(fetch).toHaveBeenCalledTimes(1);
     });
@@ -577,13 +708,16 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
         new Response(undefined, {
           status: 201,
           statusText: "Created",
-          url: "https://some.url",
+          url: "https://example.org/resource",
         } as ResponseInit),
       );
 
-      const savedFile = await overwriteFile("https://some.url", data);
+      const savedFile = await overwriteFile(
+        "https://example.org/resource",
+        data,
+      );
       expect(fetch).toHaveBeenCalledTimes(1);
-      expect(fetch).toHaveBeenCalledWith("https://some.url", {
+      expect(fetch).toHaveBeenCalledWith("https://example.org/resource", {
         headers: {
           "Content-Type": "binary",
           Slug: type === "file" ? "myFile.txt" : undefined,
@@ -597,7 +731,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
       }
       expect(savedFile.internal_resourceInfo).toEqual({
         contentType: undefined,
-        sourceIri: "https://some.url",
+        sourceIri: "https://example.org/resource",
         isRawData: true,
         linkedResources: {},
       });
@@ -609,7 +743,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
           new Response(undefined, { status: 201, statusText: "Created" }),
       );
 
-      await overwriteFile("https://some.url", data, {
+      await overwriteFile("https://example.org/resource", data, {
         fetch: mockFetch,
       });
 
@@ -617,22 +751,24 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
     });
 
     it("should PUT a remote resource using the provided fetcher, and return the saved file", async () => {
-      const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
-        Promise.resolve(
-          new Response(undefined, {
-            status: 201,
-            statusText: "Created",
-            url: "https://some.url",
-          } as ResponseInit),
-        ),
+      const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+        new Response(undefined, {
+          status: 201,
+          statusText: "Created",
+          url: "https://example.org/resource",
+        } as ResponseInit),
       );
 
-      const savedFile = await overwriteFile("https://some.url", data, {
-        fetch: mockFetch,
-      });
+      const savedFile = await overwriteFile(
+        "https://example.org/resource",
+        data,
+        {
+          fetch: mockFetch,
+        },
+      );
 
       expect(mockFetch).toHaveBeenCalledTimes(1);
-      expect(mockFetch).toHaveBeenCalledWith("https://some.url", {
+      expect(mockFetch).toHaveBeenCalledWith("https://example.org/resource", {
         headers: expect.objectContaining({
           "Content-Type": "binary",
         }),
@@ -646,7 +782,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
       }
       expect(savedFile.internal_resourceInfo).toEqual({
         contentType: undefined,
-        sourceIri: "https://some.url",
+        sourceIri: "https://example.org/resource",
         isRawData: true,
         linkedResources: {},
       });
@@ -655,29 +791,25 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
     it("throws when saving failed", async () => {
       const mockFetch = jest
         .fn<typeof fetch>()
-        .mockReturnValue(
-          Promise.resolve(
-            new Response(undefined, { status: 403, statusText: "Forbidden" }),
-          ),
+        .mockResolvedValue(
+          new Response(undefined, { status: 403, statusText: "Forbidden" }),
         );
 
       await expect(
-        overwriteFile("https://some.url", data, {
+        overwriteFile("https://example.org/resource", data, {
           fetch: mockFetch,
         }),
       ).rejects.toThrow(
-        "Overwriting the file at [https://some.url] failed: [403] [Forbidden]",
+        "Overwriting the file at [https://example.org/resource] failed: [403] [Forbidden]",
       );
     });
 
     it("includes the status code, status message and response body when a request failed", async () => {
-      const mockFetch = jest.fn<typeof fetch>().mockReturnValue(
-        Promise.resolve(
-          new Response("Teapots don't make coffee", {
-            status: 418,
-            statusText: "I'm a teapot!",
-          }),
-        ),
+      const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+        new Response("Teapots don't make coffee", {
+          status: 418,
+          statusText: "I'm a teapot!",
+        }),
       );
 
       await expect(
