@@ -182,6 +182,7 @@
     "@types/http-link-header": "^1.0.5",
     "@types/jest": "^29.5.11",
     "@types/n3": "^1.16.4",
+    "@types/rdfjs__dataset": "^1.0.5",
     "@types/uuid": "^9.0.7",
     "eslint": "^8.56.0",
     "eslint-config-next": "^14.0.4",
@@ -200,6 +201,7 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
+    "@rdfjs/dataset": "^1.1.1",
     "buffer": "^6.0.3",
     "http-link-header": "^1.1.1",
     "jsonld-context-parser": "^2.4.0",
