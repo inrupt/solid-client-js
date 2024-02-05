@@ -535,11 +535,8 @@ const supportedActorPredicates = [
  * us everywhere to update everywhere the ActorRelation type is used and that
  * needs additional work to handle it.
  */
-type SupportedActorPredicate = typeof supportedActorPredicates extends Array<
-  infer E
->
-  ? E
-  : never;
+type SupportedActorPredicate =
+  typeof supportedActorPredicates extends Array<infer E> ? E : never;
 
 /**
  * Given an ACL Rule, returns two new ACL Rules that cover all the input Rule's use cases,
