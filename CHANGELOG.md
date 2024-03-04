@@ -1,12 +1,12 @@
 # Changelog
 
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
-
+2.
 ## [Deprecation notice]
 
 The following changes are pending, and will be applied on the next major release:
 
-## [Unreleased]
+## [2.0.1]
 
 The following changes have been implemented but not released yet:
 
