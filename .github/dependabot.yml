@@ -25,15 +25,6 @@ updates:
     allow:
       - dependency-type: development
 
-  # Enable version updates for the website tooling
-  - package-ecosystem: "pip"
-    directory: "/docs"
-    # Check the npm registry for updates once a week
-    schedule:
-      interval: "weekly"
-    labels:
-      - "dependencies"
-      - "pip"
   # Enable version updates for our CI tooling
   - package-ecosystem: "github-actions"
     directory: "/"
