@@ -12,6 +12,37 @@ concurrency:
   cancel-in-progress: true
 jobs:
   audit:
-    uses: inrupt/typescript-sdk-tools/.github/workflows/reusable-audit.yml@v3
-    secrets:
-      WEBHOOK_E2E_FAILURE: ${{ secrets.WEBHOOK_E2E_FAILURE }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+          cache: "npm"
+      - run: npm install npm@latest
+      # Install dependencies so license-checker actually checks them:
+      - run: npm ci
+      # We check the dependency licenses as part of the audit job, as a
+      # misconfigured or inappropriate dependency license is in the same
+      # category of issues as an npm audit security failure: we consider
+      # bad licenses a vulnerability.
+      - run: npx license-checker --production --failOn "AGPL-1.0-only; AGPL-1.0-or-later; AGPL-3.0-only; AGPL-3.0-or-later; Beerware; CC-BY-NC-1.0; CC-BY-NC-2.0; CC-BY-NC-2.5; CC-BY-NC-3.0; CC-BY-NC-4.0; CC-BY-NC-ND-1.0; CC-BY-NC-ND-2.0; CC-BY-NC-ND-2.5; CC-BY-NC-ND-3.0; CC-BY-NC-ND-4.0; CC-BY-NC-SA-1.0; CC-BY-NC-SA-2.0; CC-BY-NC-SA-2.5; CC-BY-NC-SA-3.0; CC-BY-NC-SA-4.0; CPAL-1.0; EUPL-1.0; EUPL-1.1; EUPL-1.1;  GPL-1.0-only; GPL-1.0-or-later; GPL-2.0-only;  GPL-2.0-or-later; GPL-3.0; GPL-3.0-only; GPL-3.0-or-later; SISSL;  SISSL-1.2; WTFPL"
+      # Run the audit and capture the results
+      - run: npm audit --audit-level=moderate --omit=dev --json true | tee audit.json
+        # Note: this name is used for matching, changing it is a breaking change.
+        name: Dependency Check
+      # Run the audit to check the signatures
+      - run: npm audit signatures
+      - name: Archive audit report
+        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: audit.json
+          path: audit.json
+      # Publishes a notification to a slack channel:
+      - name: Send a notification that the audit has failed
+        if: failure() && github.event_name == 'schedule'
+        run: "curl -X POST -H Content-type: 'application/json' --data \"{\\\"text\\\":\\\"Automated npm audit --audit-level=moderate failed. View <https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID|the execution log> for more details.\\\"}\" $WEBHOOK_E2E_FAILURE"
+        env:
+          WEBHOOK_E2E_FAILURE: ${{ secrets.WEBHOOK_E2E_FAILURE }}
