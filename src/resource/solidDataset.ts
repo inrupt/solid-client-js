@@ -19,7 +19,14 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import type { Quad, NamedNode, Quad_Object } from "@rdfjs/types";
+import type {
+  Quad,
+  NamedNode,
+  Quad_Object,
+  Store,
+  DatasetCore,
+} from "@rdfjs/types";
+import { Store as N3Store } from "n3";
 import {
   addRdfJsQuadToDataset,
   DataFactory,
@@ -65,6 +72,7 @@ import {
 import { getIriAll } from "../thing/get";
 import { normalizeServerSideIri } from "./iri.internal";
 import { freeze, getLocalNodeName, isLocalNodeIri } from "../rdf.internal";
+import { fromRdfJsDataset } from "../rdfjs";
 
 /**
  * Initialise a new [[SolidDataset]] in memory.
@@ -156,6 +164,7 @@ type ContentType = string;
 export type ParseOptions = {
   parsers: Record<ContentType, Parser>;
 };
+
 /**
  * @hidden This interface is not exposed yet until we've tried it out in practice.
  */
@@ -200,82 +209,107 @@ export async function responseToSolidDataset(
   }
 
   const data = await response.text();
-  const parsingPromise = new Promise<SolidDataset & WithServerResourceInfo>(
-    (resolve, reject) => {
-      let solidDataset: SolidDataset = freeze({
-        graphs: freeze({ default: freeze({}) }),
-        type: "Dataset",
-      });
+  const rdfjsDataset = await new Promise<DatasetCore>((resolve, reject) => {
+    const store = new N3Store();
+    parser.onError((error) => {
+      reject(
+        new Error(
+          `Encountered an error parsing the Resource at [${getSourceUrl(
+            resourceInfo,
+          )}] with content type [${contentType}]: ${error}`,
+        ),
+      );
+    });
+    parser.onQuad((quad) => {
+      store.add(quad);
+    });
+    parser.onComplete(() => {
+      resolve(store);
+    });
 
-      // While Quads without Blank Nodes can be added to the SolidDataset as we
-      // encounter them, to parse Quads with Blank Nodes, we'll have to wait until
-      // we've seen all the Quads, so that we can reconcile equal Blank Nodes.
-      const quadsWithBlankNodes: Quad[] = [];
-      const allQuads: Quad[] = [];
-
-      parser.onError((error) => {
-        reject(
-          new Error(
-            `Encountered an error parsing the Resource at [${getSourceUrl(
-              resourceInfo,
-            )}] with content type [${contentType}]: ${error}`,
-          ),
-        );
-      });
-      parser.onQuad((quad) => {
-        allQuads.push(quad);
-        if (
-          quad.subject.termType === "BlankNode" ||
-          quad.object.termType === "BlankNode"
-        ) {
-          // Quads with Blank Nodes will be parsed when all Quads are known,
-          // so that equal Blank Nodes can be reconciled:
-          quadsWithBlankNodes.push(quad);
-        } else {
-          solidDataset = addRdfJsQuadToDataset(solidDataset, quad);
-        }
-      });
-      parser.onComplete(async () => {
-        // If a Resource contains more than this number of Blank Nodes,
-        // we consider the detection of chains (O(n^2), I think) to be too
-        // expensive, and just incorporate them as regular Blank Nodes with
-        // non-deterministic, ad-hoc identifiers into the SolidDataset:
-        const maxBlankNodesToDetectChainsFor = 20;
-        // Some Blank Nodes only serve to use a set of Quads as the Object for a
-        // single Subject. Those Quads will be added to the SolidDataset when
-        // their Subject's Blank Node is encountered in the Object position.
-        const chainBlankNodes =
-          quadsWithBlankNodes.length <= maxBlankNodesToDetectChainsFor
-            ? getChainBlankNodes(quadsWithBlankNodes)
-            : [];
-        const quadsWithoutChainBlankNodeSubjects = quadsWithBlankNodes.filter(
-          (quad) =>
-            chainBlankNodes.every(
-              (chainBlankNode) => !chainBlankNode.equals(quad.subject),
-            ),
-        );
-        solidDataset = quadsWithoutChainBlankNodeSubjects.reduce(
-          (datasetAcc, quad) =>
-            addRdfJsQuadToDataset(datasetAcc, quad, {
-              otherQuads: allQuads,
-              chainBlankNodes,
-            }),
-          solidDataset,
-        );
-        const solidDatasetWithResourceInfo: SolidDataset &
-          WithServerResourceInfo = freeze({
-          ...solidDataset,
-          ...resourceInfo,
-        });
-        resolve(solidDatasetWithResourceInfo);
-      });
-
-      parser.parse(data, resourceInfo);
-    },
-  );
-
-  return parsingPromise;
+    parser.parse(data, resourceInfo);
+  });
+  const solidDataset: SolidDataset = freeze(fromRdfJsDataset(rdfjsDataset));
+  return freeze({
+    ...solidDataset,
+    ...resourceInfo,
+  });
 }
+
+// (resolve, reject) => {
+//   let solidDataset: SolidDataset = freeze({
+//     graphs: freeze({ default: freeze({}) }),
+//     type: "Dataset",
+//   });
+
+//   // While Quads without Blank Nodes can be added to the SolidDataset as we
+//   // encounter them, to parse Quads with Blank Nodes, we'll have to wait until
+//   // we've seen all the Quads, so that we can reconcile equal Blank Nodes.
+//   const quadsWithBlankNodes: Quad[] = [];
+//   const allQuads: Quad[] = [];
+
+//   parser.onError((error) => {
+//     reject(
+//       new Error(
+//         `Encountered an error parsing the Resource at [${getSourceUrl(
+//           resourceInfo,
+//         )}] with content type [${contentType}]: ${error}`,
+//       ),
+//     );
+//   });
+//   parser.onQuad((quad) => {
+//     allQuads.push(quad);
+//     if (
+//       quad.subject.termType === "BlankNode" ||
+//       quad.object.termType === "BlankNode"
+//     ) {
+//       // Quads with Blank Nodes will be parsed when all Quads are known,
+//       // so that equal Blank Nodes can be reconciled:
+//       quadsWithBlankNodes.push(quad);
+//     } else {
+//       solidDataset = addRdfJsQuadToDataset(solidDataset, quad);
+//     }
+//   });
+//   parser.onComplete(async () => {
+//     // If a Resource contains more than this number of Blank Nodes,
+//     // we consider the detection of chains (O(n^2), I think) to be too
+//     // expensive, and just incorporate them as regular Blank Nodes with
+//     // non-deterministic, ad-hoc identifiers into the SolidDataset:
+//     const maxBlankNodesToDetectChainsFor = 0;
+//     // Some Blank Nodes only serve to use a set of Quads as the Object for a
+//     // single Subject. Those Quads will be added to the SolidDataset when
+//     // their Subject's Blank Node is encountered in the Object position.
+//     const chainBlankNodes =
+//       quadsWithBlankNodes.length <= maxBlankNodesToDetectChainsFor
+//         ? getChainBlankNodes(quadsWithBlankNodes)
+//         : [];
+//     const quadsWithoutChainBlankNodeSubjects = quadsWithBlankNodes.filter(
+//       (quad) =>
+//         chainBlankNodes.every(
+//           (chainBlankNode) => !chainBlankNode.equals(quad.subject),
+//         ),
+//     );
+//     solidDataset = quadsWithoutChainBlankNodeSubjects.reduce(
+//       (datasetAcc, quad) =>
+//         addRdfJsQuadToDataset(datasetAcc, quad, {
+//           otherQuads: allQuads,
+//           chainBlankNodes,
+//         }),
+//       solidDataset,
+//     );
+//     const solidDatasetWithResourceInfo: SolidDataset &
+//       WithServerResourceInfo = freeze({
+//       ...solidDataset,
+//       ...resourceInfo,
+//     });
+//     resolve(solidDatasetWithResourceInfo);
+//   });
+
+//   parser.parse(data, resourceInfo);
+// },
+// );
+
+// return parsingPromise;
 
 /**
  * Fetch a SolidDataset from the given URL. Currently requires the SolidDataset to be available as [Turtle](https://www.w3.org/TR/turtle/).
