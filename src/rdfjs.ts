@@ -40,11 +40,7 @@ import type {
   DatasetCoreFactory,
 } from "@rdfjs/types";
 import { rdfJsDataset, type ImmutableDataset } from "./rdf.internal";
-import {
-  addRdfJsQuadToDataset,
-  getChainBlankNodes,
-  toRdfJsQuads,
-} from "./rdfjs.internal";
+import { addRdfJsQuadToDataset, toRdfJsQuads } from "./rdfjs.internal";
 
 /**
  * Convert an RDF/JS Dataset into a [[SolidDataset]]
@@ -58,31 +54,14 @@ import {
  * @returns A [[SolidDataset]] containing the same data as the given RDF/JS Dataset.
  * @since 1.9.0
  */
-export function fromRdfJsDataset(rdfJsDataset: DatasetCore): ImmutableDataset {
-  const dataset: ImmutableDataset = {
+export function fromRdfJsDataset(dataset: DatasetCore): ImmutableDataset {
+  const solidDataset: ImmutableDataset = {
     graphs: { default: {} },
     type: "Dataset",
   };
-
-  const quads = Array.from(rdfJsDataset);
-
-  const chainBlankNodes = getChainBlankNodes(quads);
-
-  // Quads with chain Blank Nodes as their Subject will be parsed when those
-  // Blank Nodes are referred to in an Object. See `addRdfJsQuadToObjects`.
-  const quadsWithoutChainBlankNodeSubjects = quads.filter((quad) =>
-    chainBlankNodes.every(
-      (chainBlankNode) => !chainBlankNode.equals(quad.subject),
-    ),
-  );
-
-  return quadsWithoutChainBlankNodeSubjects.reduce(
-    (datasetAcc, quad) =>
-      addRdfJsQuadToDataset(datasetAcc, quad, {
-        otherQuads: quads,
-        chainBlankNodes,
-      }),
-    dataset,
+  return Array.from(dataset).reduce(
+    (datasetAcc, quad) => addRdfJsQuadToDataset(datasetAcc, quad),
+    solidDataset,
   );
 }
 
