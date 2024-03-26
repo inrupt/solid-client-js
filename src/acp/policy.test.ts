@@ -20,7 +20,8 @@
 //
 
 import { jest, describe, it, expect } from "@jest/globals";
-import { DataFactory } from "n3";
+import { DataFactory, Parser, Store } from "n3";
+import type DatasetCore from "@rdfjs/dataset/DatasetCore";
 import { internal_accessModeIriStrings } from "../acl/acl.internal";
 import { rdf, acp } from "../constants";
 import { mockSolidDatasetFrom } from "../resource/mock";
@@ -66,6 +67,7 @@ import {
   setResourceAcrPolicy,
   setResourcePolicy,
 } from "./policy";
+import { fromRdfJsDataset } from "../rdfjs";
 
 jest.spyOn(globalThis, "fetch").mockImplementation(
   async () =>
@@ -449,36 +451,74 @@ describe("getResourcePolicyAll", () => {
     expect(getResourcePolicyAll(mockedResourceWithAcr)).toHaveLength(1);
   });
 
-  it("returns only those Things whose type is of acp:AccessPolicy", () => {
-    let mockedAcr = mockAcrFor("https://some.pod/resource");
-    let mockedPolicy = createThing({
-      url: `${getSourceUrl(mockedAcr)}#policy`,
-    });
-    mockedPolicy = setUrl(mockedPolicy, rdf.type, acp.Policy);
-    let notAPolicy = createThing({
-      url: "https://some.pod/policy-resource#not-a-policy",
-    });
-    notAPolicy = setUrl(
-      notAPolicy,
-      rdf.type,
-      "https://arbitrary.vocab/not-a-policy",
-    );
-    mockedAcr = setThing(mockedAcr, mockedPolicy);
-    mockedAcr = setThing(mockedAcr, notAPolicy);
-    let mockedResourceWithAcr = addMockAcrTo(
+  // Initially reported in https://github.com/inrupt/solid-client-js/issues/2339
+  it("supports Blank Nodes policies if the option is set", async () => {
+    const acrWithBlankNodes = `
+    @prefix acl: <http://www.w3.org/ns/auth/acl#>.
+    @prefix acp: <http://www.w3.org/ns/solid/acp#>.
+    @base <https://example.org/> .
+    
+    <https://MY-SITE/test/test-acr-1/res1.ttl.acr> a acp:AccessControlResource;
+        acp:resource <https://MY-SITE/test/test-acr-1/res1.ttl>;
+        acp:accessControl <#fullOwnerAccess>, <#publicReadAccess>, <#defaultAccessControl>.
+    <#fullOwnerAccess> a acp:AccessControl;
+        acp:apply [
+            a acp:Policy;
+            acp:allow acl:Read, acl:Write, acl:Control;
+            acp:anyOf [
+                a acp:Matcher;
+                acp:agent <https://MY-SITE/profile/card#me>
+            ]
+        ].
+    <#publicReadAccess> a acp:AccessControl;
+        acp:apply [
+             a acp:Policy;
+            acp:allow acl:Read;
+            acp:anyOf [
+                a acp:Matcher;
+                acp:agent acp:PublicAgent
+            ]
+        ].
+    <#match-app-friends> a acp:Matcher;
+        acp:agent <https://id.example.com/chattycarl>, <https://id.example.com/busybee>;
+        acp:client <https://myapp.example.net/appid>.
+    <#defaultAccessControl> acp:apply <#app-friends-policy>.
+    <#app-friends-policy> a acp:Policy;
+        acp:allow acl:Read, acl:Write;
+        acp:allOf <#match-app-friends>.
+    `;
+    const mockedAcr = await new Promise<DatasetCore>((resolve, reject) => {
+      const parser = new Parser();
+      const store = new Store();
+      parser.parse(acrWithBlankNodes, (error, quad) => {
+        if (error) {
+          reject(error);
+        }
+        if (quad) {
+          store.add(quad);
+        } else {
+          resolve(store);
+        }
+      });
+    })
+      .then(fromRdfJsDataset)
+      .then((dataset) =>
+        getThingAll(dataset, { acceptBlankNodes: true }).reduce(
+          setThing,
+          mockAcrFor(
+            "https://some.pod/resource",
+            "https://MY-SITE/test/test-acr-1/res1.ttl.acr",
+          ),
+        ),
+      );
+
+    const mockedResourceWithAcr = addMockAcrTo(
       mockSolidDatasetFrom("https://some.pod/resource"),
       mockedAcr,
     );
-    mockedResourceWithAcr = addPolicyUrl(
-      mockedResourceWithAcr,
-      `${getSourceUrl(mockedAcr)}#policy`,
-    );
-    mockedResourceWithAcr = addPolicyUrl(
-      mockedResourceWithAcr,
-      "https://some.pod/policy-resource#not-a-policy",
-    );
-
-    expect(getResourcePolicyAll(mockedResourceWithAcr)).toHaveLength(1);
+    expect(
+      getResourcePolicyAll(mockedResourceWithAcr, { acceptBlankNodes: true }),
+    ).toHaveLength(3);
   });
 
   it("returns only those Things that apply to the given Resource", () => {

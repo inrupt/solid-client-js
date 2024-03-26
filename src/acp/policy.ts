@@ -19,19 +19,22 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+import type { Quad_Object } from "@rdfjs/types";
 import { internal_accessModeIriStrings } from "../acl/acl.internal";
 import { acp, rdf } from "../constants";
 import { internal_isValidUrl, isNamedNode } from "../datatypes";
-import type {
-  SolidDataset,
-  ThingPersisted,
-  Url,
-  UrlString,
+import {
+  SolidClientError,
+  type SolidDataset,
+  type Thing,
+  type ThingPersisted,
+  type Url,
+  type UrlString,
 } from "../interfaces";
 import { internal_toIriString } from "../interfaces.internal";
 import { getSourceUrl } from "../resource/resource";
 import { addIri } from "../thing/add";
-import { getIriAll } from "../thing/get";
+import { getIriAll, getTermAll } from "../thing/get";
 import { removeAll } from "../thing/remove";
 import { setUrl } from "../thing/set";
 import {
@@ -53,6 +56,7 @@ import {
   removePolicyUrl,
 } from "./control";
 import { internal_getAcr, internal_setAcr } from "./control.internal";
+import type { BlankNodeId } from "../rdf.internal";
 
 /**
  * A Policy can be applied to Resources to grant or deny [[AccessModes]] to users who match the Policy's [[Rule]]s.
@@ -64,6 +68,11 @@ export type Policy = ThingPersisted;
  * @since 1.6.0
  */
 export type ResourcePolicy = ThingPersisted;
+/**
+ * A Resource Policy is like a regular [[Policy]], but rather than being re-used for different Resources, it is used for a single Resource and is stored in that Resource's Access Control Resource.
+ * @since 1.6.0
+ */
+export type AnonymousResourcePolicy = Thing & { url: BlankNodeId };
 /**
  * The different Access Modes that a [[Policy]] can allow or deny for a Resource.
  * @since 1.6.0
@@ -421,14 +430,61 @@ export function getResourceAcrPolicy(
  */
 export function getResourcePolicyAll(
   resourceWithAcr: WithAccessibleAcr,
-): ResourcePolicy[] {
+): ResourcePolicy[];
+export function getResourcePolicyAll(
+  resourceWithAcr: WithAccessibleAcr,
+  options: { acceptBlankNodes: true },
+): (ResourcePolicy | AnonymousResourcePolicy)[];
+export function getResourcePolicyAll(
+  resourceWithAcr: WithAccessibleAcr,
+  options: { acceptBlankNodes: false },
+): ResourcePolicy[];
+export function getResourcePolicyAll(
+  resourceWithAcr: WithAccessibleAcr,
+  options: { acceptBlankNodes: boolean },
+): (ResourcePolicy | AnonymousResourcePolicy)[];
+export function getResourcePolicyAll(
+  resourceWithAcr: WithAccessibleAcr,
+  options: { acceptBlankNodes: boolean } = { acceptBlankNodes: false },
+): (ResourcePolicy | AnonymousResourcePolicy)[] {
   const acr = internal_getAcr(resourceWithAcr);
-  const policyUrls = getPolicyUrlAll(resourceWithAcr);
-  const foundThings = policyUrls.map((policyUrl) => getThing(acr, policyUrl));
-  const foundPolicies = foundThings.filter(
-    (thing) => thing !== null && isPolicy(thing),
-  ) as ResourcePolicy[];
-  return foundPolicies;
+  const acrUrl = getSourceUrl(acr);
+  const acrSubj = getThing(acr, acrUrl);
+  if (acrSubj === null) {
+    throw new SolidClientError(
+      `The provided ACR graph does not have an anchor node matching its URL ${acrUrl}`,
+    );
+  }
+  // Follow the links from acr -acp:accessControl> Acccess Control -acp:apply> Policy.
+  return (
+    getTermAll(acrSubj, acp.accessControl)
+      .reduce((prev, accessControlId) => {
+        const accessControl = getThing(acr, accessControlId.value);
+        if (accessControl === null) {
+          // If the access control isn't found, there are no policies to add.
+          return prev;
+        }
+        const accessControlPolicies = getTermAll(
+          accessControl,
+          acp.apply,
+        ).filter(
+          // If the option is set, all candidate policies are acceptable.
+          (policy) =>
+            options.acceptBlankNodes ? true : policy.termType === "NamedNode",
+        );
+        return [...prev, ...accessControlPolicies];
+      }, [] as Quad_Object[])
+      // Get all the triples for the found subjects ID.
+      .map((policyId) => {
+        if (policyId.termType === "BlankNode") {
+          // policyId.value removes the _: prefix,
+          // which we rely on for matching.
+          return getThing(acr, `_:${policyId.value}`);
+        }
+        return getThing(acr, policyId.value);
+      })
+      .filter((thing): thing is Thing => thing !== null)
+  );
 }
 
 /**
