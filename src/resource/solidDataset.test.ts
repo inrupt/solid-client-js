@@ -133,6 +133,7 @@ describe("createSolidDataset", () => {
 describe("responseToSolidDataset", () => {
   it("returns a SolidDataset representing the fetched Turtle", async () => {
     const turtle = `
+      @base <https://some.pod/resource> .
       @prefix : <#>.
       @prefix foaf: <http://xmlns.com/foaf/0.1/>.
       @prefix vcard: <http://www.w3.org/2006/vcard/ns#>.
@@ -154,11 +155,22 @@ describe("responseToSolidDataset", () => {
       "https://some.pod/resource",
     );
     const solidDataset = await responseToSolidDataset(response);
-
     expect(solidDataset).toEqual(
       expect.objectContaining({
         graphs: {
           default: {
+            // The blank node identifier is by definition unstable.
+            // If this test starts failing, it may be due to the
+            // identifier changing, which is not forbidden.
+            "_:n3-0": {
+              type: "Subject",
+              url: "_:n3-0",
+              predicates: {
+                "https://some.pod/resource#predicate": {
+                  namedNodes: ["for://a.blank/node"],
+                },
+              },
+            },
             "https://some.pod/resource": {
               predicates: {
                 "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": {
@@ -182,127 +194,11 @@ describe("responseToSolidDataset", () => {
                   namedNodes: ["http://xmlns.com/foaf/0.1/Person"],
                 },
                 "http://www.w3.org/2006/vcard/ns#fn": {
-                  blankNodes: [
-                    {
-                      "https://some.pod/resource#predicate": {
-                        namedNodes: ["for://a.blank/node"],
-                      },
-                    },
-                  ],
+                  // Here, the blank node identifier isn't referenced explicitly for resiliency.
+                  blankNodes: [expect.stringMatching(/^_:/)],
                   literals: {
                     "http://www.w3.org/2001/XMLSchema#string": ["Vincent"],
                   },
-                },
-              },
-              type: "Subject",
-              url: "https://some.pod/resource#me",
-            },
-          },
-        },
-        internal_resourceInfo: {
-          contentType: "text/turtle",
-          isRawData: false,
-          linkedResources: {},
-          sourceIri: "https://some.pod/resource",
-        },
-        type: "Dataset",
-      }),
-    );
-  });
-
-  it("does not include non-deterministic identifiers when it detects non-cyclic chains of Blank Nodes", async () => {
-    const turtle = `
-      @prefix : <#>.
-      @prefix foaf: <http://xmlns.com/foaf/0.1/>.
-      @prefix vcard: <http://www.w3.org/2006/vcard/ns#>.
-      @prefix acl: <http://www.w3.org/ns/auth/acl#>.
-
-      <> a foaf:PersonalProfileDocument; foaf:maker :me; foaf:primaryTopic :me.
-
-      :me
-        a foaf:Person;
-        vcard:fn "Vincent";
-        acl:trustedApp
-          [
-            acl:mode acl:Append, acl:Control, acl:Read, acl:Write;
-            acl:origin <http://localhost:3000>
-          ],
-          [
-            acl:mode acl:Append, acl:Control, acl:Read, acl:Write;
-            acl:origin <https://penny.vincenttunru.com>
-          ].
-    `;
-
-    const response = new Response(turtle, {
-      headers: {
-        "Content-Type": "text/turtle",
-      },
-    });
-    jest
-      .spyOn(response, "url", "get")
-      .mockReturnValue("https://some.pod/resource");
-    const solidDataset = await responseToSolidDataset(response);
-
-    expect(solidDataset).toEqual(
-      expect.objectContaining({
-        graphs: {
-          default: {
-            "https://some.pod/resource": {
-              predicates: {
-                "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": {
-                  namedNodes: [
-                    "http://xmlns.com/foaf/0.1/PersonalProfileDocument",
-                  ],
-                },
-                "http://xmlns.com/foaf/0.1/maker": {
-                  namedNodes: ["https://some.pod/resource#me"],
-                },
-                "http://xmlns.com/foaf/0.1/primaryTopic": {
-                  namedNodes: ["https://some.pod/resource#me"],
-                },
-              },
-              type: "Subject",
-              url: "https://some.pod/resource",
-            },
-            "https://some.pod/resource#me": {
-              predicates: {
-                "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": {
-                  namedNodes: ["http://xmlns.com/foaf/0.1/Person"],
-                },
-                "http://www.w3.org/2006/vcard/ns#fn": {
-                  literals: {
-                    "http://www.w3.org/2001/XMLSchema#string": ["Vincent"],
-                  },
-                },
-                "http://www.w3.org/ns/auth/acl#trustedApp": {
-                  blankNodes: [
-                    {
-                      "http://www.w3.org/ns/auth/acl#mode": {
-                        namedNodes: [
-                          "http://www.w3.org/ns/auth/acl#Append",
-                          "http://www.w3.org/ns/auth/acl#Control",
-                          "http://www.w3.org/ns/auth/acl#Read",
-                          "http://www.w3.org/ns/auth/acl#Write",
-                        ],
-                      },
-                      "http://www.w3.org/ns/auth/acl#origin": {
-                        namedNodes: ["http://localhost:3000"],
-                      },
-                    },
-                    {
-                      "http://www.w3.org/ns/auth/acl#mode": {
-                        namedNodes: [
-                          "http://www.w3.org/ns/auth/acl#Append",
-                          "http://www.w3.org/ns/auth/acl#Control",
-                          "http://www.w3.org/ns/auth/acl#Read",
-                          "http://www.w3.org/ns/auth/acl#Write",
-                        ],
-                      },
-                      "http://www.w3.org/ns/auth/acl#origin": {
-                        namedNodes: ["https://penny.vincenttunru.com"],
-                      },
-                    },
-                  ],
                 },
               },
               type: "Subject",

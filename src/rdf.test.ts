@@ -41,6 +41,7 @@ import {
 import type { ImmutableDataset } from "./rdf.internal";
 import { addRdfJsQuadToDataset } from "./rdfjs.internal";
 import { fromRdfJsDataset, toRdfJsDataset } from "./rdfjs";
+import { getThingAll } from "./thing/thing";
 
 describe("fromRdfJsDataset", () => {
   const fcNamedNode = fc
@@ -212,7 +213,7 @@ describe("fromRdfJsDataset", () => {
     expect(fromRdfJsDataset(rdfJsDataset)).toStrictEqual({
       type: "Dataset",
       graphs: {
-        default: {
+        default: expect.objectContaining({
           [subject1IriString]: {
             url: subject1IriString,
             type: "Subject",
@@ -231,41 +232,35 @@ describe("fromRdfJsDataset", () => {
               },
             },
           },
-        },
-        [acrGraphIriString]: {
+        }),
+        [acrGraphIriString]: expect.objectContaining({
           [subject2IriString]: {
             url: subject2IriString,
             type: "Subject",
             predicates: {
               [predicate1IriString]: {
                 blankNodes: [
-                  {
-                    [predicate1IriString]: {
-                      literals: {
-                        [xmlSchemaTypes.string]: [literalStringValue],
-                      },
-                    },
-                  },
-                  {
-                    [predicate1IriString]: {
-                      literals: {
-                        [xmlSchemaTypes.string]: [literalStringValue],
-                        [xmlSchemaTypes.integer]: [literalIntegerValue],
-                      },
-                    },
-                    [predicate2IriString]: {
-                      literals: {
-                        [xmlSchemaTypes.integer]: [literalIntegerValue],
-                      },
-                    },
-                  },
+                  expect.stringMatching(/_:/),
+                  expect.stringMatching(/_:/),
                 ],
               },
             },
           },
-        },
+        }),
       },
     });
+    const subjectsExcludingBlankNodes = getThingAll(
+      fromRdfJsDataset(rdfJsDataset),
+      { scope: acrGraphIriString },
+    );
+    const subjectsIncludingBlankNodes = getThingAll(
+      fromRdfJsDataset(rdfJsDataset),
+      { scope: acrGraphIriString, acceptBlankNodes: true },
+    );
+    // There should be two blank nodes in the resulting dataset.
+    expect(
+      subjectsIncludingBlankNodes.length - subjectsExcludingBlankNodes.length,
+    ).toBe(2);
   });
 
   it("can represent lists", () => {
