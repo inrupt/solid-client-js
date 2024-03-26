@@ -19,11 +19,13 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+import type { Quad_Object } from "@rdfjs/types";
 import { internal_accessModeIriStrings } from "../acl/acl.internal";
 import { acp, rdf } from "../constants";
 import { internal_isValidUrl, isNamedNode } from "../datatypes";
 import type {
   SolidDataset,
+  Thing,
   ThingPersisted,
   Url,
   UrlString,
@@ -31,7 +33,7 @@ import type {
 import { internal_toIriString } from "../interfaces.internal";
 import { getSourceUrl } from "../resource/resource";
 import { addIri } from "../thing/add";
-import { getIriAll } from "../thing/get";
+import { getIriAll, getTermAll } from "../thing/get";
 import { removeAll } from "../thing/remove";
 import { setUrl } from "../thing/set";
 import {
@@ -52,7 +54,12 @@ import {
   removeAcrPolicyUrl,
   removePolicyUrl,
 } from "./control";
-import { internal_getAcr, internal_setAcr } from "./control.internal";
+import {
+  internal_getAcr,
+  internal_getControlAll,
+  internal_setAcr,
+} from "./control.internal";
+import type { BlankNodeId } from "../rdf.internal";
 
 /**
  * A Policy can be applied to Resources to grant or deny [[AccessModes]] to users who match the Policy's [[Rule]]s.
@@ -64,6 +71,11 @@ export type Policy = ThingPersisted;
  * @since 1.6.0
  */
 export type ResourcePolicy = ThingPersisted;
+/**
+ * A Resource Policy is like a regular [[Policy]], but rather than being re-used for different Resources, it is used for a single Resource and is stored in that Resource's Access Control Resource.
+ * @since 1.6.0
+ */
+export type AnonymousResourcePolicy = Thing & { url: BlankNodeId };
 /**
  * The different Access Modes that a [[Policy]] can allow or deny for a Resource.
  * @since 1.6.0
@@ -421,14 +433,32 @@ export function getResourceAcrPolicy(
  */
 export function getResourcePolicyAll(
   resourceWithAcr: WithAccessibleAcr,
-): ResourcePolicy[] {
+): ResourcePolicy[];
+export function getResourcePolicyAll(
+  resourceWithAcr: WithAccessibleAcr,
+  options: { allowBlankNodes: true },
+): (ResourcePolicy | AnonymousResourcePolicy)[];
+export function getResourcePolicyAll(
+  resourceWithAcr: WithAccessibleAcr,
+  options: { allowBlankNodes: false },
+): ResourcePolicy[];
+export function getResourcePolicyAll(
+  resourceWithAcr: WithAccessibleAcr,
+  options: { allowBlankNodes: boolean },
+): (ResourcePolicy | AnonymousResourcePolicy)[];
+export function getResourcePolicyAll(
+  resourceWithAcr: WithAccessibleAcr,
+  options: { allowBlankNodes: boolean } = { allowBlankNodes: false },
+): (ResourcePolicy | AnonymousResourcePolicy)[] {
   const acr = internal_getAcr(resourceWithAcr);
-  const policyUrls = getPolicyUrlAll(resourceWithAcr);
-  const foundThings = policyUrls.map((policyUrl) => getThing(acr, policyUrl));
-  const foundPolicies = foundThings.filter(
-    (thing) => thing !== null && isPolicy(thing),
-  ) as ResourcePolicy[];
-  return foundPolicies;
+  // This may not be very efficient, in which case we may consider listing
+  // all objects of <control, acp:apply, object> triples, named and blank nodes.
+  return getThingAll(acr, {
+    acceptBlankNodes: options.allowBlankNodes,
+  }).filter((thing) => {
+    console.log(`Looking at ${asUrl(thing)}`);
+    return thing !== null && isPolicy(thing);
+  });
 }
 
 /**
