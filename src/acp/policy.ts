@@ -23,12 +23,13 @@ import type { Quad_Object } from "@rdfjs/types";
 import { internal_accessModeIriStrings } from "../acl/acl.internal";
 import { acp, rdf } from "../constants";
 import { internal_isValidUrl, isNamedNode } from "../datatypes";
-import type {
-  SolidDataset,
-  Thing,
-  ThingPersisted,
-  Url,
-  UrlString,
+import {
+  SolidClientError,
+  type SolidDataset,
+  type Thing,
+  type ThingPersisted,
+  type Url,
+  type UrlString,
 } from "../interfaces";
 import { internal_toIriString } from "../interfaces.internal";
 import { getSourceUrl } from "../resource/resource";
@@ -451,14 +452,36 @@ export function getResourcePolicyAll(
   options: { allowBlankNodes: boolean } = { allowBlankNodes: false },
 ): (ResourcePolicy | AnonymousResourcePolicy)[] {
   const acr = internal_getAcr(resourceWithAcr);
-  // This may not be very efficient, in which case we may consider listing
-  // all objects of <control, acp:apply, object> triples, named and blank nodes.
-  return getThingAll(acr, {
-    acceptBlankNodes: options.allowBlankNodes,
-  }).filter((thing) => {
-    console.log(`Looking at ${asUrl(thing)}`);
-    return thing !== null && isPolicy(thing);
-  });
+  const acrUrl = getSourceUrl(acr);
+  const acrSubj = getThing(acr, acrUrl);
+  if (acrSubj === null) {
+    throw new SolidClientError(
+      `The provided ACR graph does not have an anchor node matching its URL ${acrUrl}`,
+    );
+  }
+  // Follow the links from acr -acp:accessControl> Acccess Control -acp:apply> Policy.
+  return (
+    getTermAll(acrSubj, acp.accessControl)
+      .reduce((prev, accessControlId) => {
+        const accessControl = getThing(acr, accessControlId.value);
+        if (accessControl === null) {
+          // If the access control isn't found, there are no policies to add.
+          return prev;
+        }
+        const accessControlPolicies = getTermAll(
+          accessControl,
+          acp.apply,
+        ).filter(
+          // If the option is set, all candidate policies are acceptable.
+          (policy) =>
+            options.allowBlankNodes ? true : policy.termType === "NamedNode",
+        );
+        return [...prev, ...accessControlPolicies];
+      }, [] as Quad_Object[])
+      // Get all the triples for the found subjects ID.
+      .map((policyId) => getThing(acr, policyId.value))
+      .filter((thing): thing is Thing => thing !== null)
+  );
 }
 
 /**

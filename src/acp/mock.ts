@@ -23,6 +23,7 @@ import type { UrlString, WithResourceInfo } from "../interfaces";
 import { mockSolidDatasetFrom } from "../resource/mock";
 import { getSourceUrl } from "../resource/resource";
 import { internal_cloneResource } from "../resource/resource.internal";
+import { createThing, setThing } from "../thing/thing";
 import type { WithAccessibleAcr } from "./acp";
 import type { AccessControlResource } from "./control";
 
@@ -40,10 +41,17 @@ import type { AccessControlResource } from "./control";
  * @returns The mocked empty Access Control Resource for the given Resource.
  * @since 1.6.0
  */
-export function mockAcrFor(resourceUrl: UrlString): AccessControlResource {
-  const acrUrl = new URL("access-control-resource", resourceUrl).href;
+export function mockAcrFor(
+  resourceUrl: UrlString,
+  acrUrl?: UrlString,
+): AccessControlResource {
+  const finalAcrUrl =
+    acrUrl ?? new URL("access-control-resource", resourceUrl).href;
   const acr: AccessControlResource = {
-    ...mockSolidDatasetFrom(acrUrl),
+    ...setThing(
+      mockSolidDatasetFrom(finalAcrUrl),
+      createThing({ url: finalAcrUrl }),
+    ),
     accessTo: resourceUrl,
   };
 
