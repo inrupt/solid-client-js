@@ -518,7 +518,7 @@ describe("getResourcePolicyAll", () => {
       mockedAcr,
     );
     expect(
-      getResourcePolicyAll(mockedResourceWithAcr, { allowBlankNodes: true }),
+      getResourcePolicyAll(mockedResourceWithAcr, { acceptBlankNodes: true }),
     ).toHaveLength(3);
   });
 

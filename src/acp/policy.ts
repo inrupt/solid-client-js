@@ -437,19 +437,19 @@ export function getResourcePolicyAll(
 ): ResourcePolicy[];
 export function getResourcePolicyAll(
   resourceWithAcr: WithAccessibleAcr,
-  options: { allowBlankNodes: true },
+  options: { acceptBlankNodes: true },
 ): (ResourcePolicy | AnonymousResourcePolicy)[];
 export function getResourcePolicyAll(
   resourceWithAcr: WithAccessibleAcr,
-  options: { allowBlankNodes: false },
+  options: { acceptBlankNodes: false },
 ): ResourcePolicy[];
 export function getResourcePolicyAll(
   resourceWithAcr: WithAccessibleAcr,
-  options: { allowBlankNodes: boolean },
+  options: { acceptBlankNodes: boolean },
 ): (ResourcePolicy | AnonymousResourcePolicy)[];
 export function getResourcePolicyAll(
   resourceWithAcr: WithAccessibleAcr,
-  options: { allowBlankNodes: boolean } = { allowBlankNodes: false },
+  options: { acceptBlankNodes: boolean } = { acceptBlankNodes: false },
 ): (ResourcePolicy | AnonymousResourcePolicy)[] {
   const acr = internal_getAcr(resourceWithAcr);
   const acrUrl = getSourceUrl(acr);
@@ -474,7 +474,7 @@ export function getResourcePolicyAll(
         ).filter(
           // If the option is set, all candidate policies are acceptable.
           (policy) =>
-            options.allowBlankNodes ? true : policy.termType === "NamedNode",
+            options.acceptBlankNodes ? true : policy.termType === "NamedNode",
         );
         return [...prev, ...accessControlPolicies];
       }, [] as Quad_Object[])
