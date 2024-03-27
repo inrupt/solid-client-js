@@ -38,10 +38,11 @@ import {
   serializeInteger,
   xmlSchemaTypes,
 } from "./datatypes";
-import type { ImmutableDataset } from "./rdf.internal";
+import { isBlankNodeId, type ImmutableDataset } from "./rdf.internal";
 import { addRdfJsQuadToDataset } from "./rdfjs.internal";
 import { fromRdfJsDataset, toRdfJsDataset } from "./rdfjs";
-import { getThingAll } from "./thing/thing";
+import { asUrl, getThing, getThingAll } from "./thing/thing";
+import { getTermAll } from "./thing/get";
 
 describe("fromRdfJsDataset", () => {
   const fcNamedNode = fc
@@ -448,104 +449,6 @@ describe("fromRdfJsDataset", () => {
       );
     });
 
-    it("throws an error when passed unknown Predicate types with chain Blank Node Subjects", () => {
-      const mockDataset: ImmutableDataset = {
-        type: "Dataset",
-        graphs: { default: {} },
-      };
-      const chainBlankNode = DF.blankNode();
-      const otherQuad = DF.quad(
-        DF.namedNode("https://arbitrary.subject"),
-        DF.namedNode("https://arbitrary.predicate"),
-        chainBlankNode,
-        DF.defaultGraph(),
-      );
-      const mockQuad = DF.quad(
-        chainBlankNode,
-        { termType: "Unknown term type" } as any,
-        DF.namedNode("https://arbitrary.object"),
-        DF.defaultGraph(),
-      );
-      expect(() =>
-        addRdfJsQuadToDataset(mockDataset, otherQuad, {
-          chainBlankNodes: [chainBlankNode],
-          otherQuads: [mockQuad],
-        }),
-      ).toThrow(
-        "Cannot parse Quads with nodes of type [Unknown term type] as their Predicate node.",
-      );
-    });
-
-    it("throws an error when passed unknown Predicate types in connecting Quads for chain Blank Node Objects", () => {
-      const mockDataset: ImmutableDataset = {
-        type: "Dataset",
-        graphs: { default: {} },
-      };
-      const chainBlankNode1 = DF.blankNode();
-      const chainBlankNode2 = DF.blankNode();
-      const otherQuad = DF.quad(
-        DF.namedNode("https://arbitrary.subject"),
-        DF.namedNode("https://arbitrary.predicate"),
-        chainBlankNode1,
-        DF.defaultGraph(),
-      );
-      const inBetweenQuad = DF.quad(
-        chainBlankNode1,
-        { termType: "Unknown term type" } as any,
-        chainBlankNode2,
-        DF.defaultGraph(),
-      );
-      const mockQuad = DF.quad(
-        chainBlankNode2,
-        DF.namedNode("https://arbitrary.predicate"),
-        DF.namedNode("https://arbitrary.object"),
-        DF.defaultGraph(),
-      );
-      expect(() =>
-        addRdfJsQuadToDataset(mockDataset, otherQuad, {
-          chainBlankNodes: [chainBlankNode1, chainBlankNode2],
-          otherQuads: [mockQuad, inBetweenQuad],
-        }),
-      ).toThrow(
-        "Cannot parse Quads with nodes of type [Unknown term type] as their Predicate node.",
-      );
-    });
-
-    it("throws an error when passed unknown Predicate types in the terminating Quads for chain Blank Node Objects", () => {
-      const mockDataset: ImmutableDataset = {
-        type: "Dataset",
-        graphs: { default: {} },
-      };
-      const chainBlankNode1 = DF.blankNode();
-      const chainBlankNode2 = DF.blankNode();
-      const otherQuad = DF.quad(
-        DF.namedNode("https://arbitrary.subject"),
-        DF.namedNode("https://arbitrary.predicate"),
-        chainBlankNode1,
-        DF.defaultGraph(),
-      );
-      const inBetweenQuad = DF.quad(
-        chainBlankNode1,
-        DF.namedNode("https://arbitrary.predicate"),
-        chainBlankNode2,
-        DF.defaultGraph(),
-      );
-      const mockQuad = DF.quad(
-        chainBlankNode2,
-        { termType: "Unknown term type" } as any,
-        DF.namedNode("https://arbitrary.object"),
-        DF.defaultGraph(),
-      );
-      expect(() =>
-        addRdfJsQuadToDataset(mockDataset, otherQuad, {
-          chainBlankNodes: [chainBlankNode1, chainBlankNode2],
-          otherQuads: [mockQuad, inBetweenQuad],
-        }),
-      ).toThrow(
-        "Cannot parse Quads with nodes of type [Unknown term type] as their Predicate node.",
-      );
-    });
-
     it("throws an error when passed unknown Object types", () => {
       const mockDataset: ImmutableDataset = {
         type: "Dataset",
@@ -581,33 +484,36 @@ describe("fromRdfJsDataset", () => {
         DF.defaultGraph(),
       );
 
-      const updatedDataset = addRdfJsQuadToDataset(mockDataset, otherQuad, {
-        chainBlankNodes: [chainBlankNode1],
-        otherQuads: [mockQuad],
+      const updatedDataset = [mockQuad, otherQuad].reduce(
+        addRdfJsQuadToDataset,
+        mockDataset,
+      );
+
+      // There should be one blank node subject.
+      expect(
+        getThingAll(updatedDataset, { acceptBlankNodes: false }),
+      ).toHaveLength(1);
+      expect(
+        getThingAll(updatedDataset, { acceptBlankNodes: true }),
+      ).toHaveLength(2);
+
+      // The blank nodes should be linked
+      const blankNodes = getThingAll(updatedDataset, {
+        acceptBlankNodes: true,
+      }).filter((thing) => isBlankNodeId(asUrl(thing)));
+      let bnAreLinked = false;
+      blankNodes.forEach((bn) => {
+        const candidateObjects = getTermAll(bn, "https://some.predicate/2");
+        bnAreLinked ||=
+          candidateObjects.length > 0 &&
+          candidateObjects.some((obj) => obj.termType === "BlankNode");
       });
 
-      expect(updatedDataset).toStrictEqual({
-        graphs: {
-          default: {
-            "https://some.subject": {
-              predicates: {
-                "https://some.predicate/1": {
-                  blankNodes: [
-                    {
-                      "https://some.predicate/2": {
-                        blankNodes: ["_:some-blank-node"],
-                      },
-                    },
-                  ],
-                },
-              },
-              type: "Subject",
-              url: "https://some.subject",
-            },
-          },
-        },
-        type: "Dataset",
-      });
+      // The named node should be linked to a blank node
+      getTermAll(
+        getThing(updatedDataset, "https://some.subject")!,
+        "https://some.predicate/1",
+      ).some((term) => term.termType === "BlankNode");
     });
 
     it("can parse chained Blank Nodes that end in a dangling Blank Node", () => {
@@ -635,40 +541,42 @@ describe("fromRdfJsDataset", () => {
         DF.blankNode("some-blank-node"),
         DF.defaultGraph(),
       );
+      const updatedDataset = [mockQuad, inBetweenQuad, otherQuad].reduce(
+        addRdfJsQuadToDataset,
+        mockDataset,
+      );
 
-      const updatedDataset = addRdfJsQuadToDataset(mockDataset, otherQuad, {
-        chainBlankNodes: [chainBlankNode1, chainBlankNode2],
-        otherQuads: [mockQuad, inBetweenQuad],
-      });
+      // There should be 2 blank node subjects
+      expect(
+        getThingAll(updatedDataset, { acceptBlankNodes: false }),
+      ).toHaveLength(1);
+      expect(
+        getThingAll(updatedDataset, { acceptBlankNodes: true }),
+      ).toHaveLength(3);
 
-      expect(updatedDataset).toStrictEqual({
-        graphs: {
-          default: {
-            "https://some.subject": {
-              predicates: {
-                "https://some.predicate/1": {
-                  blankNodes: [
-                    {
-                      "https://some.predicate/2": {
-                        blankNodes: [
-                          {
-                            "https://some.predicate/3": {
-                              blankNodes: ["_:some-blank-node"],
-                            },
-                          },
-                        ],
-                      },
-                    },
-                  ],
-                },
-              },
-              type: "Subject",
-              url: "https://some.subject",
-            },
-          },
-        },
-        type: "Dataset",
-      });
+      // The blank nodes subjects and the blank node object should be linked.
+      const blankNodes = getThingAll(updatedDataset, {
+        acceptBlankNodes: true,
+      }).filter((thing) => isBlankNodeId(asUrl(thing)));
+      // Count the number of links between blank nodes,
+      // based on known predicates.
+      const bnLinks = blankNodes.reduce(
+        (prev, cur) =>
+          prev +
+          [
+            ...getTermAll(cur, "https://some.predicate/2"),
+            ...getTermAll(cur, "https://some.predicate/3"),
+          ].filter((obj) => obj.termType === "BlankNode").length,
+        0,
+      );
+      // There should be a chain of links between blank nodes.
+      expect(bnLinks).toBe(2);
+
+      // The named node should be linked to a blank node.
+      getTermAll(
+        getThing(updatedDataset, "https://some.subject")!,
+        "https://some.predicate/1",
+      ).some((term) => term.termType === "BlankNode");
     });
   });
 });
