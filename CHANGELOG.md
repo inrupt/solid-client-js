@@ -6,6 +6,12 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 The following changes are pending, and will be applied on the next major release:
 
+## Unreleased changes
+
+### Patch changes
+
+- `getThing` now supports Blank Node identifiers in addition to IRIs and skolems to refer to a subject.
+
 ## [2.0.1]
 
 The following changes have been implemented but not released yet:
