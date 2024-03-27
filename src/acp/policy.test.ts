@@ -504,7 +504,7 @@ describe("getResourcePolicyAll", () => {
     })
       .then(fromRdfJsDataset)
       .then((dataset) =>
-        getThingAll(dataset).reduce(
+        getThingAll(dataset, { acceptBlankNodes: true }).reduce(
           setThing,
           mockAcrFor(
             "https://some.pod/resource",

@@ -479,7 +479,14 @@ export function getResourcePolicyAll(
         return [...prev, ...accessControlPolicies];
       }, [] as Quad_Object[])
       // Get all the triples for the found subjects ID.
-      .map((policyId) => getThing(acr, policyId.value))
+      .map((policyId) => {
+        if (policyId.termType === "BlankNode") {
+          // policyId.value removes the _: prefix,
+          // which we rely on for matching.
+          return getThing(acr, `_:${policyId.value}`);
+        }
+        return getThing(acr, policyId.value);
+      })
       .filter((thing): thing is Thing => thing !== null)
   );
 }
