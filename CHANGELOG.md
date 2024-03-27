@@ -9,7 +9,9 @@ The following changes are pending, and will be applied on the next major release
 ## Unreleased changes
 
 ### Patch changes
-
+- Fixed #2339: Unnamed policies are now returned by `getResourcePolicyAll` if an optional argument 
+  `{ acceptBlankNodes: true }` is specified. This additional argument makes this a non-breaking change,
+  as the current type signature isn't changed.
 - `getThing` now supports Blank Node identifiers in addition to IRIs and skolems to refer to a subject.
 - `getThingAll(dataset, { allowacceptBlankNodes: true })` now returns all Blank Nodes
   subjects in the Dataset, in particular including those part of a single chain of
