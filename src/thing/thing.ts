@@ -86,7 +86,7 @@ export function getThing(
  * Extract Quads with a given Subject from a [[SolidDataset]] into a [[Thing]].
  *
  * @param solidDataset The [[SolidDataset]] to extract the [[Thing]] from.
- * @param thingUrl The URL of the desired [[Thing]].
+ * @param thingUrl The identifier of the desired [[Thing]] (URL or Blank Node identifier).
  * @param options Not yet implemented.
  */
 export function getThing(
