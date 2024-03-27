@@ -10,9 +10,7 @@ The following changes are pending, and will be applied on the next major release
 
 ### Patch changes
 
-<<<<<<< HEAD
 - `getThing` now supports Blank Node identifiers in addition to IRIs and skolems to refer to a subject.
-=======
 - `getThingAll(dataset, { allowacceptBlankNodes: true })` now returns all Blank Nodes
   subjects in the Dataset, in particular including those part of a single chain of
   predicates. For instance, given the following dataset:
@@ -32,7 +30,6 @@ The following changes are pending, and will be applied on the next major release
   a single element for the Named Node (`ex:camille`), it will now also include a second
   element for the Blank Node. Blank Node identifiers are by definition unstable and shouldn't
   be relied upon beyond local resolution.
->>>>>>> f552370 (Update Changelog)
 
 ## [2.0.1]
 
