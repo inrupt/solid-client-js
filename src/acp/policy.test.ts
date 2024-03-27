@@ -68,7 +68,6 @@ import {
   setResourcePolicy,
 } from "./policy";
 import { fromRdfJsDataset } from "../rdfjs";
-import { addRdfJsQuadToDataset } from "../rdfjs.internal";
 
 jest.spyOn(globalThis, "fetch").mockImplementation(
   async () =>

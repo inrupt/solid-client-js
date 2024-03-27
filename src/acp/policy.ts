@@ -55,11 +55,7 @@ import {
   removeAcrPolicyUrl,
   removePolicyUrl,
 } from "./control";
-import {
-  internal_getAcr,
-  internal_getControlAll,
-  internal_setAcr,
-} from "./control.internal";
+import { internal_getAcr, internal_setAcr } from "./control.internal";
 import type { BlankNodeId } from "../rdf.internal";
 
 /**
