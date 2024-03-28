@@ -60,7 +60,7 @@ import {
 import type { WithAcl } from "../acl/acl";
 import { mockSolidDatasetFrom } from "../resource/mock";
 import { internal_setAcl } from "../acl/acl.internal";
-import type { LocalNodeIri } from "../rdf.internal";
+import type { BlankNodeId, LocalNodeIri } from "../rdf.internal";
 import { localNodeSkolemPrefix } from "../rdf.internal";
 
 describe("createThing", () => {
@@ -147,6 +147,16 @@ describe("getThing", () => {
   const mockLocalThing: ThingLocal = {
     type: "Subject",
     url: mockLocalThingIri,
+    predicates: {
+      "https://arbitrary.vocab/predicate": {
+        namedNodes: ["https://arbitrary.vocab/predicate"],
+      },
+    },
+  };
+  const mockBlankNodeThingId: BlankNodeId = "_:0";
+  const mockBlankNodeThing: Thing = {
+    type: "Subject",
+    url: mockBlankNodeThingId,
     predicates: {
       "https://arbitrary.vocab/predicate": {
         namedNodes: ["https://arbitrary.vocab/predicate"],
@@ -285,6 +295,15 @@ describe("getThing", () => {
     }
 
     expect(thrownError).toBeInstanceOf(ValidThingUrlExpectedError);
+  });
+
+  it("accepts blank nodes identifiers", () => {
+    const thing = getThing(
+      getMockDataset([mockBlankNodeThing]),
+      mockBlankNodeThingId,
+    );
+
+    expect(thing).toStrictEqual(mockBlankNodeThing);
   });
 });
 

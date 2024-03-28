@@ -27,7 +27,13 @@ import { addIri } from "../thing/add";
 import { getIriAll } from "../thing/get";
 import { removeAll, removeIri } from "../thing/remove";
 import { setIri } from "../thing/set";
-import { createThing, getThing, getThingAll, setThing } from "../thing/thing";
+import {
+  asIri,
+  createThing,
+  getThing,
+  getThingAll,
+  setThing,
+} from "../thing/thing";
 import type { WithAccessibleAcr, WithAcp } from "./acp";
 import { hasAccessibleAcr } from "./acp";
 import type { AccessControlResource, Control } from "./control";
@@ -156,7 +162,15 @@ export function internal_setControl<ResourceExt extends WithAccessibleAcr>(
   control: Control,
 ): ResourceExt {
   const acr = internal_getAcr(withAccessControlResource);
-  const updatedAcr = setThing(acr, control);
+  let updatedAcr = setThing(acr, control);
+  const acrSubj = getThing(acr, getSourceUrl(acr));
+  // Th the ACR has an anchor node, link the Access Control.
+  if (acrSubj !== null) {
+    updatedAcr = setThing(
+      updatedAcr,
+      addIri(acrSubj, acp.accessControl, asIri(control, getSourceUrl(acr))),
+    );
+  }
   const updatedResource = internal_setAcr(
     withAccessControlResource,
     updatedAcr,

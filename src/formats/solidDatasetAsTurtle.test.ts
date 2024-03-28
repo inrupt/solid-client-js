@@ -33,10 +33,11 @@ async function getDataset(ttl: string): Promise<SolidDataset> {
 }
 
 const ttl = `
-  prefix : <#>
-  prefix ex: <https://example.org/>
-  prefix foaf: <http://xmlns.com/foaf/0.1/>
-  prefix vcard: <http://www.w3.org/2006/vcard/ns#>
+  @prefix : <#> .
+  @prefix ex: <https://example.org/> .
+  @prefix foaf: <http://xmlns.com/foaf/0.1/> .
+  @prefix vcard: <http://www.w3.org/2006/vcard/ns#> .
+  @base <https://example.org/> .
 
   <>
     a foaf:PersonalProfileDocument ;
