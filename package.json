@@ -176,7 +176,7 @@
     "@inrupt/internal-test-env": "^3.1.0",
     "@inrupt/jest-jsdom-polyfills": "^3.0.1",
     "@inrupt/solid-client-authn-node": "^2.0.0",
-    "@playwright/test": "~1.37.0",
+    "@playwright/test": "~1.43.0",
     "@rdfjs/types": "^1.1.0",
     "@rushstack/eslint-patch": "^1.6.1",
     "@types/http-link-header": "^1.0.5",
