@@ -184,7 +184,7 @@
     "@types/n3": "^1.16.4",
     "@types/rdfjs__dataset": "^1.0.5",
     "@types/uuid": "^9.0.7",
-    "eslint": "^8.56.0",
+    "eslint": "^9.0.0",
     "eslint-config-next": "^14.0.4",
     "fast-check": "^3.15.0",
     "jest": "^29.7.0",
