@@ -10,6 +10,7 @@ The following changes are pending, and will be applied on the next major release
 
 ### Patch changes
 
+- `getThing` now supports Blank Node identifiers in addition to IRIs and skolems to refer to a subject.
 - `getThingAll(dataset, { allowacceptBlankNodes: true })` now returns all Blank Nodes
   subjects in the Dataset, in particular including those part of a single chain of
   predicates. For instance, given the following dataset:

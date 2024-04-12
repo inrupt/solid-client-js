@@ -18,6 +18,8 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
+// There are multiple classes in this file for legacy reasons.
+/* eslint-disable max-classes-per-file */
 import { v4 as uuidv4 } from "uuid";
 import {
   isNamedNode,
@@ -42,7 +44,7 @@ import {
   internal_addDeletionsToChangeLog,
   internal_getReadableValue,
 } from "./thing.internal";
-import type { LocalNodeIri } from "../rdf.internal";
+import type { BlankNodeId, LocalNodeIri } from "../rdf.internal";
 import {
   freeze,
   getLocalNodeIri,
@@ -77,22 +79,22 @@ export function getThing(
 ): ThingLocal | null;
 export function getThing(
   solidDataset: SolidDataset,
-  thingUrl: UrlString | Url | LocalNodeIri,
+  thingUrl: UrlString | Url | LocalNodeIri | BlankNodeId,
   options?: GetThingOptions,
 ): Thing | null;
 /**
  * Extract Quads with a given Subject from a [[SolidDataset]] into a [[Thing]].
  *
  * @param solidDataset The [[SolidDataset]] to extract the [[Thing]] from.
- * @param thingUrl The URL of the desired [[Thing]].
+ * @param thingUrl The identifier of the desired [[Thing]] (URL or Blank Node identifier).
  * @param options Not yet implemented.
  */
 export function getThing(
   solidDataset: SolidDataset,
-  thingUrl: UrlString | Url | LocalNodeIri,
+  thingUrl: UrlString | Url | LocalNodeIri | BlankNodeId,
   options: GetThingOptions = {},
 ): Thing | null {
-  if (!internal_isValidUrl(thingUrl)) {
+  if (!internal_isValidUrl(thingUrl) && !thingUrl.match(/^_:/)) {
     throw new ValidThingUrlExpectedError(thingUrl);
   }
 
