@@ -164,7 +164,7 @@ export function internal_setControl<ResourceExt extends WithAccessibleAcr>(
   const acr = internal_getAcr(withAccessControlResource);
   let updatedAcr = setThing(acr, control);
   const acrSubj = getThing(acr, getSourceUrl(acr));
-  // Th the ACR has an anchor node, link the Access Control.
+  // If the ACR has an anchor node, link the Access Control.
   if (acrSubj !== null) {
     updatedAcr = setThing(
       updatedAcr,
