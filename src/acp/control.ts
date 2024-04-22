@@ -252,6 +252,9 @@ export function removeAcrPolicyUrl<ResourceExt extends WithAccessibleAcr>(
   if (acrThing === null) {
     return resourceWithAcr;
   }
+  if (!getIriAll(acrThing, acp.access).includes(policyUrl.toString())) {
+    return resourceWithAcr;
+  }
   const updatedAcrThing = removeIri(acrThing, acp.access, policyUrl);
   const updatedAcr = setThing(acr, updatedAcrThing);
 
@@ -280,6 +283,9 @@ export function removeMemberAcrPolicyUrl<ResourceExt extends WithAccessibleAcr>(
 
   const acrThing = getThing(acr, acrUrl);
   if (acrThing === null) {
+    return resourceWithAcr;
+  }
+  if (!getIriAll(acrThing, acp.accessMembers).includes(policyUrl.toString())) {
     return resourceWithAcr;
   }
   const updatedAcrThing = removeIri(acrThing, acp.accessMembers, policyUrl);
