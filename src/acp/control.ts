@@ -32,7 +32,7 @@ import type {
 import { hasServerResourceInfo } from "../interfaces";
 import { getSourceUrl } from "../resource/resource";
 import { addIri } from "../thing/add";
-import { getIriAll } from "../thing/get";
+import { getIriAll, getUrlAll } from "../thing/get";
 import { removeAll, removeIri } from "../thing/remove";
 import { createThing, getThing, setThing } from "../thing/thing";
 import type { WithAccessibleAcr } from "./acp";
@@ -461,14 +461,10 @@ export function removePolicyUrl<ResourceExt extends WithAccessibleAcr>(
   policyUrl: Url | UrlString | ThingPersisted,
 ): ResourceExt {
   const controls = internal_getControlAll(resourceWithAcr);
-  const updatedControls = controls.map((control) =>
-    internal_removePolicyUrl(control, policyUrl),
-  );
-  const updatedResource = updatedControls.reduce(
-    internal_setControl,
-    resourceWithAcr,
-  );
-  return updatedResource;
+  return controls
+    .filter((control) => getUrlAll(control, acp.apply).length > 0)
+    .map((control) => internal_removePolicyUrl(control, policyUrl))
+    .reduce(internal_setControl, resourceWithAcr);
 }
 
 /**
