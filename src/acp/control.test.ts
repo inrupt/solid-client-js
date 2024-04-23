@@ -43,8 +43,10 @@ import {
 } from "./control";
 import {
   internal_createControl,
+  internal_getAcr,
   internal_getControl,
   internal_getControlAll,
+  internal_setAcr,
   internal_setControl,
 } from "./control.internal";
 import { acp, rdf } from "../constants";
@@ -52,9 +54,11 @@ import type { WithServerResourceInfo } from "../interfaces";
 import { getIri, getUrl, getUrlAll } from "../thing/get";
 import {
   asIri,
+  asUrl,
   createThing,
   getThing,
   getThingAll,
+  removeThing,
   setThing,
 } from "../thing/thing";
 import { addMockAcrTo, mockAcrFor } from "./mock";
@@ -527,6 +531,24 @@ describe("getAcrPolicyUrlAll", () => {
 
     expect(policyUrls).toEqual([]);
   });
+
+  it("does not return policies if acr does not have an anchor node", () => {
+    const accessControlResource = mockAcrFor("https://some.pod/resource");
+    const existingControl = addUrl(
+      createThing({ url: getSourceUrl(accessControlResource) }),
+      acp.accessMembers,
+      "https://some.pod/policy-resource#policy",
+    );
+    const resourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      setThing(accessControlResource, existingControl),
+    );
+    const acr = internal_getAcr(resourceWithAcr);
+    const acrUrl = getSourceUrl(acr);
+    const updatedAcr = removeThing(acr, acrUrl);
+    const updatedResource = internal_setAcr(resourceWithAcr, updatedAcr);
+    expect(getAcrPolicyUrlAll(updatedResource)).toHaveLength(0);
+  });
 });
 
 describe("getMemberAcrPolicyUrlAll", () => {
@@ -574,6 +596,24 @@ describe("getMemberAcrPolicyUrlAll", () => {
     const policyUrls = getMemberAcrPolicyUrlAll(resourceWithAcr);
 
     expect(policyUrls).toEqual([]);
+  });
+
+  it("does not return policies if acr does not have an anchor node", () => {
+    const accessControlResource = mockAcrFor("https://some.pod/resource");
+    const existingControl = addUrl(
+      createThing({ url: getSourceUrl(accessControlResource) }),
+      acp.accessMembers,
+      "https://some.pod/policy-resource#policy",
+    );
+    const resourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      setThing(accessControlResource, existingControl),
+    );
+    const acr = internal_getAcr(resourceWithAcr);
+    const acrUrl = getSourceUrl(acr);
+    const updatedAcr = removeThing(acr, acrUrl);
+    const updatedResource = internal_setAcr(resourceWithAcr, updatedAcr);
+    expect(getMemberAcrPolicyUrlAll(updatedResource)).toHaveLength(0);
   });
 });
 
@@ -705,6 +745,29 @@ describe("removeAcrPolicyUrl", () => {
       "https://some.pod/policy-resource#policy",
     );
   });
+
+  it("returns the resource unchanged if acr does not have an anchor node", () => {
+    const accessControlResource = mockAcrFor("https://some.pod/resource");
+    const existingControl = addUrl(
+      createThing({ url: getSourceUrl(accessControlResource) }),
+      acp.accessMembers,
+      "https://some.pod/policy-resource#policy",
+    );
+    const resourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      setThing(accessControlResource, existingControl),
+    );
+    const acr = internal_getAcr(resourceWithAcr);
+    const acrUrl = getSourceUrl(acr);
+    const updatedAcr = removeThing(acr, acrUrl);
+    const updatedResource = internal_setAcr(resourceWithAcr, updatedAcr);
+    expect(
+      removeAcrPolicyUrl(
+        updatedResource,
+        "https://some.pod/policy-resource#policy",
+      ),
+    ).toEqual(updatedResource);
+  });
 });
 
 describe("removeMemberAcrPolicyUrl", () => {
@@ -835,6 +898,33 @@ describe("removeMemberAcrPolicyUrl", () => {
       "https://some.pod/policy-resource#policy",
     );
   });
+
+  it("returns the resource unchanged if acr does not have an anchor node", () => {
+    let accessControlResource = mockAcrFor("https://some.pod/resource");
+    let existingControl = createThing({
+      url: getSourceUrl(accessControlResource),
+    });
+    existingControl = addUrl(
+      existingControl,
+      acp.accessMembers,
+      "https://some.pod/policy-resource#policy",
+    );
+    accessControlResource = setThing(accessControlResource, existingControl);
+    const resourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      accessControlResource,
+    );
+    const acr = internal_getAcr(resourceWithAcr);
+    const acrUrl = getSourceUrl(acr);
+    const updatedAcr = removeThing(acr, acrUrl);
+    const updatedResource = internal_setAcr(resourceWithAcr, updatedAcr);
+    expect(
+      removeMemberAcrPolicyUrl(
+        updatedResource,
+        "https://some.pod/policy-resource#policy",
+      ),
+    ).toEqual(updatedResource);
+  });
 });
 
 describe("removeAcrPolicyUrlAll", () => {
@@ -928,6 +1018,24 @@ describe("removeAcrPolicyUrlAll", () => {
     expect(getUrl(controls[0], acp.access)).toBe(
       "https://some.pod/policy-resource#policy",
     );
+  });
+
+  it("returns the resource unchanged if acr does not have an anchor node", () => {
+    const accessControlResource = mockAcrFor("https://some.pod/resource");
+    const existingControl = addUrl(
+      createThing({ url: getSourceUrl(accessControlResource) }),
+      acp.accessMembers,
+      "https://some.pod/policy-resource#policy",
+    );
+    const resourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      setThing(accessControlResource, existingControl),
+    );
+    const acr = internal_getAcr(resourceWithAcr);
+    const acrUrl = getSourceUrl(acr);
+    const updatedAcr = removeThing(acr, acrUrl);
+    const updatedResource = internal_setAcr(resourceWithAcr, updatedAcr);
+    expect(removeAcrPolicyUrlAll(updatedResource)).toEqual(updatedResource);
   });
 });
 
@@ -1023,6 +1131,26 @@ describe("removeMemberAcrPolicyUrlAll", () => {
       "https://some.pod/policy-resource#policy",
     );
   });
+
+  it("returns the resource unchanged if acr does not have an anchor node", () => {
+    const accessControlResource = mockAcrFor("https://some.pod/resource");
+    const existingControl = addUrl(
+      createThing({ url: getSourceUrl(accessControlResource) }),
+      acp.accessMembers,
+      "https://some.pod/policy-resource#policy",
+    );
+    const resourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      setThing(accessControlResource, existingControl),
+    );
+    const acr = internal_getAcr(resourceWithAcr);
+    const acrUrl = getSourceUrl(acr);
+    const updatedAcr = removeThing(acr, acrUrl);
+    const updatedResource = internal_setAcr(resourceWithAcr, updatedAcr);
+    expect(removeMemberAcrPolicyUrlAll(updatedResource)).toEqual(
+      updatedResource,
+    );
+  });
 });
 
 describe("addPolicyUrl", () => {
@@ -1042,8 +1170,14 @@ describe("addPolicyUrl", () => {
       updatedResourceWithAcr.internal_acp.acr,
     );
 
+    const difference = updatedControls.filter((control) => {
+      return !oldControls.some((oldControl) => {
+        return asUrl(control) === asUrl(oldControl);
+      });
+    })[0];
+
     expect(updatedControls).toHaveLength(oldControls.length + 1);
-    expect(getUrl(updatedControls[updatedControls.length - 1], acp.apply)).toBe(
+    expect(getUrl(difference, acp.apply)).toBe(
       "https://some.pod/policy-resource#policy",
     );
   });
@@ -1110,10 +1244,17 @@ describe("addMemberPolicyUrl", () => {
     const updatedControls = getThingAll(
       updatedResourceWithAcr.internal_acp.acr,
     );
+
+    const difference = updatedControls.filter((control) => {
+      return !oldControls.some((oldControl) => {
+        return asUrl(control) === asUrl(oldControl);
+      });
+    })[0];
+
     expect(updatedControls).toHaveLength(oldControls.length + 1);
-    expect(
-      getUrl(updatedControls[updatedControls.length - 1], acp.applyMembers),
-    ).toBe("https://some.pod/policy-resource#policy");
+    expect(getUrl(difference, acp.applyMembers)).toBe(
+      "https://some.pod/policy-resource#policy",
+    );
   });
 
   it("does not remove existing Policy URLs", () => {
@@ -1275,6 +1416,24 @@ describe("getMemberPolicyUrlAll", () => {
     const policyUrls = getMemberPolicyUrlAll(resourceWithAcr);
 
     expect(policyUrls).toEqual([]);
+  });
+
+  it("returns the resource unchanged if acr does not have an anchor node", () => {
+    const accessControlResource = mockAcrFor("https://some.pod/resource");
+    const existingControl = addUrl(
+      createThing({ url: getSourceUrl(accessControlResource) }),
+      acp.applyMembers,
+      "https://some.pod/policy-resource#policy",
+    );
+    const resourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      setThing(accessControlResource, existingControl),
+    );
+    const acr = internal_getAcr(resourceWithAcr);
+    const acrUrl = getSourceUrl(acr);
+    const updatedAcr = removeThing(acr, acrUrl);
+    const updatedResource = internal_setAcr(resourceWithAcr, updatedAcr);
+    expect(getMemberPolicyUrlAll(updatedResource)).toHaveLength(0);
   });
 });
 

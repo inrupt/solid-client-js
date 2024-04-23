@@ -459,11 +459,7 @@ export function getResourcePolicyAll(
   return (
     getTermAll(acrSubj, acp.accessControl)
       .reduce((prev, accessControlId) => {
-        const accessControl = getThing(acr, accessControlId.value);
-        if (accessControl === null) {
-          // If the access control isn't found, there are no policies to add.
-          return prev;
-        }
+        const accessControl = getThing(acr, accessControlId.value)!;
         const accessControlPolicies = getTermAll(
           accessControl,
           acp.apply,

@@ -37,6 +37,7 @@ import {
   createThing,
   getThing,
   getThingAll,
+  removeThing,
   setThing,
 } from "../thing/thing";
 import {
@@ -45,7 +46,7 @@ import {
   getAcrPolicyUrlAll,
   getPolicyUrlAll,
 } from "./control";
-import { internal_getAcr } from "./control.internal";
+import { internal_getAcr, internal_setAcr } from "./control.internal";
 import { addMockAcrTo, mockAcrFor } from "./mock";
 import {
   createPolicy,
@@ -68,6 +69,7 @@ import {
   setResourcePolicy,
 } from "./policy";
 import { fromRdfJsDataset } from "../rdfjs";
+import { SolidClientError } from "../interfaces";
 
 jest.spyOn(globalThis, "fetch").mockImplementation(
   async () =>
@@ -1140,6 +1142,26 @@ describe("removeResourceAcrPolicy", () => {
     );
 
     expect(getResourceAcrPolicyAll(updatedPolicyDataset)).toHaveLength(1);
+  });
+
+  it("errors if the acr does not have an anchor node matching its url", () => {
+    let mockedAcr = mockAcrFor("https://some.pod/resource");
+    let mockedPolicy1 = createThing({
+      url: `${getSourceUrl(mockedAcr)}#policy1`,
+    });
+    mockedPolicy1 = setUrl(mockedPolicy1, rdf.type, acp.Policy);
+    mockedAcr = setThing(mockedAcr, mockedPolicy1);
+    const mockedResourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      mockedAcr,
+    );
+    const acr = internal_getAcr(mockedResourceWithAcr);
+    const acrUrl = getSourceUrl(acr);
+    const updatedAcr = removeThing(acr, acrUrl);
+    const updatedResource = internal_setAcr(mockedResourceWithAcr, updatedAcr);
+    expect(() => getResourcePolicyAll(updatedResource)).toThrow(
+      SolidClientError,
+    );
   });
 });
 
