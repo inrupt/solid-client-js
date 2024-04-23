@@ -418,6 +418,25 @@ describe("addAcrPolicyUrl", () => {
 
     expect(inputControlsAfter).toEqual(inputControlsBefore);
   });
+
+  it("creates the acr subject", () => {
+    const accessControlResource = mockAcrFor("https://some.pod/resource");
+    const inputControlsBefore = getThingAll(accessControlResource);
+    const resourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      accessControlResource,
+    );
+
+    const acr = internal_getAcr(resourceWithAcr);
+    const acrUrl = getSourceUrl(acr);
+    const updatedAcr = removeThing(acr, acrUrl);
+    const updatedResource = internal_setAcr(resourceWithAcr, updatedAcr);
+
+    addAcrPolicyUrl(updatedResource, "https://some.pod/policy-resource#policy");
+
+    const inputControlsAfter = getThingAll(accessControlResource);
+    expect(inputControlsAfter).toEqual(inputControlsBefore);
+  });
 });
 
 describe("addMemberAcrPolicyUrl", () => {
@@ -477,6 +496,28 @@ describe("addMemberAcrPolicyUrl", () => {
 
     addMemberAcrPolicyUrl(
       resourceWithAcr,
+      "https://some.pod/policy-resource#policy",
+    );
+
+    const inputControlsAfter = getThingAll(accessControlResource);
+    expect(inputControlsAfter).toEqual(inputControlsBefore);
+  });
+
+  it("creates the acr subject", () => {
+    const accessControlResource = mockAcrFor("https://some.pod/resource");
+    const inputControlsBefore = getThingAll(accessControlResource);
+    const resourceWithAcr = addMockAcrTo(
+      mockSolidDatasetFrom("https://some.pod/resource"),
+      accessControlResource,
+    );
+
+    const acr = internal_getAcr(resourceWithAcr);
+    const acrUrl = getSourceUrl(acr);
+    const updatedAcr = removeThing(acr, acrUrl);
+    const updatedResource = internal_setAcr(resourceWithAcr, updatedAcr);
+
+    addMemberAcrPolicyUrl(
+      updatedResource,
       "https://some.pod/policy-resource#policy",
     );
 
