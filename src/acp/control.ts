@@ -32,7 +32,7 @@ import type {
 import { hasServerResourceInfo } from "../interfaces";
 import { getSourceUrl } from "../resource/resource";
 import { addIri } from "../thing/add";
-import { getIriAll } from "../thing/get";
+import { getIriAll, getUrlAll } from "../thing/get";
 import { removeAll, removeIri } from "../thing/remove";
 import { createThing, getThing, setThing } from "../thing/thing";
 import type { WithAccessibleAcr } from "./acp";
@@ -252,6 +252,9 @@ export function removeAcrPolicyUrl<ResourceExt extends WithAccessibleAcr>(
   if (acrThing === null) {
     return resourceWithAcr;
   }
+  if (!getIriAll(acrThing, acp.access).includes(policyUrl.toString())) {
+    return resourceWithAcr;
+  }
   const updatedAcrThing = removeIri(acrThing, acp.access, policyUrl);
   const updatedAcr = setThing(acr, updatedAcrThing);
 
@@ -280,6 +283,9 @@ export function removeMemberAcrPolicyUrl<ResourceExt extends WithAccessibleAcr>(
 
   const acrThing = getThing(acr, acrUrl);
   if (acrThing === null) {
+    return resourceWithAcr;
+  }
+  if (!getIriAll(acrThing, acp.accessMembers).includes(policyUrl.toString())) {
     return resourceWithAcr;
   }
   const updatedAcrThing = removeIri(acrThing, acp.accessMembers, policyUrl);
@@ -455,14 +461,10 @@ export function removePolicyUrl<ResourceExt extends WithAccessibleAcr>(
   policyUrl: Url | UrlString | ThingPersisted,
 ): ResourceExt {
   const controls = internal_getControlAll(resourceWithAcr);
-  const updatedControls = controls.map((control) =>
-    internal_removePolicyUrl(control, policyUrl),
-  );
-  const updatedResource = updatedControls.reduce(
-    internal_setControl,
-    resourceWithAcr,
-  );
-  return updatedResource;
+  return controls
+    .filter((control) => getUrlAll(control, acp.apply).length > 0)
+    .map((control) => internal_removePolicyUrl(control, policyUrl))
+    .reduce(internal_setControl, resourceWithAcr);
 }
 
 /**
