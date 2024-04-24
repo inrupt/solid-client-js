@@ -457,20 +457,28 @@ export function getResourcePolicyAll(
   }
   // Follow the links from acr -acp:accessControl> Acccess Control -acp:apply> Policy.
   return (
+    // List all candidate Access Controls
     getTermAll(acrSubj, acp.accessControl)
-      .reduce((prev, accessControlId) => {
-        const accessControl = getThing(acr, accessControlId.value)!;
+      // For each candidate, check whether it is a subject with associated triples.
+      .map((accessControlId) => getThing(acr, accessControlId.value))
+      // Eliminate non-subject Access Control Candidates
+      .filter(
+        (accessControlSubject): accessControlSubject is ThingPersisted =>
+          accessControlSubject !== null,
+      )
+      // For all subject Access Control candidates, list all the policies they apply.
+      .reduce((policies, accessControlSubj) => {
         const accessControlPolicies = getTermAll(
-          accessControl,
+          accessControlSubj,
           acp.apply,
         ).filter(
           // If the option is set, all candidate policies are acceptable.
           (policy) =>
             options.acceptBlankNodes ? true : policy.termType === "NamedNode",
         );
-        return [...prev, ...accessControlPolicies];
+        return [...policies, ...accessControlPolicies];
       }, [] as Quad_Object[])
-      // Get all the triples for the found subjects ID.
+      // Get all the triples for the found policies subjects.
       .map((policyId) => {
         if (policyId.termType === "BlankNode") {
           // policyId.value removes the _: prefix,
