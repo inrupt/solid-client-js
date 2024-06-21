@@ -204,7 +204,7 @@
     "@rdfjs/dataset": "^1.1.1",
     "buffer": "^6.0.3",
     "http-link-header": "^1.1.1",
-    "jsonld-context-parser": "^2.4.0",
+    "jsonld-context-parser": "^3.0.0",
     "jsonld-streaming-parser": "^3.3.0",
     "n3": "^1.17.2",
     "uuid": "^10.0.0"
