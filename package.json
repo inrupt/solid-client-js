@@ -194,7 +194,7 @@
     "rdf-namespaces": "^1.12.0",
     "rollup": "^4.9.1",
     "ts-jest": "^29.1.1",
-    "typedoc": "^0.25.4",
+    "typedoc": "^0.26.3",
     "typedoc-plugin-markdown": "^3.17.1",
     "typescript": "^5.3.3",
     "webpack": "^5.89.0",
