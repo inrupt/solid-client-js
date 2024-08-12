@@ -24,12 +24,20 @@ updates:
       - "development"
     allow:
       - dependency-type: development
+    ignore:
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "typedoc-plugin-markdown"
+        update-types: ["version-update:semver-major"]
 
   # Enable weekly version updates for the test application
   - package-ecosystem: "npm"
     directory: "/e2e/browser/test-app"
     schedule:
       interval: "weekly"
+    ignore:
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
 
   # Enable version updates for the website tooling
   - package-ecosystem: "pip"
