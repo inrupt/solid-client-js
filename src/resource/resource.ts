@@ -318,7 +318,7 @@ class CachingResponseBody {
   }
 
   constructor(response: Response) {
-    this.response = response.bodyUsed ? response : response.clone();
+    this.response = response.clone();
     this.bodyText = "";
   }
 }
