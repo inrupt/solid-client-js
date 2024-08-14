@@ -165,7 +165,7 @@ export async function responseToSolidDataset(
     throw new FetchError(
       `Fetching the SolidDataset at [${response.url}] failed: [${
         response.status
-      }] [${response.statusText}] ${await response.text()}.`,
+      }] [${response.statusText}] ${await response.clone().text()}.`,
       response,
     );
   }
@@ -255,7 +255,7 @@ export async function getSolidDataset(
     throw new FetchError(
       `Fetching the Resource at [${normalizedUrl}] failed: [${
         response.status
-      }] [${response.statusText}] ${await response.text()}.`,
+      }] [${response.statusText}] ${await response.clone().text()}.`,
       response,
     );
   }
@@ -383,7 +383,7 @@ export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
     throw new FetchError(
       `Storing the Resource at [${targetUrl}] failed: [${response.status}] [${
         response.statusText
-      }] ${await response.text()}.\n\n${diagnostics}`,
+      }] ${await response.clone().text()}.\n\n${diagnostics}`,
       response,
     );
   }
@@ -426,7 +426,7 @@ export async function deleteSolidDataset(
     throw new FetchError(
       `Deleting the SolidDataset at [${url}] failed: [${response.status}] [${
         response.statusText
-      }] ${await response.text()}.`,
+      }] ${await response.clone().text()}.`,
       response,
     );
   }
@@ -481,7 +481,7 @@ export async function createContainerAt(
     throw new FetchError(
       `Creating the ${containerType} Container at [${url}] failed: [${
         response.status
-      }] [${response.statusText}] ${await response.text()}.`,
+      }] [${response.statusText}] ${await response.clone().text()}.`,
       response,
     );
   }
@@ -576,7 +576,7 @@ export async function saveSolidDatasetInContainer(
     throw new FetchError(
       `Storing the Resource in the Container at [${normalizedUrl}] failed: [${
         response.status
-      }] [${response.statusText}] ${await response.text()}.\n\n` +
+      }] [${response.statusText}] ${await response.clone().text()}.\n\n` +
         `The SolidDataset that was sent to the Pod is listed below.\n\n${solidDatasetAsMarkdown(
           solidDataset,
         )}`,
@@ -673,7 +673,7 @@ export async function createContainerInContainer(
     throw new FetchError(
       `Creating an empty Container in the Container at [${normalizedUrl}] failed: [${
         response.status
-      }] [${response.statusText}] ${await response.text()}.`,
+      }] [${response.statusText}] ${await response.clone().text()}.`,
       response,
     );
   }
@@ -737,7 +737,7 @@ export async function deleteContainer(
     throw new FetchError(
       `Deleting the Container at [${normalizedUrl}] failed: [${
         response.status
-      }] [${response.statusText}] ${await response.text()}.`,
+      }] [${response.statusText}] ${await response.clone().text()}.`,
       response,
     );
   }

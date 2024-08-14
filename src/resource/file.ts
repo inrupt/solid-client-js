@@ -92,7 +92,7 @@ export async function getFile(
     throw new FetchError(
       `Fetching the File failed: [${response.status}] [${
         response.statusText
-      }] ${await response.text()}.`,
+      }] ${await response.clone().text()}.`,
       response,
     );
   }
@@ -138,7 +138,7 @@ export async function deleteFile(
     throw new FetchError(
       `Deleting the file at [${url}] failed: [${response.status}] [${
         response.statusText
-      }] ${await response.text()}.`,
+      }] ${await response.clone().text()}.`,
       response,
     );
   }
@@ -222,7 +222,7 @@ export async function saveFileInContainer<
     throw new FetchError(
       `Saving the file in [${folderUrl}] failed: [${response.status}] [${
         response.statusText
-      }] ${await response.text()}.`,
+      }] ${await response.clone().text()}.`,
       response,
     );
   }
@@ -309,7 +309,7 @@ export async function overwriteFile<FileExt extends File | BlobFile | NodeFile>(
     throw new FetchError(
       `Overwriting the file at [${fileUrlString}] failed: [${
         response.status
-      }] [${response.statusText}] ${await response.text()}.`,
+      }] [${response.statusText}] ${await response.clone().text()}.`,
       response,
     );
   }

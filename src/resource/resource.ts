@@ -19,6 +19,8 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+import type { ProblemDetails } from "@inrupt/solid-client-errors";
+import { ClientHttpError } from "@inrupt/solid-client-errors";
 import type {
   UrlString,
   Url,
@@ -265,6 +267,8 @@ export class FetchError extends SolidClientError {
   /** @since 1.3.0 */
   public readonly response: Response & { ok: false };
 
+  private bodyCache: CachingResponseBody;
+
   get statusCode(): number {
     return this.response.status;
   }
@@ -273,8 +277,48 @@ export class FetchError extends SolidClientError {
     return this.response.statusText;
   }
 
+  async problemDetails(): Promise<ProblemDetails> {
+    return this.bodyCache
+      .text()
+      .then(
+        (body) =>
+          new ClientHttpError(
+            {
+              status: this.response.status,
+              statusText: this.response.statusText,
+              headers: this.response.headers,
+              url: this.response.url,
+            },
+            body,
+            this.message,
+          ),
+      )
+      .then((err) => err.problemDetails);
+  }
+
   constructor(message: string, errorResponse: Response & { ok: false }) {
     super(message);
+    this.bodyCache = new CachingResponseBody(errorResponse);
     this.response = errorResponse;
+  }
+}
+
+class CachingResponseBody {
+  private response: Response;
+
+  private bodyText: string;
+
+  async text() {
+    // if the body has already been consumed, don't try to consume it again
+    if (this.bodyText || this.response.bodyUsed) {
+      return this.bodyText;
+    }
+    this.bodyText = await this.response.text();
+    return this.bodyText;
+  }
+
+  constructor(response: Response) {
+    this.response = response.bodyUsed ? response : response.clone();
+    this.bodyText = "";
   }
 }
