@@ -527,7 +527,7 @@ describe("getResourceInfo", () => {
   });
 
   it("throws an instance of FetchError when a request failed with problem details", async () => {
-    const url = "https://arbirary.pod/resource";
+    const url = "https://arbitrary.pod/resource";
     const problem = {
       type: new URL("https://error.test/NotFound"),
       title: "Not Found",
@@ -574,7 +574,7 @@ describe("getResourceInfo", () => {
   });
 
   it("throws an instance of FetchError when a request failed with problem details using relative URIs", async () => {
-    const url = "https://arbirary.pod/container/resource";
+    const url = "https://arbitrary.pod/container/resource";
     const problem = {
       type: "/errors/NotFound",
       title: "Not Found",
