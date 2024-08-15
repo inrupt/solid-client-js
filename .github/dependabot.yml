@@ -1,6 +1,6 @@
 version: 2
 updates:
-  # Enable weekly version updates for prod dependencies
+  # Enable dependency updates
   - package-ecosystem: "npm"
     directory: "/"
     # Check the npm registry for updates once a week
@@ -9,21 +9,6 @@ updates:
     labels:
       - "dependencies"
       - "npm"
-      - "production"
-    allow:
-      - dependency-type: production
-  # Enable weekly version updates for dev dependencies
-  - package-ecosystem: "npm"
-    directory: "/"
-    # Check the npm registry for updates once a week
-    schedule:
-      interval: "weekly"
-    labels:
-      - "dependencies"
-      - "npm"
-      - "development"
-    allow:
-      - dependency-type: development
     ignore:
       - dependency-name: "eslint"
         update-types: ["version-update:semver-major"]
