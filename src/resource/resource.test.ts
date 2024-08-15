@@ -618,7 +618,7 @@ describe("getResourceInfo", () => {
     // Extract for a second time
     const problemDetails2 = await error.problemDetails();
     expect(problemDetails2.type).toEqual(
-      new URL("https://arbitrary.pod/error/NotFound"),
+      new URL("https://arbitrary.pod/errors/NotFound"),
     );
     expect(problemDetails2.title).toBe(problem.title);
     expect(problemDetails2.status).toBe(problem.status);
