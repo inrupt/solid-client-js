@@ -54,7 +54,7 @@ Node.js Support
 ^^^^^^^^^^^^^^^
 
 Our JavaScript Client Libraries track Node.js `LTS releases
-<https://nodejs.org/en/about/releases/>`__, and support 18.x and 20.x.
+<https://nodejs.org/en/about/releases/>`__, and support 18.x, 20.x, and 22.x.
 
 .. _issues--help:
 
