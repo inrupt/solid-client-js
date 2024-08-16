@@ -19,46 +19,47 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import { File as NodeFile, Blob as NodeBlob } from "buffer";
+import { Blob as NodeBlob, File as NodeFile } from "buffer";
 import {
-  jest,
   afterEach,
   beforeEach,
   describe,
   expect,
   it,
+  jest,
   test,
 } from "@jest/globals";
 
 import type { Session } from "@inrupt/solid-client-authn-node";
 
 import {
+  createFetch,
+  getAuthenticatedSession,
   getNodeTestingEnvironment,
+  getPodRoot,
   setupTestResources,
   teardownTestResources,
-  getAuthenticatedSession,
-  getPodRoot,
-  createFetch,
 } from "@inrupt/internal-test-env";
 import { DataFactory } from "n3";
+import { DEFAULT_TYPE } from "@inrupt/solid-client-errors";
 import {
-  getSolidDataset,
-  setThing,
-  getThing,
-  setTerm,
-  saveSolidDatasetAt,
-  overwriteFile,
-  isRawData,
-  getSourceUrl,
-  deleteFile,
   createContainerAt,
   createContainerInContainer,
-  getBoolean,
-  setBoolean,
-  createThing,
   createSolidDataset,
+  createThing,
+  deleteFile,
   deleteSolidDataset,
+  getBoolean,
+  getSolidDataset,
+  getSourceUrl,
+  getThing,
   getWellKnownSolid,
+  isRawData,
+  overwriteFile,
+  saveSolidDatasetAt,
+  setBoolean,
+  setTerm,
+  setThing,
 } from "../../src/index";
 
 const { blankNode } = DataFactory;
@@ -133,13 +134,24 @@ describe("Authenticated end-to-end", () => {
     expect(getBoolean(secondSavedThing, arbitraryPredicate)).toBe(false);
 
     await deleteSolidDataset(datasetUrl, fetchOptions);
-    await expect(() =>
-      getSolidDataset(datasetUrl, fetchOptions),
-    ).rejects.toEqual(
-      expect.objectContaining({
-        statusCode: 404,
-      }),
+
+    // As the dataset was deleted retrieving it should produce an error.
+    const error = await getSolidDataset(datasetUrl, fetchOptions).catch(
+      (err) => err,
     );
+
+    expect(error.statusCode).toBe(404);
+    expect(error.message).toContain(
+      `Fetching the Resource at [${datasetUrl}] failed:`,
+    );
+    expect(error.statusText).toContain("Not Found");
+
+    const problemDetails = await error.problemDetails();
+    expect(problemDetails.type).toBe(DEFAULT_TYPE);
+    expect(problemDetails.title).toBe("Not Found");
+    expect(problemDetails.status).toBe(404);
+    expect(problemDetails.detail).toBe("Resource not found");
+    expect(problemDetails.instance).toBeDefined();
   });
 
   it("can create, delete, and differentiate between RDF and non-RDF Resources using a Blob from the node Buffer package", async () => {
@@ -307,7 +319,20 @@ describe("Authenticated end-to-end", () => {
   });
 
   it("cannot fetch non public resources unauthenticated", async () => {
-    await expect(getSolidDataset(sessionResource)).rejects.toThrow();
+    const error = await getSolidDataset(sessionResource).catch((err) => err);
+
+    expect(error.statusCode).toBe(401);
+    expect(error.message).toContain(
+      `Fetching the Resource at [${sessionResource}] failed:`,
+    );
+    expect(error.statusText).toBe("Unauthorized");
+
+    const problemDetails = await error.problemDetails();
+    expect(problemDetails.type).toBe(DEFAULT_TYPE);
+    expect(problemDetails.title).toBe("Unauthorized");
+    expect(problemDetails.status).toBe(401);
+    expect(problemDetails.detail).toBeDefined();
+    expect(problemDetails.instance).toBeDefined();
   });
 
   it("can fetch getWellKnownSolid", async () => {
@@ -345,5 +370,38 @@ describe("Authenticated end-to-end", () => {
       }),
     );
     expect(headers.get("Content-Type")).toContain("text/turtle");
+  });
+
+  it("customizing the fetch incorrectly can produce an error", async () => {
+    const customFetch: typeof fetch = async (
+      info: Parameters<typeof fetch>[0],
+      init?: Parameters<typeof fetch>[1],
+    ) => {
+      return fetchOptions.fetch(info, {
+        ...init,
+        headers: {
+          ...init?.headers,
+          Accept: "plain/text",
+        },
+      });
+    };
+
+    // This request should produce an error
+    const error = await getSolidDataset(sessionResource, {
+      fetch: customFetch,
+    }).catch((err) => err);
+
+    expect(error.statusCode).toBe(406);
+    expect(error.message).toContain(
+      `Fetching the Resource at [${sessionResource}] failed: [406]`,
+    );
+    expect(error.statusText).toBe("Not Acceptable");
+
+    const problemDetails = await error.problemDetails();
+    expect(problemDetails.type).toBe(DEFAULT_TYPE);
+    expect(problemDetails.title).toBe("Not Acceptable");
+    expect(problemDetails.status).toBe(406);
+    expect(problemDetails.detail).toBeDefined();
+    expect(problemDetails.instance).toBeDefined();
   });
 });

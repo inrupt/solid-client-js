@@ -38,6 +38,7 @@ import {
   createFetch,
 } from "@inrupt/internal-test-env";
 import Link from "http-link-header";
+import { DEFAULT_TYPE } from "@inrupt/solid-client-errors";
 import {
   acp_ess_2,
   fromRdfJsDataset,
@@ -327,5 +328,47 @@ describe("An ACP Solid server", () => {
     expect(
       await getAgentAccess(sessionResource, agent, fetchOptions),
     ).toStrictEqual(READ_AND_APPEND_ACCESS);
+  });
+
+  it("customizing the fetch incorrectly can produce an error", async () => {
+    const headResponse = await session.fetch(sessionResource, {
+      method: "HEAD",
+    });
+
+    const responseLinks = headResponse.headers.get("Link");
+    if (!responseLinks) {
+      throw new Error("No Link header found");
+    }
+
+    const links = Link.parse(responseLinks.toString());
+    const acrUrl = links?.get("rel", "acl")[0].uri;
+
+    const customFetch: typeof fetch = async (
+      info: Parameters<typeof fetch>[0],
+      init?: Parameters<typeof fetch>[1],
+    ) => {
+      return fetchOptions.fetch(info, {
+        ...init,
+        method: "INVALID",
+      });
+    };
+    const agent = "https://example.org/bob";
+    // This request should produce an error
+    const error = await getAgentAccess(acrUrl, agent, {
+      fetch: customFetch,
+    }).catch((err) => err);
+
+    expect(error.statusCode).toBe(405);
+    expect(error.message).toContain(
+      `Fetching the metadata of the Resource at [${acrUrl}] failed: [405]`,
+    );
+    expect(error.statusText).toBe("Method Not Allowed");
+
+    const problemDetails = await error.problemDetails();
+    expect(problemDetails.type).toBe(DEFAULT_TYPE);
+    expect(problemDetails.title).toBe("Method Not Allowed");
+    expect(problemDetails.status).toBe(405);
+    expect(problemDetails.detail).toBeDefined();
+    expect(problemDetails.instance).toBeDefined();
   });
 });
