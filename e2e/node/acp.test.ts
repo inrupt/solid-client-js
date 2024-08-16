@@ -330,7 +330,7 @@ describe("An ACP Solid server", () => {
     ).toStrictEqual(READ_AND_APPEND_ACCESS);
   });
 
-  it("customizing the fetch incorrectly can produce an error", async () => {
+  it("customizing the fetch incorrectly for get agent access can produce an error", async () => {
     const headResponse = await session.fetch(sessionResource, {
       method: "HEAD",
     });
@@ -352,6 +352,7 @@ describe("An ACP Solid server", () => {
         method: "INVALID",
       });
     };
+
     const agent = "https://example.org/bob";
     // This request should produce an error
     const error = await getAgentAccess(acrUrl, agent, {
@@ -370,5 +371,59 @@ describe("An ACP Solid server", () => {
     expect(problemDetails.status).toBe(405);
     expect(problemDetails.detail).toBeDefined();
     expect(problemDetails.instance).toBeDefined();
+  });
+
+  it("customizing the fetch incorrectly for set agent access can produce an error", async () => {
+    const customFetch: typeof fetch = async (
+      info: Parameters<typeof fetch>[0],
+      init?: Parameters<typeof fetch>[1],
+    ) => {
+      // Only change the PATCH request that updates the ACR
+      if (init?.method === "PATCH") {
+        return fetchOptions.fetch(info, {
+          ...init,
+          body: "Invalid Content",
+        });
+      }
+      // All other requests fallback to the original fetch
+      return fetchOptions.fetch(info, init);
+    };
+
+    const agent = "https://example.org/bob";
+
+    // Agent does not have any access to the resource
+    await expect(
+      getAgentAccess(sessionResource, agent, fetchOptions),
+    ).resolves.toEqual({
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
+
+    // This operation should fail and produce an 400 error to the client. It doesn't as the error is not propagated.
+    // This is legacy behaviour which is not consistent with other functions from the access control module. This
+    // maybe changed in a future major version of the library. For now this test is just proving that nothing changed
+    // on the ACR.
+    await expect(
+      setAgentAccess(
+        sessionResource,
+        agent,
+        { read: true },
+        { fetch: customFetch },
+      ),
+    ).resolves.not.toThrow();
+
+    // Agent still does not have any access to the resource
+    await expect(
+      getAgentAccess(sessionResource, agent, fetchOptions),
+    ).resolves.toEqual({
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
   });
 });
