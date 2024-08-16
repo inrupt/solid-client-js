@@ -19,8 +19,10 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import type { ProblemDetails } from "@inrupt/solid-client-errors";
-import { ClientHttpError } from "@inrupt/solid-client-errors";
+import {
+  type ProblemDetails,
+  ClientHttpError,
+} from "@inrupt/solid-client-errors";
 import type {
   UrlString,
   Url,

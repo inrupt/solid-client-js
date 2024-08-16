@@ -50,23 +50,6 @@ jest.spyOn(globalThis, "fetch").mockImplementation(
     }),
 );
 
-class ResponseFacade extends Response {
-  private facadeUrl: string;
-
-  constructor(response: Response, url: string) {
-    super(response.body, {
-      status: response.status,
-      statusText: response.statusText,
-      headers: response.headers,
-    });
-    this.facadeUrl = url;
-  }
-
-  get url(): string {
-    return this.facadeUrl;
-  }
-}
-
 describe("getResourceInfo", () => {
   it("calls the included fetcher by default", async () => {
     await getResourceInfo("https://some.pod/resource");
@@ -536,14 +519,15 @@ describe("getResourceInfo", () => {
       instance: new URL(url),
     };
     const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
-      new ResponseFacade(
-        new Response(JSON.stringify(problem), {
+      mockResponse(
+        JSON.stringify(problem),
+        {
           status: 404,
           statusText: "Not Found",
           headers: {
             "Content-Type": "application/problem+json",
           },
-        }),
+        },
         url,
       ),
     );
@@ -583,14 +567,15 @@ describe("getResourceInfo", () => {
       instance: "relative-url",
     };
     const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
-      new ResponseFacade(
-        new Response(JSON.stringify(problem), {
+      mockResponse(
+        JSON.stringify(problem),
+        {
           status: 404,
           statusText: "Not Found",
           headers: {
             "Content-Type": "application/problem+json",
           },
-        }),
+        },
         url,
       ),
     );
