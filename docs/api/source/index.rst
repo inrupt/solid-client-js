@@ -53,8 +53,8 @@ e.g. ``Map``, ``Set``, ``Promise``, ``Headers``, ``Array.prototype.includes``,
 Node.js Support
 ^^^^^^^^^^^^^^^
 
-Our JavaScript Client Libraries track Node.js `LTS releases
-<https://nodejs.org/en/about/releases/>`__, and support 18.x, 20.x, and 22.x.
+See `Inrupt Solid Javascript Client Libraries
+<https://docs.inrupt.com/developer-tools/javascript/client-libraries/#node-js-support>`__.
 
 .. _issues--help:
 
