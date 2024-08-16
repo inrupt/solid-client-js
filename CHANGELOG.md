@@ -8,6 +8,10 @@ The following changes are pending, and will be applied on the next major release
 
 ## Unreleased changes
 
+### New Features
+
+- Node 22 is now supported
+
 ### Patch changes
 
 - Fixed #2339: Unnamed policies are now returned by `getResourcePolicyAll` if an optional argument
