@@ -22,12 +22,11 @@
 // This linter exception is introduced for legacy reasons.
 /* eslint-disable max-classes-per-file */
 
-
-import {
-  type ProblemDetails,
-  ClientHttpError,
+import { ClientHttpError } from "@inrupt/solid-client-errors";
+import type {
   WithProblemDetails,
-  WithErrorResponse
+  type ProblemDetails,
+  WithErrorResponse,
 } from "@inrupt/solid-client-errors";
 import type {
   UrlString,
@@ -277,12 +276,19 @@ export class FetchError extends SolidClientError implements WithProblemDetails {
 
   private httpError: ClientHttpError;
 
-  constructor(message: string, errorResponse: Response & { ok: false }, responseBody?: string) {
+  constructor(
+    message: string,
+    errorResponse: Response & { ok: false },
+    responseBody?: string,
+  ) {
     super(message);
     this.response = errorResponse;
     if (typeof responseBody === "string") {
-      
-      this.httpError = new ClientHttpError(errorResponse, responseBody, message);
+      this.httpError = new ClientHttpError(
+        errorResponse,
+        responseBody,
+        message,
+      );
     } else {
       // If no response body is provided, defaults are applied.
       this.httpError = new ClientHttpError(errorResponse, "", message);
@@ -298,6 +304,6 @@ export class FetchError extends SolidClientError implements WithProblemDetails {
   }
 
   get problemDetails(): ProblemDetails {
-    return this.httpError.problemDetails
+    return this.httpError.problemDetails;
   }
 }
