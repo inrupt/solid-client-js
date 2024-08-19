@@ -27,6 +27,8 @@ import {
   beforeEach,
   afterEach,
 } from "@jest/globals";
+import { DEFAULT_TYPE } from "@inrupt/solid-client-errors";
+import { FetchError } from "./resource";
 import {
   getFile,
   deleteFile,
@@ -35,6 +37,7 @@ import {
   flattenHeaders,
 } from "./file";
 import type { WithResourceInfo } from "../interfaces";
+import { mockResponse } from "../tests.internal";
 
 describe("flattenHeaders", () => {
   it("returns an empty object for undefined headers", () => {
@@ -243,6 +246,143 @@ describe("getFile", () => {
       statusText: "I'm a teapot!",
       message: expect.stringMatching("Teapots don't make coffee"),
     });
+  });
+
+  it("throws an instance of FetchError when a request failed", async () => {
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+      new Response("I'm a teapot!", {
+        status: 418,
+        statusText: "I'm a teapot!",
+      }),
+    );
+
+    const fetchPromise = getFile("https://arbitrary.pod/resource", {
+      fetch: mockFetch,
+    });
+
+    const error: FetchError = await fetchPromise.catch((err) => err);
+
+    expect(error).toBeInstanceOf(FetchError);
+
+    // Extract the problem details for a first time
+    const problemDetails = error.problemDetails;
+    expect(problemDetails.type).toBe(DEFAULT_TYPE);
+    expect(problemDetails.title).toBe("I'm a teapot!");
+    expect(problemDetails.status).toBe(418);
+    expect(problemDetails.detail).toBeUndefined();
+    expect(problemDetails.instance).toBeUndefined();
+
+    // Extract for a second time
+    const problemDetails2 = error.problemDetails;
+    expect(problemDetails2.type).toBe(DEFAULT_TYPE);
+    expect(problemDetails2.title).toBe("I'm a teapot!");
+    expect(problemDetails2.status).toBe(418);
+    expect(problemDetails2.detail).toBeUndefined();
+    expect(problemDetails2.instance).toBeUndefined();
+  });
+
+  it("throws an instance of FetchError when a request failed with problem details", async () => {
+    const url = "https://arbitrary.pod/resource";
+    const problem = {
+      type: new URL("https://error.test/NotFound"),
+      title: "Not Found",
+      detail: "No resource was found at this location",
+      status: 404,
+      instance: new URL(url),
+    };
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+      mockResponse(
+        JSON.stringify(problem),
+        {
+          status: 404,
+          statusText: "Not Found",
+          headers: {
+            "Content-Type": "application/problem+json",
+          },
+        },
+        url,
+      ),
+    );
+
+    const fetchPromise = getFile(url, {
+      fetch: mockFetch,
+    });
+
+    const error: FetchError = await fetchPromise.catch((err) => err);
+
+    expect(error).toBeInstanceOf(FetchError);
+
+    // Extract the problem details for a first time
+    const problemDetails = error.problemDetails;
+    expect(problemDetails.type).toEqual(problem.type);
+    expect(problemDetails.title).toBe(problem.title);
+    expect(problemDetails.status).toBe(problem.status);
+    expect(problemDetails.detail).toBe(problem.detail);
+    expect(problemDetails.instance).toEqual(problem.instance);
+
+    // Extract for a second time
+    const problemDetails2 = error.problemDetails;
+    expect(problemDetails2.type).toEqual(problem.type);
+    expect(problemDetails2.title).toBe(problem.title);
+    expect(problemDetails2.status).toBe(problem.status);
+    expect(problemDetails2.detail).toBe(problem.detail);
+    expect(problemDetails2.instance).toEqual(problem.instance);
+  });
+
+  it("throws an instance of FetchError when a request failed with problem details using relative URIs", async () => {
+    const url = "https://arbitrary.pod/container/resource";
+    const problem = {
+      type: "/errors/NotFound",
+      title: "Not Found",
+      detail: "No resource was found at this location",
+      status: 404,
+      instance: "relative-url",
+    };
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+      mockResponse(
+        JSON.stringify(problem),
+        {
+          status: 404,
+          statusText: "Not Found",
+          headers: {
+            "Content-Type": "application/problem+json",
+          },
+        },
+        url,
+      ),
+    );
+
+    const fetchPromise = getFile(url, {
+      fetch: mockFetch,
+    });
+
+    const error: FetchError = await fetchPromise.catch((err) => err);
+
+    expect(error).toBeInstanceOf(FetchError);
+
+    // Extract the problem details for a first time
+    const problemDetails = error.problemDetails;
+    expect(problemDetails.type).toEqual(
+      new URL("https://arbitrary.pod/errors/NotFound"),
+    );
+    expect(problemDetails.title).toBe(problem.title);
+    expect(problemDetails.status).toBe(problem.status);
+    expect(problemDetails.detail).toBe(problem.detail);
+    expect(problemDetails.instance).toEqual(
+      new URL("https://arbitrary.pod/container/relative-url"),
+    );
+
+    // Extract for a second time
+    const problemDetails2 = error.problemDetails;
+    expect(problemDetails2.type).toEqual(
+      new URL("https://arbitrary.pod/errors/NotFound"),
+    );
+    expect(problemDetails2.title).toBe(problem.title);
+    expect(problemDetails2.status).toBe(problem.status);
+    expect(problemDetails2.detail).toBe(problem.detail);
+    expect(problemDetails2.instance).toEqual(
+      new URL("https://arbitrary.pod/container/relative-url"),
+    );
   });
 });
 

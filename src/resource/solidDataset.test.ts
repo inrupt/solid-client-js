@@ -278,7 +278,7 @@ describe("responseToSolidDataset", () => {
     const dataPromise = new Promise<string>((resolve) => {
       resolveDataPromise = resolve;
     });
-    jest.spyOn(response, "text").mockReturnValueOnce(dataPromise);
+    jest.spyOn(response, "text").mockReturnValue(dataPromise);
 
     const onErrorHandlers: Array<Parameters<Parser["onError"]>[0]> = [];
     const mockParser: Parser = {

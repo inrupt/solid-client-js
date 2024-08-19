@@ -89,11 +89,13 @@ export async function getFile(
     options?.init,
   );
   if (internal_isUnsuccessfulResponse(response)) {
+    const errorBody = await response.clone().text();
     throw new FetchError(
       `Fetching the File failed: [${response.status}] [${
         response.statusText
-      }] ${await response.clone().text()}.`,
+      }] ${errorBody}.`,
       response,
+      errorBody,
     );
   }
   const resourceInfo = internal_parseResourceInfo(response);
@@ -135,11 +137,13 @@ export async function deleteFile(
   });
 
   if (internal_isUnsuccessfulResponse(response)) {
+    const errorBody = await response.clone().text();
     throw new FetchError(
       `Deleting the file at [${url}] failed: [${response.status}] [${
         response.statusText
-      }] ${await response.clone().text()}.`,
+      }] ${errorBody}.`,
       response,
+      errorBody,
     );
   }
 }
@@ -219,11 +223,13 @@ export async function saveFileInContainer<
   const response = await writeFile(folderUrlString, file, "POST", options);
 
   if (internal_isUnsuccessfulResponse(response)) {
+    const errorBody = await response.clone().text();
     throw new FetchError(
       `Saving the file in [${folderUrl}] failed: [${response.status}] [${
         response.statusText
-      }] ${await response.clone().text()}.`,
+      }] ${errorBody}.`,
       response,
+      errorBody,
     );
   }
 
@@ -306,11 +312,13 @@ export async function overwriteFile<FileExt extends File | BlobFile | NodeFile>(
   const response = await writeFile(fileUrlString, file, "PUT", options);
 
   if (internal_isUnsuccessfulResponse(response)) {
+    const errorBody = await response.clone().text();
     throw new FetchError(
       `Overwriting the file at [${fileUrlString}] failed: [${
         response.status
-      }] [${response.statusText}] ${await response.clone().text()}.`,
+      }] [${response.statusText}] ${errorBody}.`,
       response,
+      errorBody,
     );
   }
 

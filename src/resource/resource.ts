@@ -23,7 +23,7 @@
 /* eslint-disable max-classes-per-file */
 
 import { ClientHttpError } from "@inrupt/solid-client-errors";
-import type {
+import {
   WithProblemDetails,
   type ProblemDetails,
 } from "@inrupt/solid-client-errors";
