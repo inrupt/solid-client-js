@@ -19,9 +19,15 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+// This linter exception is introduced for legacy reasons.
+/* eslint-disable max-classes-per-file */
+
+
 import {
   type ProblemDetails,
   ClientHttpError,
+  WithProblemDetails,
+  WithErrorResponse
 } from "@inrupt/solid-client-errors";
 import type {
   UrlString,
@@ -265,11 +271,23 @@ export function getEffectiveAccess(
  * Extends the regular JavaScript error object with access to the status code and status message.
  * @since 1.2.0
  */
-export class FetchError extends SolidClientError {
+export class FetchError extends SolidClientError implements WithProblemDetails {
   /** @since 1.3.0 */
   public readonly response: Response & { ok: false };
 
-  private bodyCache: CachingResponseBody;
+  private httpError: ClientHttpError;
+
+  constructor(message: string, errorResponse: Response & { ok: false }, responseBody?: string) {
+    super(message);
+    this.response = errorResponse;
+    if (typeof responseBody === "string") {
+      
+      this.httpError = new ClientHttpError(errorResponse, responseBody, message);
+    } else {
+      // If no response body is provided, defaults are applied.
+      this.httpError = new ClientHttpError(errorResponse, "", message);
+    }
+  }
 
   get statusCode(): number {
     return this.response.status;
@@ -279,48 +297,7 @@ export class FetchError extends SolidClientError {
     return this.response.statusText;
   }
 
-  async problemDetails(): Promise<ProblemDetails> {
-    return this.bodyCache
-      .text()
-      .then(
-        (body) =>
-          new ClientHttpError(
-            {
-              status: this.response.status,
-              statusText: this.response.statusText,
-              headers: this.response.headers,
-              url: this.response.url,
-            },
-            body,
-            this.message,
-          ),
-      )
-      .then((err) => err.problemDetails);
-  }
-
-  constructor(message: string, errorResponse: Response & { ok: false }) {
-    super(message);
-    this.bodyCache = new CachingResponseBody(errorResponse);
-    this.response = errorResponse;
-  }
-}
-
-class CachingResponseBody {
-  private response: Response;
-
-  private bodyText: string;
-
-  async text() {
-    // if the body has already been consumed, don't try to consume it again
-    if (this.bodyText || this.response.bodyUsed) {
-      return this.bodyText;
-    }
-    this.bodyText = await this.response.text();
-    return this.bodyText;
-  }
-
-  constructor(response: Response) {
-    this.response = response.clone();
-    this.bodyText = "";
+  get problemDetails(): ProblemDetails {
+    return this.httpError.problemDetails
   }
 }
