@@ -26,7 +26,6 @@ import { ClientHttpError } from "@inrupt/solid-client-errors";
 import type {
   WithProblemDetails,
   type ProblemDetails,
-  WithErrorResponse,
 } from "@inrupt/solid-client-errors";
 import type {
   UrlString,
