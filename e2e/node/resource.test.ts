@@ -41,7 +41,7 @@ import {
   teardownTestResources,
 } from "@inrupt/internal-test-env";
 import { DataFactory } from "n3";
-import { DEFAULT_TYPE } from "@inrupt/solid-client-errors";
+import { DEFAULT_TYPE, type ProblemDetails } from "@inrupt/solid-client-errors";
 import {
   createContainerAt,
   createContainerInContainer,
@@ -372,7 +372,7 @@ describe("Authenticated end-to-end", () => {
     expect(headers.get("Content-Type")).toContain("text/turtle");
   });
 
-  it("customizing the fetch incorrectly can produce an error", async () => {
+  it("raises error getting a resource if service returns an error response", async () => {
     const customFetch: typeof fetch = async (
       info: Parameters<typeof fetch>[0],
       init?: Parameters<typeof fetch>[1],
@@ -406,25 +406,9 @@ describe("Authenticated end-to-end", () => {
   });
 
   it("raises error creating a container if service returns an error response", async () => {
-    // Provide invalid body content to the PUT request to get the server to return a 400 error
-    const customFetch: typeof fetch = async (
-      info: Parameters<typeof fetch>[0],
-      init?: Parameters<typeof fetch>[1],
-    ) => {
-      // Only change the PUT request
-      if (init?.method === "PUT") {
-        return fetchOptions.fetch(info, {
-          ...init,
-          body: "Invalid content",
-        });
-      }
-      // All other requests fallback to the original fetch
-      return fetchOptions.fetch(info, init);
-    };
-
     // This operation should throw an error
     const error = await createContainerAt(sessionContainer, {
-      fetch: customFetch,
+      fetch: serverToRespondWithAn400Error("PUT"),
     }).catch((err) => err);
 
     expect(error.statusCode).toBe(400);
@@ -434,33 +418,13 @@ describe("Authenticated end-to-end", () => {
     expect(error.statusText).toBe("Bad Request");
 
     const problemDetails = await error.problemDetails();
-    expect(problemDetails.type).toBe(DEFAULT_TYPE);
-    expect(problemDetails.title).toBe("Bad Request");
-    expect(problemDetails.status).toBe(400);
-    expect(problemDetails.detail).toBeDefined();
-    expect(problemDetails.instance).toBeDefined();
+    expect400ProblemDetails(problemDetails);
   });
 
   it("raises error creating a container in a container if service returns an error response", async () => {
-    // Provide invalid body content to the PUT request to get the server to return a 400 error
-    const customFetch: typeof fetch = async (
-      info: Parameters<typeof fetch>[0],
-      init?: Parameters<typeof fetch>[1],
-    ) => {
-      // Only change the PUT request
-      if (init?.method === "POST") {
-        return fetchOptions.fetch(info, {
-          ...init,
-          body: "Invalid content",
-        });
-      }
-      // All other requests fallback to the original fetch
-      return fetchOptions.fetch(info, init);
-    };
-
     // This operation should throw an error
     const error = await createContainerInContainer(sessionContainer, {
-      fetch: customFetch,
+      fetch: serverToRespondWithAn400Error("POST"),
     }).catch((err) => err);
 
     expect(error.statusCode).toBe(400);
@@ -470,33 +434,13 @@ describe("Authenticated end-to-end", () => {
     expect(error.statusText).toBe("Bad Request");
 
     const problemDetails = await error.problemDetails();
-    expect(problemDetails.type).toBe(DEFAULT_TYPE);
-    expect(problemDetails.title).toBe("Bad Request");
-    expect(problemDetails.status).toBe(400);
-    expect(problemDetails.detail).toBeDefined();
-    expect(problemDetails.instance).toBeDefined();
+    expect400ProblemDetails(problemDetails);
   });
 
   it("raises error deleting a resource if service returns an error response", async () => {
-    // Change to invalid method on the DELETE request to get the server to return a 405 error
-    const customFetch: typeof fetch = async (
-      info: Parameters<typeof fetch>[0],
-      init?: Parameters<typeof fetch>[1],
-    ) => {
-      // Only change the DELETE request
-      if (init?.method === "DELETE") {
-        return fetchOptions.fetch(info, {
-          ...init,
-          method: "INVALID",
-        });
-      }
-      // All other requests fallback to the original fetch
-      return fetchOptions.fetch(info, init);
-    };
-
     // This operation should throw an error
     const error = await deleteFile(sessionResource, {
-      fetch: customFetch,
+      fetch: serverToRespondWithAn405Error(),
     }).catch((err) => err);
 
     expect(error.statusCode).toBe(405);
@@ -506,33 +450,13 @@ describe("Authenticated end-to-end", () => {
     expect(error.statusText).toBe("Method Not Allowed");
 
     const problemDetails = await error.problemDetails();
-    expect(problemDetails.type).toBe(DEFAULT_TYPE);
-    expect(problemDetails.title).toBe("Method Not Allowed");
-    expect(problemDetails.status).toBe(405);
-    expect(problemDetails.detail).toBeDefined();
-    expect(problemDetails.instance).toBeDefined();
+    expect405ProblemDetails(problemDetails);
   });
 
   it("raises error deleting a dataset if service returns an error response", async () => {
-    // Change to invalid method on the DELETE request to get the server to return a 405 error
-    const customFetch: typeof fetch = async (
-      info: Parameters<typeof fetch>[0],
-      init?: Parameters<typeof fetch>[1],
-    ) => {
-      // Only change the DELETE request
-      if (init?.method === "DELETE") {
-        return fetchOptions.fetch(info, {
-          ...init,
-          method: "INVALID",
-        });
-      }
-      // All other requests fallback to the original fetch
-      return fetchOptions.fetch(info, init);
-    };
-
     // This operation should throw an error
     const error = await deleteSolidDataset(sessionResource, {
-      fetch: customFetch,
+      fetch: serverToRespondWithAn405Error(),
     }).catch((err) => err);
 
     expect(error.statusCode).toBe(405);
@@ -542,28 +466,13 @@ describe("Authenticated end-to-end", () => {
     expect(error.statusText).toBe("Method Not Allowed");
 
     const problemDetails = await error.problemDetails();
-    expect(problemDetails.type).toBe(DEFAULT_TYPE);
-    expect(problemDetails.title).toBe("Method Not Allowed");
-    expect(problemDetails.status).toBe(405);
-    expect(problemDetails.detail).toBeDefined();
-    expect(problemDetails.instance).toBeDefined();
+    expect405ProblemDetails(problemDetails);
   });
 
   it("raises error retrieving a resource if service returns an error response", async () => {
-    // Change to invalid method to get the server to return a 405 error
-    const customFetch: typeof fetch = async (
-      info: Parameters<typeof fetch>[0],
-      init?: Parameters<typeof fetch>[1],
-    ) => {
-      return fetchOptions.fetch(info, {
-        ...init,
-        method: "INVALID",
-      });
-    };
-
     // This operation should throw an error
     const error = await getSolidDataset(sessionResource, {
-      fetch: customFetch,
+      fetch: serverToRespondWithAn405Error(),
     }).catch((err) => err);
 
     expect(error.statusCode).toBe(405);
@@ -573,25 +482,10 @@ describe("Authenticated end-to-end", () => {
     expect(error.statusText).toBe("Method Not Allowed");
 
     const problemDetails = await error.problemDetails();
-    expect(problemDetails.type).toBe(DEFAULT_TYPE);
-    expect(problemDetails.title).toBe("Method Not Allowed");
-    expect(problemDetails.status).toBe(405);
-    expect(problemDetails.detail).toBeDefined();
-    expect(problemDetails.instance).toBeDefined();
+    expect405ProblemDetails(problemDetails);
   });
 
   it("raises error overwriting a file if service returns an error response", async () => {
-    // Change to invalid method to get the server to return a 405 error
-    const customFetch: typeof fetch = async (
-      info: Parameters<typeof fetch>[0],
-      init?: Parameters<typeof fetch>[1],
-    ) => {
-      return fetchOptions.fetch(info, {
-        ...init,
-        method: "INVALID",
-      });
-    };
-
     // This operation should throw an error
     const error = await overwriteFile(
       sessionResource,
@@ -602,7 +496,7 @@ describe("Authenticated end-to-end", () => {
         type: "text/plain",
       }),
       {
-        fetch: customFetch,
+        fetch: serverToRespondWithAn405Error(),
       },
     ).catch((err) => err);
 
@@ -613,14 +507,44 @@ describe("Authenticated end-to-end", () => {
     expect(error.statusText).toBe("Method Not Allowed");
 
     const problemDetails = await error.problemDetails();
+    expect405ProblemDetails(problemDetails);
+  });
+
+  it("raises error saving a dataset if service returns an error response", async () => {
+    // This operation should throw an error
+    const error = await saveSolidDatasetAt(
+      sessionResource,
+      createSolidDataset(),
+      { fetch: serverToRespondWithAn405Error() },
+    ).catch((err) => err);
+
+    expect(error.statusCode).toBe(405);
+    expect(error.message).toContain(
+      `Storing the Resource at [${sessionResource}] failed: [405]`,
+    );
+    expect(error.statusText).toBe("Method Not Allowed");
+
+    const problemDetails = await error.problemDetails();
+    expect405ProblemDetails(problemDetails);
+  });
+
+  function expect400ProblemDetails(problemDetails: ProblemDetails) {
+    expect(problemDetails.type).toBe(DEFAULT_TYPE);
+    expect(problemDetails.title).toBe("Bad Request");
+    expect(problemDetails.status).toBe(400);
+    expect(problemDetails.detail).toBeDefined();
+    expect(problemDetails.instance).toBeDefined();
+  }
+
+  function expect405ProblemDetails(problemDetails: ProblemDetails) {
     expect(problemDetails.type).toBe(DEFAULT_TYPE);
     expect(problemDetails.title).toBe("Method Not Allowed");
     expect(problemDetails.status).toBe(405);
     expect(problemDetails.detail).toBeDefined();
     expect(problemDetails.instance).toBeDefined();
-  });
+  }
 
-  it("raises error saving a dataset if service returns an error response", async () => {
+  function serverToRespondWithAn405Error() {
     // Change to invalid method to get the server to return a 405 error
     const customFetch: typeof fetch = async (
       info: Parameters<typeof fetch>[0],
@@ -631,25 +555,25 @@ describe("Authenticated end-to-end", () => {
         method: "INVALID",
       });
     };
+    return customFetch;
+  }
 
-    // This operation should throw an error
-    const error = await saveSolidDatasetAt(
-      sessionResource,
-      createSolidDataset(),
-      { fetch: customFetch },
-    ).catch((err) => err);
-
-    expect(error.statusCode).toBe(405);
-    expect(error.message).toContain(
-      `Storing the Resource at [${sessionResource}] failed: [405]`,
-    );
-    expect(error.statusText).toBe("Method Not Allowed");
-
-    const problemDetails = await error.problemDetails();
-    expect(problemDetails.type).toBe(DEFAULT_TYPE);
-    expect(problemDetails.title).toBe("Method Not Allowed");
-    expect(problemDetails.status).toBe(405);
-    expect(problemDetails.detail).toBeDefined();
-    expect(problemDetails.instance).toBeDefined();
-  });
+  function serverToRespondWithAn400Error(method: string) {
+    // Provide invalid body content to the PUT request to get the server to return a 400 error
+    const customFetch: typeof fetch = async (
+      info: Parameters<typeof fetch>[0],
+      init?: Parameters<typeof fetch>[1],
+    ) => {
+      // Only change the given method
+      if (init?.method === method) {
+        return fetchOptions.fetch(info, {
+          ...init,
+          body: "Invalid content",
+        });
+      }
+      // All other requests fallback to the original fetch
+      return fetchOptions.fetch(info, init);
+    };
+    return customFetch;
+  }
 });
