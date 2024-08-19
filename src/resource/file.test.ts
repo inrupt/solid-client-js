@@ -264,7 +264,7 @@ describe("getFile", () => {
 
     expect(error).toBeInstanceOf(FetchError);
 
-    // Extract the problem details for a first time
+    // Verify the problem details data
     expect(error.problemDetails.type).toBe(DEFAULT_TYPE);
     expect(error.problemDetails.title).toBe("I'm a teapot!");
     expect(error.problemDetails.status).toBe(418);
@@ -303,7 +303,7 @@ describe("getFile", () => {
 
     expect(error).toBeInstanceOf(FetchError);
 
-    // Extract the problem details for a first time
+    // Verify the problem details data
     expect(error.problemDetails.type).toEqual(problem.type);
     expect(error.problemDetails.title).toBe(problem.title);
     expect(error.problemDetails.status).toBe(problem.status);
@@ -342,7 +342,7 @@ describe("getFile", () => {
 
     expect(error).toBeInstanceOf(FetchError);
 
-    // Extract the problem details for a first time
+    // Verify the problem details data
     expect(error.problemDetails.type).toEqual(
       new URL("https://arbitrary.pod/errors/NotFound"),
     );
