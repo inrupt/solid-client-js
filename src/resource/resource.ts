@@ -23,9 +23,9 @@
 /* eslint-disable max-classes-per-file */
 
 import { ClientHttpError } from "@inrupt/solid-client-errors";
-import {
+import type {
   WithProblemDetails,
-  type ProblemDetails,
+  ProblemDetails,
 } from "@inrupt/solid-client-errors";
 import type {
   UrlString,

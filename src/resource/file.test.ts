@@ -265,20 +265,11 @@ describe("getFile", () => {
     expect(error).toBeInstanceOf(FetchError);
 
     // Extract the problem details for a first time
-    const problemDetails = error.problemDetails;
-    expect(problemDetails.type).toBe(DEFAULT_TYPE);
-    expect(problemDetails.title).toBe("I'm a teapot!");
-    expect(problemDetails.status).toBe(418);
-    expect(problemDetails.detail).toBeUndefined();
-    expect(problemDetails.instance).toBeUndefined();
-
-    // Extract for a second time
-    const problemDetails2 = error.problemDetails;
-    expect(problemDetails2.type).toBe(DEFAULT_TYPE);
-    expect(problemDetails2.title).toBe("I'm a teapot!");
-    expect(problemDetails2.status).toBe(418);
-    expect(problemDetails2.detail).toBeUndefined();
-    expect(problemDetails2.instance).toBeUndefined();
+    expect(error.problemDetails.type).toBe(DEFAULT_TYPE);
+    expect(error.problemDetails.title).toBe("I'm a teapot!");
+    expect(error.problemDetails.status).toBe(418);
+    expect(error.problemDetails.detail).toBeUndefined();
+    expect(error.problemDetails.instance).toBeUndefined();
   });
 
   it("throws an instance of FetchError when a request failed with problem details", async () => {
@@ -313,20 +304,11 @@ describe("getFile", () => {
     expect(error).toBeInstanceOf(FetchError);
 
     // Extract the problem details for a first time
-    const problemDetails = error.problemDetails;
-    expect(problemDetails.type).toEqual(problem.type);
-    expect(problemDetails.title).toBe(problem.title);
-    expect(problemDetails.status).toBe(problem.status);
-    expect(problemDetails.detail).toBe(problem.detail);
-    expect(problemDetails.instance).toEqual(problem.instance);
-
-    // Extract for a second time
-    const problemDetails2 = error.problemDetails;
-    expect(problemDetails2.type).toEqual(problem.type);
-    expect(problemDetails2.title).toBe(problem.title);
-    expect(problemDetails2.status).toBe(problem.status);
-    expect(problemDetails2.detail).toBe(problem.detail);
-    expect(problemDetails2.instance).toEqual(problem.instance);
+    expect(error.problemDetails.type).toEqual(problem.type);
+    expect(error.problemDetails.title).toBe(problem.title);
+    expect(error.problemDetails.status).toBe(problem.status);
+    expect(error.problemDetails.detail).toBe(problem.detail);
+    expect(error.problemDetails.instance).toEqual(problem.instance);
   });
 
   it("throws an instance of FetchError when a request failed with problem details using relative URIs", async () => {
@@ -361,26 +343,13 @@ describe("getFile", () => {
     expect(error).toBeInstanceOf(FetchError);
 
     // Extract the problem details for a first time
-    const problemDetails = error.problemDetails;
-    expect(problemDetails.type).toEqual(
+    expect(error.problemDetails.type).toEqual(
       new URL("https://arbitrary.pod/errors/NotFound"),
     );
-    expect(problemDetails.title).toBe(problem.title);
-    expect(problemDetails.status).toBe(problem.status);
-    expect(problemDetails.detail).toBe(problem.detail);
-    expect(problemDetails.instance).toEqual(
-      new URL("https://arbitrary.pod/container/relative-url"),
-    );
-
-    // Extract for a second time
-    const problemDetails2 = error.problemDetails;
-    expect(problemDetails2.type).toEqual(
-      new URL("https://arbitrary.pod/errors/NotFound"),
-    );
-    expect(problemDetails2.title).toBe(problem.title);
-    expect(problemDetails2.status).toBe(problem.status);
-    expect(problemDetails2.detail).toBe(problem.detail);
-    expect(problemDetails2.instance).toEqual(
+    expect(error.problemDetails.title).toBe(problem.title);
+    expect(error.problemDetails.status).toBe(problem.status);
+    expect(error.problemDetails.detail).toBe(problem.detail);
+    expect(error.problemDetails.instance).toEqual(
       new URL("https://arbitrary.pod/container/relative-url"),
     );
   });
