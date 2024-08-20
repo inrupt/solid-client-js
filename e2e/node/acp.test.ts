@@ -38,6 +38,7 @@ import {
   createFetch,
 } from "@inrupt/internal-test-env";
 import Link from "http-link-header";
+import { DEFAULT_TYPE } from "@inrupt/solid-client-errors";
 import {
   acp_ess_2,
   fromRdfJsDataset,
@@ -327,5 +328,173 @@ describe("An ACP Solid server", () => {
     expect(
       await getAgentAccess(sessionResource, agent, fetchOptions),
     ).toStrictEqual(READ_AND_APPEND_ACCESS);
+  });
+
+  it("raises an error getting agent access if service returns an error response", async () => {
+    const headResponse = await session.fetch(sessionResource, {
+      method: "HEAD",
+    });
+
+    const responseLinks = headResponse.headers.get("Link");
+    if (!responseLinks) {
+      throw new Error("No Link header found");
+    }
+
+    const links = Link.parse(responseLinks.toString());
+    const acrUrl = links?.get("rel", "acl")[0].uri;
+
+    const customFetch: typeof fetch = async (
+      info: Parameters<typeof fetch>[0],
+      init?: Parameters<typeof fetch>[1],
+    ) => {
+      return fetchOptions.fetch(info, {
+        ...init,
+        method: "INVALID",
+      });
+    };
+
+    const agent = "https://example.org/bob";
+    // This request should produce an error
+    const error = await getAgentAccess(acrUrl, agent, {
+      fetch: customFetch,
+    }).catch((err) => err);
+
+    expect(error.statusCode).toBe(405);
+    expect(error.message).toContain(
+      `Fetching the metadata of the Resource at [${acrUrl}] failed: [405]`,
+    );
+    expect(error.statusText).toBe("Method Not Allowed");
+
+    expect(error.problemDetails.type).toBe(DEFAULT_TYPE);
+    expect(error.problemDetails.title).toBe("Method Not Allowed");
+    expect(error.problemDetails.status).toBe(405);
+    expect(error.problemDetails.detail).toBeUndefined();
+    expect(error.problemDetails.instance).toBeUndefined();
+  });
+
+  it("silently ignores setting agent access if service returns an error response", async () => {
+    const customFetch: typeof fetch = async (
+      info: Parameters<typeof fetch>[0],
+      init?: Parameters<typeof fetch>[1],
+    ) => {
+      // Only change the PATCH request that updates the ACR
+      if (init?.method === "PATCH") {
+        return fetchOptions.fetch(info, {
+          ...init,
+          body: "Invalid Content",
+        });
+      }
+      // All other requests fallback to the original fetch
+      return fetchOptions.fetch(info, init);
+    };
+
+    const agent = "https://example.org/bob";
+
+    // Agent does not have any access to the resource
+    await expect(
+      getAgentAccess(sessionResource, agent, fetchOptions),
+    ).resolves.toEqual({
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
+
+    // This operation should fail and produce an 400 error to the client. It doesn't as the error is not propagated.
+    // This is legacy behaviour which is not consistent with other functions from the access control module. This
+    // maybe changed in a future major version of the library. For now this test is just proving that nothing changed
+    // on the ACR. This is problematic as a client may think the set access was successful.
+    await expect(
+      setAgentAccess(
+        sessionResource,
+        agent,
+        { read: true },
+        { fetch: customFetch },
+      ),
+    ).resolves.not.toThrow();
+
+    // Agent still does not have any access to the resource
+    await expect(
+      getAgentAccess(sessionResource, agent, fetchOptions),
+    ).resolves.toEqual({
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
+  });
+
+  it("silently ignores getting public access modes if service returns an error response", async () => {
+    // Provide an invalid Accept header to the GET request to get the server to return a 406 error
+    const customFetch: typeof fetch = async (
+      info: Parameters<typeof fetch>[0],
+      init?: Parameters<typeof fetch>[1],
+    ) => {
+      // Only change the GET request
+      if (init?.method === "GET") {
+        return fetchOptions.fetch(info, {
+          ...init,
+          headers: {
+            ...init?.headers,
+            Accept: "invalid-mime-type",
+          },
+        });
+      }
+      // All other requests fallback to the original fetch
+      return fetchOptions.fetch(info, init);
+    };
+
+    // This operation should fail and produce an 400 error to the client. It doesn't as the error is not propagated.
+    // This is legacy behaviour which is not consistent with other functions from the access control module. This
+    // maybe changed in a future major version of the library. For now this test is just proving that there is no
+    // public access to the resource. This is problematic as a client will think there is just no public access.
+    await expect(
+      getPublicAccess(sessionResource, { fetch: customFetch }),
+    ).resolves.toEqual({
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
+  });
+
+  it("silently ignores setting public access modes if service returns an error response", async () => {
+    // Provide invalid body content to the PATCH request to get the server to return a 400 error
+    const customFetch: typeof fetch = async (
+      info: Parameters<typeof fetch>[0],
+      init?: Parameters<typeof fetch>[1],
+    ) => {
+      // Only change the PATCH request
+      if (init?.method === "PATCH") {
+        return fetchOptions.fetch(info, {
+          ...init,
+          body: "Invalid content",
+        });
+      }
+      // All other requests fallback to the original fetch
+      return fetchOptions.fetch(info, init);
+    };
+
+    // This operation should fail and produce an 400 error to the client. It doesn't as the error is not propagated.
+    // This is legacy behaviour which is not consistent with other functions from the access control module. This
+    // maybe changed in a future major version of the library. For now this test is just proving that there is no
+    // public access to the resource set. This is problematic as a client will think the operation worked.
+    await expect(
+      setPublicAccess(sessionResource, { read: true }, { fetch: customFetch }),
+    ).resolves.toBeNull();
+
+    // Check that no public access was set
+    await expect(
+      getPublicAccess(sessionResource, { fetch: customFetch }),
+    ).resolves.toEqual({
+      read: false,
+      append: false,
+      write: false,
+      controlRead: false,
+      controlWrite: false,
+    });
   });
 });
