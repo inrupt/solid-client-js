@@ -85,7 +85,6 @@ export function responseToResourceInfo(
   response: Response,
   options: {
     ignoreAuthenticationErrors: boolean;
-    responseBody?: string;
   } = { ignoreAuthenticationErrors: false },
 ): WithServerResourceInfo {
   if (
@@ -96,7 +95,6 @@ export function responseToResourceInfo(
     throw new FetchError(
       `Fetching the metadata of the Resource at [${response.url}] failed: [${response.status}] [${response.statusText}].`,
       response,
-      options.responseBody ?? "",
     );
   }
 

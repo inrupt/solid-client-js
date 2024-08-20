@@ -172,11 +172,7 @@ export async function responseToSolidDataset(
     );
   }
 
-  const data = await response.text();
-  const resourceInfo = responseToResourceInfo(response, {
-    ignoreAuthenticationErrors: false,
-    responseBody: data,
-  });
+  const resourceInfo = responseToResourceInfo(response);
 
   const parsers: Record<ContentType, Parser> = {
     "text/turtle": getTurtleParser(),
@@ -203,6 +199,7 @@ export async function responseToSolidDataset(
     );
   }
 
+  const data = await response.text();
   const rdfjsDataset = await new Promise<DatasetCore>((resolve, reject) => {
     const store = new N3Store();
     parser.onError((error) => {
