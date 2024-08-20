@@ -162,11 +162,13 @@ export async function responseToSolidDataset(
   parseOptions: Partial<ParseOptions> = {},
 ): Promise<SolidDataset & WithServerResourceInfo> {
   if (internal_isUnsuccessfulResponse(response)) {
+    const errorBody = await response.clone().text();
     throw new FetchError(
       `Fetching the SolidDataset at [${response.url}] failed: [${
         response.status
-      }] [${response.statusText}] ${await response.text()}.`,
+      }] [${response.statusText}] ${errorBody}.`,
       response,
+      errorBody,
     );
   }
 
@@ -252,11 +254,13 @@ export async function getSolidDataset(
     },
   });
   if (internal_isUnsuccessfulResponse(response)) {
+    const errorBody = await response.clone().text();
     throw new FetchError(
       `Fetching the Resource at [${normalizedUrl}] failed: [${
         response.status
-      }] [${response.statusText}] ${await response.text()}.`,
+      }] [${response.statusText}] ${errorBody}.`,
       response,
+      errorBody,
     );
   }
   const solidDataset = await responseToSolidDataset(response, options);
@@ -380,11 +384,13 @@ export async function saveSolidDatasetAt<Dataset extends SolidDataset>(
       : `The SolidDataset that was sent to the Pod is listed below.\n\n${solidDatasetAsMarkdown(
           datasetWithChangelog,
         )}`;
+    const errorBody = await response.clone().text();
     throw new FetchError(
       `Storing the Resource at [${targetUrl}] failed: [${response.status}] [${
         response.statusText
-      }] ${await response.text()}.\n\n${diagnostics}`,
+      }] ${errorBody}.\n\n${diagnostics}`,
       response,
+      errorBody,
     );
   }
 
@@ -423,11 +429,13 @@ export async function deleteSolidDataset(
   const response = await (options?.fetch ?? fetch)(url, { method: "DELETE" });
 
   if (internal_isUnsuccessfulResponse(response)) {
+    const errorBody = await response.clone().text();
     throw new FetchError(
       `Deleting the SolidDataset at [${url}] failed: [${response.status}] [${
         response.statusText
-      }] ${await response.text()}.`,
+      }] ${errorBody}.`,
       response,
+      errorBody,
     );
   }
 }
@@ -478,11 +486,13 @@ export async function createContainerAt(
   if (internal_isUnsuccessfulResponse(response)) {
     const containerType =
       options.initialContent === undefined ? "empty" : "non-empty";
+    const errorBody = await response.clone().text();
     throw new FetchError(
       `Creating the ${containerType} Container at [${url}] failed: [${
         response.status
-      }] [${response.statusText}] ${await response.text()}.`,
+      }] [${response.statusText}] ${errorBody}.`,
       response,
+      errorBody,
     );
   }
 
@@ -573,14 +583,16 @@ export async function saveSolidDatasetInContainer(
   });
 
   if (internal_isUnsuccessfulResponse(response)) {
+    const errorBody = await response.clone().text();
     throw new FetchError(
       `Storing the Resource in the Container at [${normalizedUrl}] failed: [${
         response.status
-      }] [${response.statusText}] ${await response.text()}.\n\n` +
+      }] [${response.statusText}] ${errorBody}.\n\n` +
         `The SolidDataset that was sent to the Pod is listed below.\n\n${solidDatasetAsMarkdown(
           solidDataset,
         )}`,
       response,
+      errorBody,
     );
   }
 
@@ -670,11 +682,13 @@ export async function createContainerInContainer(
   });
 
   if (internal_isUnsuccessfulResponse(response)) {
+    const errorBody = await response.clone().text();
     throw new FetchError(
       `Creating an empty Container in the Container at [${normalizedUrl}] failed: [${
         response.status
-      }] [${response.statusText}] ${await response.text()}.`,
+      }] [${response.statusText}] ${errorBody}.`,
       response,
+      errorBody,
     );
   }
 
@@ -734,11 +748,13 @@ export async function deleteContainer(
   });
 
   if (internal_isUnsuccessfulResponse(response)) {
+    const errorBody = await response.clone().text();
     throw new FetchError(
       `Deleting the Container at [${normalizedUrl}] failed: [${
         response.status
-      }] [${response.statusText}] ${await response.text()}.`,
+      }] [${response.statusText}] ${errorBody}.`,
       response,
+      errorBody,
     );
   }
 }

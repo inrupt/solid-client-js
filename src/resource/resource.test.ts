@@ -25,7 +25,6 @@ import {
   getSourceIri,
   getPodOwner,
   isPodOwner,
-  FetchError,
   isContainer,
   isRawData,
   getContentType,
@@ -473,21 +472,6 @@ describe("getResourceInfo", () => {
     });
 
     await expect(fetchPromise).rejects.toBeInstanceOf(SolidClientError);
-  });
-
-  it("throws an instance of FetchError when a request failed", async () => {
-    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
-      new Response("I'm a teapot!", {
-        status: 418,
-        statusText: "I'm a teapot!",
-      }),
-    );
-
-    const fetchPromise = getResourceInfo("https://arbitrary.pod/resource", {
-      fetch: mockFetch,
-    });
-
-    await expect(fetchPromise).rejects.toBeInstanceOf(FetchError);
   });
 });
 

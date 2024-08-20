@@ -27,6 +27,8 @@ import {
   beforeEach,
   afterEach,
 } from "@jest/globals";
+import { DEFAULT_TYPE } from "@inrupt/solid-client-errors";
+import { FetchError } from "./resource";
 import {
   getFile,
   deleteFile,
@@ -35,6 +37,7 @@ import {
   flattenHeaders,
 } from "./file";
 import type { WithResourceInfo } from "../interfaces";
+import { mockResponse } from "../tests.internal";
 
 describe("flattenHeaders", () => {
   it("returns an empty object for undefined headers", () => {
@@ -243,6 +246,112 @@ describe("getFile", () => {
       statusText: "I'm a teapot!",
       message: expect.stringMatching("Teapots don't make coffee"),
     });
+  });
+
+  it("throws an instance of FetchError when a request failed", async () => {
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+      new Response("I'm a teapot!", {
+        status: 418,
+        statusText: "I'm a teapot!",
+      }),
+    );
+
+    const fetchPromise = getFile("https://arbitrary.pod/resource", {
+      fetch: mockFetch,
+    });
+
+    const error: FetchError = await fetchPromise.catch((err) => err);
+
+    expect(error).toBeInstanceOf(FetchError);
+
+    // Verify the problem details data
+    expect(error.problemDetails.type).toBe(DEFAULT_TYPE);
+    expect(error.problemDetails.title).toBe("I'm a teapot!");
+    expect(error.problemDetails.status).toBe(418);
+    expect(error.problemDetails.detail).toBeUndefined();
+    expect(error.problemDetails.instance).toBeUndefined();
+  });
+
+  it("throws an instance of FetchError when a request failed with problem details", async () => {
+    const url = "https://arbitrary.pod/resource";
+    const problem = {
+      type: new URL("https://error.test/NotFound"),
+      title: "Not Found",
+      detail: "No resource was found at this location",
+      status: 404,
+      instance: new URL(url),
+    };
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+      mockResponse(
+        JSON.stringify(problem),
+        {
+          status: 404,
+          statusText: "Not Found",
+          headers: {
+            "Content-Type": "application/problem+json",
+          },
+        },
+        url,
+      ),
+    );
+
+    const fetchPromise = getFile(url, {
+      fetch: mockFetch,
+    });
+
+    const error: FetchError = await fetchPromise.catch((err) => err);
+
+    expect(error).toBeInstanceOf(FetchError);
+
+    // Verify the problem details data
+    expect(error.problemDetails.type).toEqual(problem.type);
+    expect(error.problemDetails.title).toBe(problem.title);
+    expect(error.problemDetails.status).toBe(problem.status);
+    expect(error.problemDetails.detail).toBe(problem.detail);
+    expect(error.problemDetails.instance).toEqual(problem.instance);
+  });
+
+  it("throws an instance of FetchError when a request failed with problem details using relative URIs", async () => {
+    const url = "https://arbitrary.pod/container/resource";
+    const problem = {
+      type: "/errors/NotFound",
+      title: "Not Found",
+      detail: "No resource was found at this location",
+      status: 404,
+      instance: "relative-url",
+    };
+    const mockFetch = jest.fn<typeof fetch>().mockResolvedValue(
+      mockResponse(
+        JSON.stringify(problem),
+        {
+          status: 404,
+          statusText: "Not Found",
+          headers: {
+            "Content-Type": "application/problem+json",
+          },
+        },
+        url,
+      ),
+    );
+
+    const fetchPromise = getFile(url, {
+      fetch: mockFetch,
+    });
+
+    const error: FetchError = await fetchPromise.catch((err) => err);
+
+    expect(error).toBeInstanceOf(FetchError);
+
+    // Verify the problem details data
+    expect(error.problemDetails.type).toEqual(
+      new URL("https://arbitrary.pod/errors/NotFound"),
+    );
+    expect(error.problemDetails.title).toBe(problem.title);
+    expect(error.problemDetails.status).toBe(problem.status);
+    expect(error.problemDetails.detail).toBe(problem.detail);
+    expect(error.problemDetails.instance).toEqual(
+      new URL("https://arbitrary.pod/container/relative-url"),
+    );
   });
 });
 

@@ -19,6 +19,14 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+// This linter exception is introduced for legacy reasons.
+/* eslint-disable max-classes-per-file */
+
+import { ClientHttpError } from "@inrupt/solid-client-errors";
+import type {
+  WithProblemDetails,
+  ProblemDetails,
+} from "@inrupt/solid-client-errors";
 import type {
   UrlString,
   Url,
@@ -261,9 +269,30 @@ export function getEffectiveAccess(
  * Extends the regular JavaScript error object with access to the status code and status message.
  * @since 1.2.0
  */
-export class FetchError extends SolidClientError {
+export class FetchError extends SolidClientError implements WithProblemDetails {
   /** @since 1.3.0 */
   public readonly response: Response & { ok: false };
+
+  private httpError: ClientHttpError;
+
+  constructor(
+    message: string,
+    errorResponse: Response & { ok: false },
+    responseBody?: string,
+  ) {
+    super(message);
+    this.response = errorResponse;
+    if (typeof responseBody === "string") {
+      this.httpError = new ClientHttpError(
+        errorResponse,
+        responseBody,
+        message,
+      );
+    } else {
+      // If no response body is provided, defaults are applied.
+      this.httpError = new ClientHttpError(errorResponse, "", message);
+    }
+  }
 
   get statusCode(): number {
     return this.response.status;
@@ -273,8 +302,7 @@ export class FetchError extends SolidClientError {
     return this.response.statusText;
   }
 
-  constructor(message: string, errorResponse: Response & { ok: false }) {
-    super(message);
-    this.response = errorResponse;
+  get problemDetails(): ProblemDetails {
+    return this.httpError.problemDetails;
   }
 }
