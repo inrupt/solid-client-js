@@ -19,47 +19,47 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import { Blob as NodeBlob, File as NodeFile } from "buffer";
+import { File as NodeFile, Blob as NodeBlob } from "buffer";
 import {
+  jest,
   afterEach,
   beforeEach,
   describe,
   expect,
   it,
-  jest,
   test,
 } from "@jest/globals";
 
 import type { Session } from "@inrupt/solid-client-authn-node";
 
 import {
-  createFetch,
-  getAuthenticatedSession,
   getNodeTestingEnvironment,
-  getPodRoot,
   setupTestResources,
   teardownTestResources,
+  getAuthenticatedSession,
+  getPodRoot,
+  createFetch,
 } from "@inrupt/internal-test-env";
 import { DataFactory } from "n3";
 import { DEFAULT_TYPE, type ProblemDetails } from "@inrupt/solid-client-errors";
 import {
+  getSolidDataset,
+  setThing,
+  getThing,
+  setTerm,
+  saveSolidDatasetAt,
+  overwriteFile,
+  isRawData,
+  getSourceUrl,
+  deleteFile,
   createContainerAt,
   createContainerInContainer,
-  createSolidDataset,
-  createThing,
-  deleteFile,
-  deleteSolidDataset,
   getBoolean,
-  getSolidDataset,
-  getSourceUrl,
-  getThing,
-  getWellKnownSolid,
-  isRawData,
-  overwriteFile,
-  saveSolidDatasetAt,
   setBoolean,
-  setTerm,
-  setThing,
+  createThing,
+  createSolidDataset,
+  deleteSolidDataset,
+  getWellKnownSolid,
 } from "../../src/index";
 
 const { blankNode } = DataFactory;
