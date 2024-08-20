@@ -365,12 +365,11 @@ describe("An ACP Solid server", () => {
     );
     expect(error.statusText).toBe("Method Not Allowed");
 
-    const problemDetails = await error.problemDetails();
-    expect(problemDetails.type).toBe(DEFAULT_TYPE);
-    expect(problemDetails.title).toBe("Method Not Allowed");
-    expect(problemDetails.status).toBe(405);
-    expect(problemDetails.detail).toBeDefined();
-    expect(problemDetails.instance).toBeDefined();
+    expect(error.problemDetails.type).toBe(DEFAULT_TYPE);
+    expect(error.problemDetails.title).toBe("Method Not Allowed");
+    expect(error.problemDetails.status).toBe(405);
+    expect(error.problemDetails.detail).toBeDefined();
+    expect(error.problemDetails.instance).toBeDefined();
   });
 
   it("silently ignores setting agent access if service returns an error response", async () => {

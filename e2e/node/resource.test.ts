@@ -146,12 +146,11 @@ describe("Authenticated end-to-end", () => {
     );
     expect(error.statusText).toContain("Not Found");
 
-    const problemDetails = await error.problemDetails();
-    expect(problemDetails.type).toBe(DEFAULT_TYPE);
-    expect(problemDetails.title).toBe("Not Found");
-    expect(problemDetails.status).toBe(404);
-    expect(problemDetails.detail).toBe("Resource not found");
-    expect(problemDetails.instance).toBeDefined();
+    expect(error.problemDetails.type).toBe(DEFAULT_TYPE);
+    expect(error.problemDetails.title).toBe("Not Found");
+    expect(error.problemDetails.status).toBe(404);
+    expect(error.problemDetails.detail).toBe("Resource not found");
+    expect(error.problemDetails.instance).toBeDefined();
   });
 
   it("can create, delete, and differentiate between RDF and non-RDF Resources using a Blob from the node Buffer package", async () => {
@@ -327,12 +326,11 @@ describe("Authenticated end-to-end", () => {
     );
     expect(error.statusText).toBe("Unauthorized");
 
-    const problemDetails = await error.problemDetails();
-    expect(problemDetails.type).toBe(DEFAULT_TYPE);
-    expect(problemDetails.title).toBe("Unauthorized");
-    expect(problemDetails.status).toBe(401);
-    expect(problemDetails.detail).toBeDefined();
-    expect(problemDetails.instance).toBeDefined();
+    expect(error.problemDetails.type).toBe(DEFAULT_TYPE);
+    expect(error.problemDetails.title).toBe("Unauthorized");
+    expect(error.problemDetails.status).toBe(401);
+    expect(error.problemDetails.detail).toBeDefined();
+    expect(error.problemDetails.instance).toBeDefined();
   });
 
   it("can fetch getWellKnownSolid", async () => {
@@ -397,12 +395,11 @@ describe("Authenticated end-to-end", () => {
     );
     expect(error.statusText).toBe("Not Acceptable");
 
-    const problemDetails = await error.problemDetails();
-    expect(problemDetails.type).toBe(DEFAULT_TYPE);
-    expect(problemDetails.title).toBe("Not Acceptable");
-    expect(problemDetails.status).toBe(406);
-    expect(problemDetails.detail).toBeDefined();
-    expect(problemDetails.instance).toBeDefined();
+    expect(error.problemDetails.type).toBe(DEFAULT_TYPE);
+    expect(error.problemDetails.title).toBe("Not Acceptable");
+    expect(error.problemDetails.status).toBe(406);
+    expect(error.problemDetails.detail).toBeDefined();
+    expect(error.problemDetails.instance).toBeDefined();
   });
 
   it("raises error creating a container if service returns an error response", async () => {
@@ -417,8 +414,7 @@ describe("Authenticated end-to-end", () => {
     );
     expect(error.statusText).toBe("Bad Request");
 
-    const problemDetails = await error.problemDetails();
-    expect400ProblemDetails(problemDetails);
+    expect400ProblemDetails(error.problemDetails);
   });
 
   it("raises error creating a container in a container if service returns an error response", async () => {
@@ -433,8 +429,7 @@ describe("Authenticated end-to-end", () => {
     );
     expect(error.statusText).toBe("Bad Request");
 
-    const problemDetails = await error.problemDetails();
-    expect400ProblemDetails(problemDetails);
+    expect400ProblemDetails(error.problemDetails);
   });
 
   it("raises error deleting a resource if service returns an error response", async () => {
@@ -449,8 +444,7 @@ describe("Authenticated end-to-end", () => {
     );
     expect(error.statusText).toBe("Method Not Allowed");
 
-    const problemDetails = await error.problemDetails();
-    expect405ProblemDetails(problemDetails);
+    expect405ProblemDetails(error.problemDetails);
   });
 
   it("raises error deleting a dataset if service returns an error response", async () => {
@@ -465,8 +459,7 @@ describe("Authenticated end-to-end", () => {
     );
     expect(error.statusText).toBe("Method Not Allowed");
 
-    const problemDetails = await error.problemDetails();
-    expect405ProblemDetails(problemDetails);
+    expect405ProblemDetails(error.problemDetails);
   });
 
   it("raises error retrieving a resource if service returns an error response", async () => {
@@ -481,8 +474,7 @@ describe("Authenticated end-to-end", () => {
     );
     expect(error.statusText).toBe("Method Not Allowed");
 
-    const problemDetails = await error.problemDetails();
-    expect405ProblemDetails(problemDetails);
+    expect405ProblemDetails(error.problemDetails);
   });
 
   it("raises error overwriting a file if service returns an error response", async () => {
@@ -506,8 +498,7 @@ describe("Authenticated end-to-end", () => {
     );
     expect(error.statusText).toBe("Method Not Allowed");
 
-    const problemDetails = await error.problemDetails();
-    expect405ProblemDetails(problemDetails);
+    expect405ProblemDetails(error.problemDetails);
   });
 
   it("raises error saving a dataset if service returns an error response", async () => {
@@ -524,8 +515,7 @@ describe("Authenticated end-to-end", () => {
     );
     expect(error.statusText).toBe("Method Not Allowed");
 
-    const problemDetails = await error.problemDetails();
-    expect405ProblemDetails(problemDetails);
+    expect405ProblemDetails(error.problemDetails);
   });
 
   function expect400ProblemDetails(problemDetails: ProblemDetails) {
