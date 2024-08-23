@@ -80,7 +80,7 @@ export async function setPublicAccess(
   try {
     await saveAcrFor(await setPublicAccessAcp(acr, access), options);
     return await getPublicAccessAcp(resourceUrl, options);
-  } catch (e) {
+  } catch {
     return null;
   }
 }
