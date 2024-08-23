@@ -301,7 +301,7 @@ async function saveUpdatedAcl<
   try {
     savedAcl = await saveAclFor(resource, acl, options);
     return internal_setResourceAcl(resource, savedAcl);
-  } catch (e) {
+  } catch {
     return null;
   }
 }

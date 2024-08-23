@@ -47,7 +47,7 @@ export async function getResourceAcr<T extends WithServerResourceInfo>(
   let acr: SolidDataset & WithServerResourceInfo;
   try {
     acr = await getSolidDataset(acrUrl, options);
-  } catch (e: unknown) {
+  } catch {
     return null;
   }
 

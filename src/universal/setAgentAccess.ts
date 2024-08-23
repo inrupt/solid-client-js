@@ -84,7 +84,7 @@ export async function setAgentAccess(
   try {
     await saveAcrFor(await setAgentAccessAcp(acr, webId, access), options);
     return await getAgentAccess(resourceUrl, webId, options);
-  } catch (e) {
+  } catch {
     return null;
   }
 }

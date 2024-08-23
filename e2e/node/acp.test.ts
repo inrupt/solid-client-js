@@ -293,7 +293,7 @@ describe("An ACP Solid server", () => {
         await expect(getSolidDataset(sessionResource)).resolves.toEqual(
           expect.objectContaining({ graphs: { default: {} } }),
         );
-      } catch (e) {
+      } catch {
         console.error(
           `"Making a resource public with the universal API fails in environment ${env.environment}`,
         );
