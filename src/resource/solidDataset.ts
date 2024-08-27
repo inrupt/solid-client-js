@@ -828,7 +828,7 @@ export function getContainedResourceUrlAll(
  *
  * @param solidDataset The container from which containment claims are validated.
  * @returns A validation report, including the offending contained resources URL if any.
- * @since unreleased
+ * @since 1.30.1
  */
 export function validateContainedResourceAll(
   solidDataset: SolidDataset & WithResourceInfo,
