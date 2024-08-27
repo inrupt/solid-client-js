@@ -8,6 +8,8 @@ The following changes are pending, and will be applied on the next major release
 
 ## Unreleased changes
 
+## [2.1.0](https://github.com/inrupt/solid-client-js/releases/tag/v2.1.0) - 2024-08-27
+
 ### New Features
 
 - Node 22 is now supported
