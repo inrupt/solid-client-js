@@ -13,6 +13,10 @@ The following changes are pending, and will be applied on the next major release
 ### New Features
 
 - Node 22 is now supported
+- `FetchError` now implements `WithProblemDetails`: it has a `.problemDetails` getter providing
+  additional information about the HTTP error response, either provided by the server if it
+  supports [RFC9457](https://www.rfc-editor.org/rfc/rfc9457), or falling back to defaults.
+  . 
 
 ### Patch changes
 
