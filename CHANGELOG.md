@@ -8,6 +8,12 @@ The following changes are pending, and will be applied on the next major release
 
 ## Unreleased changes
 
+## [2.1.1](https://github.com/inrupt/solid-client-js/releases/tag/v2.1.1) - 2024-10-14
+
+### Internal change
+
+- This release has no impact on shipped code. A feature flag has been added to Problem Details end-to-end tests.
+
 ## [2.1.0](https://github.com/inrupt/solid-client-js/releases/tag/v2.1.0) - 2024-08-27
 
 ### New Features
