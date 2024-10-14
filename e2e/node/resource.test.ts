@@ -19,6 +19,10 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+// Assertions are made conditionally on problem details responses because not all
+// servers support this feature.
+/* eslint-disable jest/no-conditional-expect */
+
 import { File as NodeFile, Blob as NodeBlob } from "buffer";
 import {
   jest,
@@ -329,8 +333,10 @@ describe("Authenticated end-to-end", () => {
     expect(error.problemDetails.type).toBe(DEFAULT_TYPE);
     expect(error.problemDetails.title).toBe("Unauthorized");
     expect(error.problemDetails.status).toBe(401);
-    expect(error.problemDetails.detail).toBeDefined();
-    expect(error.problemDetails.instance).toBeDefined();
+    if (env?.features?.PROBLEM_DETAILS === "true") {
+      expect(error.problemDetails.detail).toBeDefined();
+      expect(error.problemDetails.instance).toBeDefined();
+    }
   });
 
   it("can fetch getWellKnownSolid", async () => {
@@ -398,8 +404,10 @@ describe("Authenticated end-to-end", () => {
     expect(error.problemDetails.type).toBe(DEFAULT_TYPE);
     expect(error.problemDetails.title).toBe("Not Acceptable");
     expect(error.problemDetails.status).toBe(406);
-    expect(error.problemDetails.detail).toBeDefined();
-    expect(error.problemDetails.instance).toBeDefined();
+    if (env?.features?.PROBLEM_DETAILS === "true") {
+      expect(error.problemDetails.detail).toBeDefined();
+      expect(error.problemDetails.instance).toBeDefined();
+    }
   });
 
   it("raises error creating a container if service returns an error response", async () => {
@@ -522,16 +530,20 @@ describe("Authenticated end-to-end", () => {
     expect(problemDetails.type).toBe(DEFAULT_TYPE);
     expect(problemDetails.title).toBe("Bad Request");
     expect(problemDetails.status).toBe(400);
-    expect(problemDetails.detail).toBeDefined();
-    expect(problemDetails.instance).toBeDefined();
+    if (env?.features?.PROBLEM_DETAILS === "true") {
+      expect(problemDetails.detail).toBeDefined();
+      expect(problemDetails.instance).toBeDefined();
+    }
   }
 
   function expect405ProblemDetails(problemDetails: ProblemDetails) {
     expect(problemDetails.type).toBe(DEFAULT_TYPE);
     expect(problemDetails.title).toBe("Method Not Allowed");
     expect(problemDetails.status).toBe(405);
-    expect(problemDetails.detail).toBeDefined();
-    expect(problemDetails.instance).toBeDefined();
+    if (env?.features?.PROBLEM_DETAILS === "true") {
+      expect(problemDetails.detail).toBeDefined();
+      expect(problemDetails.instance).toBeDefined();
+    }
   }
 
   function serverToRespondWithAn405Error() {
