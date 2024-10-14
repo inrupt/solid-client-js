@@ -153,8 +153,10 @@ describe("Authenticated end-to-end", () => {
     expect(error.problemDetails.type).toBe(DEFAULT_TYPE);
     expect(error.problemDetails.title).toBe("Not Found");
     expect(error.problemDetails.status).toBe(404);
-    expect(error.problemDetails.detail).toBe("Resource not found");
-    expect(error.problemDetails.instance).toBeDefined();
+    if (env?.features?.PROBLEM_DETAILS === "true") {
+      expect(error.problemDetails.detail).toBe("Resource not found");
+      expect(error.problemDetails.instance).toBeDefined();
+    }
   });
 
   it("can create, delete, and differentiate between RDF and non-RDF Resources using a Blob from the node Buffer package", async () => {
