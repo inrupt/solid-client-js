@@ -47,6 +47,7 @@ import {
 import { internal_getAcr, internal_setAcr } from "./control.internal";
 import { normalizeServerSideIri } from "../resource/iri.internal";
 import { isAcr } from "./acp.internal";
+import { ParserOptions } from "n3";
 
 /**
  * ```{note} The Web Access Control specification is not yet finalised. As such, this
@@ -62,7 +63,7 @@ import { isAcr } from "./acp.internal";
  */
 export async function getSolidDatasetWithAcr(
   url: Url | UrlString,
-  options?: { fetch?: typeof fetch },
+  options?: { fetch?: typeof fetch } & ParserOptions,
 ): Promise<SolidDataset & WithServerResourceInfo & WithAcp> {
   const urlString = internal_toIriString(url);
   const solidDataset = await getSolidDataset(urlString, options);
@@ -135,7 +136,7 @@ export async function getResourceInfoWithAcr(
  */
 export async function getSolidDatasetWithAccessDatasets(
   url: Url | UrlString,
-  options?: { fetch?: typeof fetch },
+  options?: { fetch?: typeof fetch } & ParserOptions,
 ): Promise<SolidDataset & (WithAcp | WithAcl)> {
   const urlString = internal_toIriString(url);
   const solidDataset = await getSolidDataset(urlString, options);
@@ -266,7 +267,7 @@ export function hasAccessibleAcr(
 
 async function fetchAcr(
   resource: WithServerResourceInfo,
-  options?: { fetch?: typeof fetch },
+  options?: { fetch?: typeof fetch } & ParserOptions,
 ): Promise<WithAcp> {
   let acrUrl: UrlString | undefined;
   if (hasLinkedAcr(resource)) {

@@ -47,6 +47,7 @@ import {
   internal_setAcl,
 } from "./acl.internal";
 import { freeze } from "../rdf.internal";
+import { ParserOptions } from "n3";
 
 /**
  * ```{note} The Web Access Control specification is not yet finalised. As such, this
@@ -114,7 +115,7 @@ export function hasResourceAcl<
  */
 export async function getSolidDatasetWithAcl(
   url: UrlString | Url,
-  options?: { fetch?: typeof fetch },
+  options?: { fetch?: typeof fetch } & ParserOptions,
 ): Promise<SolidDataset & WithServerResourceInfo & WithAcl> {
   const solidDataset = await getSolidDataset(url, options);
   const acl = await internal_fetchAcl(solidDataset, options);
