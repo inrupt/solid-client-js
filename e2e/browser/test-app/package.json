@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@inrupt/solid-client": "file:../../../",
-    "@inrupt/solid-client-authn-browser": "^2.2.6",
+    "@inrupt/solid-client-authn-browser": "^2.2.7",
     "next": "^14.2.15",
     "react": "^18.2.0",
     "react-dom": "^18.3.1"
