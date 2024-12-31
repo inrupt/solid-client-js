@@ -198,7 +198,7 @@
     "typedoc-plugin-markdown": "^3.17.1",
     "typescript": "^5.3.3",
     "webpack": "^5.89.0",
-    "webpack-cli": "^5.1.4"
+    "webpack-cli": "^6.0.1"
   },
   "dependencies": {
     "@inrupt/solid-client-errors": "^0.0.2",
