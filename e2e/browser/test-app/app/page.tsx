@@ -19,6 +19,8 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+"use client";
+
 // Disabling the following prevents from having to install before linting from
 // the root.
 // eslint-disable-next-line import/no-unresolved
