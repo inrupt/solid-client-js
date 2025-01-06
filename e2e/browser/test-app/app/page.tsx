@@ -30,7 +30,7 @@ import {
   handleIncomingRedirect,
   getDefaultSession,
 } from "@inrupt/solid-client-authn-browser";
-import SolidClient from "../solidClient";
+import SolidClient from "../components/solidClient";
 
 const REDIRECT_URL = window.location.href;
 const APP_NAME = "Solid client browser-based tests app";
