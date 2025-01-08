@@ -19,6 +19,8 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+"use client";
+
 // Disabling the following prevents from having to install before linting from
 // the root.
 // eslint-disable-next-line import/no-unresolved
@@ -30,7 +32,7 @@ import {
   handleIncomingRedirect,
   getDefaultSession,
 } from "@inrupt/solid-client-authn-browser";
-import SolidClient from "../solidClient";
+import SolidClient from "../components/solidClient";
 
 const REDIRECT_URL = window.location.href;
 const APP_NAME = "Solid client browser-based tests app";
