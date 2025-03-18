@@ -35,7 +35,7 @@ import { getResourceInfo, getSourceUrl } from "../resource/resource";
 import type { WithAcl } from "../acl/acl";
 import { hasAccessibleAcl } from "../acl/acl";
 import { internal_fetchAcl, internal_setAcl } from "../acl/acl.internal";
-import { getSolidDataset, saveSolidDatasetAt } from "../resource/solidDataset";
+import { getSolidDataset, ParseOptions, saveSolidDatasetAt } from "../resource/solidDataset";
 import type { AccessControlResource } from "./control";
 import {
   getAcrPolicyUrlAll,
@@ -62,7 +62,7 @@ import { isAcr } from "./acp.internal";
  */
 export async function getSolidDatasetWithAcr(
   url: Url | UrlString,
-  options?: { fetch?: typeof fetch },
+  options?: { fetch?: typeof fetch } & Partial<ParseOptions>,
 ): Promise<SolidDataset & WithServerResourceInfo & WithAcp> {
   const urlString = internal_toIriString(url);
   const solidDataset = await getSolidDataset(urlString, options);
@@ -135,7 +135,7 @@ export async function getResourceInfoWithAcr(
  */
 export async function getSolidDatasetWithAccessDatasets(
   url: Url | UrlString,
-  options?: { fetch?: typeof fetch },
+  options?: { fetch?: typeof fetch } & Partial<ParseOptions>,
 ): Promise<SolidDataset & (WithAcp | WithAcl)> {
   const urlString = internal_toIriString(url);
   const solidDataset = await getSolidDataset(urlString, options);
@@ -266,7 +266,7 @@ export function hasAccessibleAcr(
 
 async function fetchAcr(
   resource: WithServerResourceInfo,
-  options?: { fetch?: typeof fetch },
+  options?: { fetch?: typeof fetch } & Partial<ParseOptions>,
 ): Promise<WithAcp> {
   let acrUrl: UrlString | undefined;
   if (hasLinkedAcr(resource)) {
