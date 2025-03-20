@@ -18,7 +18,7 @@ jobs:
       matrix:
         # Available OS's: https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
         os: [ubuntu-latest, windows-latest]
-        environment-name: ["ESS PodSpaces", "ESS Dev-2-2"]
+        environment-name: ["ESS PodSpaces"]
         experimental: [false]
         include:
           - environment-name: "ESS Dev-2-3"
