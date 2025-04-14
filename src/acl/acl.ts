@@ -23,6 +23,7 @@ import { acl } from "../constants";
 import {
   createSolidDataset,
   getSolidDataset,
+  ParseOptions,
   saveSolidDatasetAt,
 } from "../resource/solidDataset";
 import type {
@@ -114,7 +115,7 @@ export function hasResourceAcl<
  */
 export async function getSolidDatasetWithAcl(
   url: UrlString | Url,
-  options?: { fetch?: typeof fetch },
+  options?: { fetch?: typeof fetch } & Partial<ParseOptions>,
 ): Promise<SolidDataset & WithServerResourceInfo & WithAcl> {
   const solidDataset = await getSolidDataset(url, options);
   const acl = await internal_fetchAcl(solidDataset, options);
