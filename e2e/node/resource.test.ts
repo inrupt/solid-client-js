@@ -31,7 +31,6 @@ import {
   describe,
   expect,
   it,
-  test,
 } from "@jest/globals";
 
 import type { Session } from "@inrupt/solid-client-authn-node";
