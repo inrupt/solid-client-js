@@ -91,7 +91,7 @@ describe("fromRdfJsDataset", () => {
     fcArbitraryLiteral,
   );
   const fcBlankNode = fc
-    .asciiString()
+    .string()
     .map((asciiString) => DF.blankNode(asciiString));
   const fcDefaultGraph = fc.constant(DF.defaultGraph());
   const fcGraph = fc.oneof(fcDefaultGraph, fcNamedNode);
