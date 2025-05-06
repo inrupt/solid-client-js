@@ -31,7 +31,6 @@ import {
   describe,
   expect,
   it,
-  test,
 } from "@jest/globals";
 
 import type { Session } from "@inrupt/solid-client-authn-node";
@@ -69,11 +68,6 @@ import {
 const { blankNode } = DataFactory;
 
 const env = getNodeTestingEnvironment();
-
-if (env.environment === "NSS") {
-  // eslint-disable-next-line jest/no-focused-tests
-  test.only(`Skipping Unauth NSS tests in ${env.environment}`, () => {});
-}
 
 const TEST_SLUG = "solid-client-test-e2e-resource";
 
