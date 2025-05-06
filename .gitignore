@@ -6,15 +6,12 @@ umd
 whitesource/
 LICENSE_DEPENDENCIES
 LICENSE_DEPENDENCIES_ALL
-docs/api/build/
-docs/api/source/api/
-docs/api/docs-assets/
-docs/dist/
+docs/
 .env*.local
 .codesandbox/sandbox/.parcel-cache/
 test-results/
 .vercel
 .virtualenv
 .parcel-cache/
-.vscode/settings.json
+.vscode/
 coverage
