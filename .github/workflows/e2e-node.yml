@@ -20,7 +20,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         node-version: [22.x, 20.x, 18.x]
-        environment-name: ["ESS PodSpaces", "ESS Dev-2-3"]
+        environment-name: ["ESS PodSpaces", "ESS Release-2-3", "ESS Dev-2-4"]
         experimental: [false]
     steps:
       - uses: actions/checkout@v4
@@ -51,3 +51,15 @@ jobs:
           E2E_TEST_FEATURE_ACP_V3: ${{ secrets.E2E_TEST_FEATURE_ACP_V3 }}
           E2E_TEST_FEATURE_WAC: ${{ secrets.E2E_TEST_FEATURE_WAC }}
           E2E_TEST_FEATURE_PROBLEM_DETAILS: ${{ secrets.E2E_TEST_FEATURE_PROBLEM_DETAILS }}
+
+  check:
+    if: always()
+    needs:
+      - e2e-node
+    runs-on: ubuntu-latest
+    steps:
+      - name: Decide whether the needed jobs succeeded or failed
+        uses: re-actors/alls-green@05ac9388f0aebcb5727afa17fcccfecd6f8ec5fe # release/v1
+        with:
+          allowed-skips: e2e-node
+          jobs: ${{ toJSON(needs) }}
