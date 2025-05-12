@@ -20,17 +20,17 @@
 //
 
 import type { Quad } from "@rdfjs/types";
-import { getSolidDataset } from "../resource/solidDataset";
+import { getSolidDataset, ParseOptions } from "../resource/solidDataset";
 import type {
   IriString,
-  WithChangeLog,
   Thing,
+  WithChangeLog,
   WithServerResourceInfo,
 } from "../interfaces";
 import {
-  getSourceUrl,
   getResourceInfo,
   getSourceIri,
+  getSourceUrl,
 } from "../resource/resource";
 import { acl, rdf } from "../constants";
 import { DataFactory, subjectToRdfJsQuads } from "../rdfjs.internal";
@@ -68,7 +68,7 @@ import { isAcr } from "../acp/acp.internal";
  */
 export async function internal_fetchAcl(
   resourceInfo: WithServerResourceInfo,
-  options?: { fetch?: typeof fetch },
+  options?: { fetch?: typeof fetch } & Partial<ParseOptions>,
 ): Promise<WithAcl["internal_acl"]> {
   if (!hasAccessibleAcl(resourceInfo)) {
     return {
@@ -104,7 +104,7 @@ export async function internal_fetchAcl(
 /** @internal */
 export async function internal_fetchResourceAcl(
   dataset: WithServerResourceInfo,
-  options?: { fetch?: typeof fetch },
+  options?: { fetch?: typeof fetch } & Partial<ParseOptions>,
 ): Promise<AclDataset | null> {
   if (!hasAccessibleAcl(dataset)) {
     return null;
@@ -136,7 +136,7 @@ export async function internal_fetchResourceAcl(
 /** @internal */
 export async function internal_fetchFallbackAcl(
   resource: WithAccessibleAcl,
-  options?: { fetch?: typeof fetch },
+  options?: { fetch?: typeof fetch } & Partial<ParseOptions>,
 ): Promise<AclDataset | null> {
   const resourceUrl = new URL(getSourceUrl(resource));
   const resourcePath = resourceUrl.pathname;

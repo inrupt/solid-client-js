@@ -240,7 +240,7 @@ export async function responseToSolidDataset(
  */
 export async function getSolidDataset(
   url: UrlString | Url,
-  options?: Partial<{ fetch: typeof fetch } & ParseOptions>,
+  options?: Partial<{ fetch: typeof fetch } & Partial<ParseOptions>>,
 ): Promise<SolidDataset & WithServerResourceInfo> {
   const normalizedUrl = normalizeUrl(internal_toIriString(url));
   const parserContentTypes = Object.keys(options?.parsers ?? {});
@@ -1151,7 +1151,7 @@ function resolveLocalIrisInThing(
  */
 export async function getWellKnownSolid(
   url: UrlString | Url,
-  options?: Partial<{ fetch?: typeof fetch } & ParseOptions>,
+  options?: Partial<{ fetch?: typeof fetch } & Partial<ParseOptions>>,
 ): Promise<SolidDataset & WithServerResourceInfo> {
   const urlString = internal_toIriString(url);
 
