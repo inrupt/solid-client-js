@@ -3334,7 +3334,6 @@ describe("changeLogAsMarkdown", () => {
 
 describe("getWellKnownSolid", () => {
   const serverUrl = "https://example.org/";
-  const podUrl = "https://example.org/pod/";
   const resourceUrl = "https://example.org/pod/resource";
   const wellKnownSolid = ".well-known/solid";
 
