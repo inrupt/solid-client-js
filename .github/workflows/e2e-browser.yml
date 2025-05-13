@@ -18,7 +18,7 @@ jobs:
       matrix:
         # Available OS's: https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
         os: [ubuntu-latest, windows-latest]
-        environment-name: ["ESS PodSpaces"]
+        environment-name: ["ESS PodSpaces", "ESS Release-2-3", "ESS Dev-2-4"]
         experimental: [false]
         include:
           - environment-name: "ESS Dev-2-3"
@@ -59,3 +59,15 @@ jobs:
         with:
           name: playwright-output
           path: test-results/
+
+  check:
+    if: always()
+    needs:
+      - e2e-browser
+    runs-on: ubuntu-latest
+    steps:
+      - name: Decide whether the needed jobs succeeded or failed
+        uses: re-actors/alls-green@05ac9388f0aebcb5727afa17fcccfecd6f8ec5fe # release/v1
+        with:
+          allowed-skips: e2e-browser
+          jobs: ${{ toJSON(needs) }}

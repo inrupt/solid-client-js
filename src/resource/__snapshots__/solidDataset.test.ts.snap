@@ -57,55 +57,11 @@ exports[`getSolidDataset returns a SolidDataset representing the fetched Turtle 
 }
 `;
 
-exports[`getWellKnownSolid returns the contents of .well-known/solid for the given resource (1.1) 1`] = `
+exports[`getWellKnownSolid returns the contents of .well-known/solid for the given resource 1`] = `
 {
   "graphs": {
     "default": {
-      "_:b0": {
-        "predicates": {
-          "http://inrupt.com/ns/ess#consentIssuer": {
-            "namedNodes": [
-              "https://consent.pod.inrupt.com",
-            ],
-          },
-          "http://inrupt.com/ns/ess#notificationGatewayEndpoint": {
-            "namedNodes": [
-              "https://notification.pod.inrupt.com",
-            ],
-          },
-          "http://inrupt.com/ns/ess#powerSwitchEndpoint": {
-            "namedNodes": [
-              "https://pod.inrupt.com/powerswitch/username",
-            ],
-          },
-          "http://www.w3.org/ns/pim/space#storage": {
-            "namedNodes": [
-              "https://pod.inrupt.com/username/",
-            ],
-          },
-        },
-        "type": "Subject",
-        "url": "_:b0",
-      },
-    },
-  },
-  "internal_resourceInfo": {
-    "contentLocation": undefined,
-    "contentType": "application/ld+json",
-    "isRawData": false,
-    "linkedResources": {},
-    "location": undefined,
-    "sourceIri": "https://example.org/pod/.well-known/solid",
-  },
-  "type": "Dataset",
-}
-`;
-
-exports[`getWellKnownSolid returns the contents of .well-known/solid for the given resource (2.0) 1`] = `
-{
-  "graphs": {
-    "default": {
-      "_:n3-3": {
+      "_:n3-2": {
         "predicates": {
           "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": {
             "namedNodes": [
@@ -114,7 +70,7 @@ exports[`getWellKnownSolid returns the contents of .well-known/solid for the giv
           },
           "http://www.w3.org/ns/auth/acl#trustedApp": {
             "namedNodes": [
-              "https://podbrowser.inrupt.com/api/app",
+              "https://inrupt.com",
             ],
           },
           "http://www.w3.org/ns/solid/terms#maxPodsPerOwner": {
@@ -143,7 +99,7 @@ exports[`getWellKnownSolid returns the contents of .well-known/solid for the giv
           },
         },
         "type": "Subject",
-        "url": "_:n3-3",
+        "url": "_:n3-2",
       },
     },
   },
