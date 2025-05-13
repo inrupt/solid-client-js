@@ -8,6 +8,11 @@ The following changes are pending, and will be applied on the next major release
 
 ## Unreleased changes
 
+### Patch changes
+
+- Removed the legacy behavior in the internal `getWellKnownSolid` method so that the only place it looks for
+  the `.well-known/solid` resource is the server root.
+
 ## [2.1.2](https://github.com/inrupt/solid-client-js/releases/tag/v2.1.2) - 2024-10-15
 
 ### Internal change
