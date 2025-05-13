@@ -91,7 +91,7 @@ describe("fromRdfJsDataset", () => {
     fcArbitraryLiteral,
   );
   const fcBlankNode = fc
-    .asciiString()
+    .string()
     .map((asciiString) => DF.blankNode(asciiString));
   const fcDefaultGraph = fc.constant(DF.defaultGraph());
   const fcGraph = fc.oneof(fcDefaultGraph, fcNamedNode);
@@ -600,9 +600,20 @@ describe("toRdfJsDataset", () => {
       fc.uniqueArray(fc.string(), { minLength: 1 }),
     )
     .filter(isNotEmpty);
+  // Replaced deprecated hexaString with custom implementation for v4
+  const hexaChars = "0123456789abcdef";
+  const hexa = () => {
+    return fc.integer({ min: 0, max: 15 }).map(
+      (n) => hexaChars[n],
+      (c) => hexaChars.indexOf(<string>c),
+    );
+  };
+  const hexaString = (constraints: fc.StringConstraints = {}) =>
+    fc.string({ ...constraints, unit: hexa() });
+
   const fcLangStrings = fc
     .dictionary(
-      fc.hexaString({ minLength: 1 }).map((str) => str.toLowerCase()),
+      hexaString({ minLength: 1 }).map((str) => str.toLowerCase()),
       fc.uniqueArray(fc.string(), { minLength: 1 }),
     )
     .filter(isNotEmpty);
@@ -619,16 +630,28 @@ describe("toRdfJsDataset", () => {
       minLength: 1,
     },
   );
+  // withDeletedKeys option was removed in v4, achieve similar functionality with filter
   const fcObjects = fc
-    .record(
-      {
-        literals: fcLiterals,
-        langStrings: fcLangStrings,
-        namedNodes: fcNamedNodes,
-        // blankNodes: fcBlankNodes,
-      },
-      { withDeletedKeys: true },
-    )
+    .record({
+      literals: fcLiterals,
+      langStrings: fcLangStrings,
+      namedNodes: fcNamedNodes,
+      // blankNodes: fcBlankNodes,
+    })
+    .map((obj) => {
+      // Randomly delete some keys to achieve similar behavior to withDeletedKeys
+      const keys = Object.keys(obj) as Array<keyof typeof obj>;
+      if (keys.length <= 1) return obj; // Keep at least one property
+
+      const result = { ...obj };
+      // Delete random keys with 50% chance for each
+      keys.forEach((key) => {
+        if (Math.random() < 0.5 && Object.keys(result).length > 1) {
+          delete result[key];
+        }
+      });
+      return result;
+    })
     .filter(isNotEmpty);
   // Unfortunately I haven't figured out how to generate the nested blank node
   // structures with fast-check yet, so this does not generate those:
