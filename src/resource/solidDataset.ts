@@ -22,8 +22,7 @@
 import type { Quad, NamedNode, Quad_Object, DatasetCore } from "@rdfjs/types";
 import { Store as N3Store } from "n3";
 import { DataFactory, toRdfJsQuads } from "../rdfjs.internal";
-import { ldp, pim } from "../constants";
-import { getJsonLdParser } from "../formats/jsonLd";
+import { ldp } from "../constants";
 import { triplesToTurtle, getTurtleParser } from "../formats/turtle";
 import { isLocalNode, isNamedNode, resolveIriForLocalNode } from "../datatypes";
 import type {
@@ -42,12 +41,10 @@ import { hasResourceInfo, hasChangelog } from "../interfaces";
 import { internal_toIriString, normalizeUrl } from "../interfaces.internal";
 import {
   getSourceUrl,
-  getResourceInfo,
   isContainer,
   FetchError,
   responseToResourceInfo,
   getContentType,
-  getLinkedResourceUrlAll,
 } from "./resource";
 import {
   internal_isUnsuccessfulResponse,
@@ -1117,14 +1114,10 @@ function resolveLocalIrisInThing(
  * please see the [ESS
  * Documentation](https://docs.inrupt.com/ess/latest/services/discovery-endpoint/#well-known-solid).
  *
- * **Note:** The data contained in this dataset has changed between ESS 1.1 and
- * ESS 2.0, as such you will need to check for multiple predicates to support
- * both versions.
- *
  * ```typescript
  * const wellKnown = await getWellKnownSolid(resource);
  *
- * // The wellKnown dataset uses a blank node for the subject all of it’s predicates,
+ * // The wellKnown dataset uses a blank node for the subject all of its predicates,
  * // such that we need to call getThingAll with acceptBlankNodes set to true to
  * // retrieve back predicates contained within the dataset
  * const wellKnownSubjects = getThingAll(wellKnown, {
@@ -1141,9 +1134,6 @@ function resolveLocalIrisInThing(
  *
  *
  * @param url URL of a Resource.
- * @param options Optional parameter `options.fetch`: An alternative `fetch`
- * function to make the HTTP request, compatible with the browser-native [fetch
- * API](https://developer.mozilla.org/docs/Web/API/WindowOrWorkerGlobalScope/fetch#parameters).
  * @returns Promise resolving to a [[SolidDataset]] containing the data at
  * '.well-known/solid' for the given Resource, or rejecting if fetching it
  * failed.
@@ -1151,7 +1141,6 @@ function resolveLocalIrisInThing(
  */
 export async function getWellKnownSolid(
   url: UrlString | Url,
-  options?: Partial<{ fetch?: typeof fetch } & ParseOptions>,
 ): Promise<SolidDataset & WithServerResourceInfo> {
   const urlString = internal_toIriString(url);
 
@@ -1164,35 +1153,8 @@ export async function getWellKnownSolid(
 
     return await getSolidDataset(wellKnownSolidUrl);
   } catch {
-    // In case of error, do nothing and try to discover the .well-known
-    // at the pod's root.
+    throw new Error(
+      "Could not determine storage root or well-known solid resource.",
+    );
   }
-
-  // 1.1s implementation:
-  const resourceMetadata = await getResourceInfo(urlString, {
-    fetch: options?.fetch,
-    // Discovering the .well-known/solid document is useful even for resources
-    // we don't have access to.
-    ignoreAuthenticationErrors: true,
-  });
-  const linkedResources = getLinkedResourceUrlAll(resourceMetadata);
-  const rootResources = linkedResources[pim.storage];
-  const rootResource = rootResources?.length === 1 ? rootResources[0] : null;
-  // If pod root (storage) was advertised, retrieve well known solid from pod's root
-  if (rootResource !== null) {
-    const wellKnownSolidUrl = new URL(
-      ".well-known/solid",
-      rootResource.endsWith("/") ? rootResource : `${rootResource}/`,
-    ).href;
-    return getSolidDataset(wellKnownSolidUrl, {
-      ...options,
-      parsers: {
-        "application/ld+json": getJsonLdParser(),
-      },
-    });
-  }
-
-  throw new Error(
-    "Could not determine storage root or well-known solid resource.",
-  );
 }
