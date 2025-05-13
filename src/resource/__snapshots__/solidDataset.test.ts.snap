@@ -61,7 +61,7 @@ exports[`getWellKnownSolid returns the contents of .well-known/solid for the giv
 {
   "graphs": {
     "default": {
-      "_:n3-3": {
+      "_:n3-2": {
         "predicates": {
           "http://www.w3.org/1999/02/22-rdf-syntax-ns#type": {
             "namedNodes": [
@@ -99,7 +99,7 @@ exports[`getWellKnownSolid returns the contents of .well-known/solid for the giv
           },
         },
         "type": "Subject",
-        "url": "_:n3-3",
+        "url": "_:n3-2",
       },
     },
   },
