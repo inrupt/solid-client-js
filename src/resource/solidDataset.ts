@@ -1168,6 +1168,30 @@ export async function getWellKnownSolid(
     // at the pod's root.
   }
 
+  // 1.1s implementation:
+  const resourceMetadata = await getResourceInfo(urlString, {
+    fetch: options?.fetch,
+    // Discovering the .well-known/solid document is useful even for resources
+    // we don't have access to.
+    ignoreAuthenticationErrors: true,
+  });
+  const linkedResources = getLinkedResourceUrlAll(resourceMetadata);
+  const rootResources = linkedResources[pim.storage];
+  const rootResource = rootResources?.length === 1 ? rootResources[0] : null;
+  // If pod root (storage) was advertised, retrieve well known solid from pod's root
+  if (rootResource !== null) {
+    const wellKnownSolidUrl = new URL(
+      ".well-known/solid",
+      rootResource.endsWith("/") ? rootResource : `${rootResource}/`,
+    ).href;
+    return getSolidDataset(wellKnownSolidUrl, {
+      ...options,
+      parsers: {
+        "application/ld+json": getJsonLdParser(),
+      },
+    });
+  }
+
   throw new Error(
     "Could not determine storage root or well-known solid resource.",
   );
