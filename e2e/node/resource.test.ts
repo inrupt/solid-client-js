@@ -71,9 +71,6 @@ const env = getNodeTestingEnvironment();
 
 const TEST_SLUG = "solid-client-test-e2e-resource";
 
-const nodeVersion = process.versions.node.split(".");
-const nodeMajor = Number(nodeVersion[0]);
-
 describe("Authenticated end-to-end", () => {
   let fetchOptions: { fetch: typeof fetch };
   let session: Session;
