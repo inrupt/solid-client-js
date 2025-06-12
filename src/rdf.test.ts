@@ -60,7 +60,7 @@ describe("fromRdfJsDataset", () => {
       DF.literal(serializeDecimal(value), DF.namedNode(xmlSchemaTypes.decimal)),
     );
   const fcDatetime = fc
-    .date()
+    .date({ noInvalidDate: true })
     .map((value) =>
       DF.literal(
         serializeDatetime(value),
