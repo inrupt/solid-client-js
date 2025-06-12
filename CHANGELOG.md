@@ -8,6 +8,10 @@ The following changes are pending, and will be applied on the next major release
 
 ## Unreleased changes
 
+### Breaking Changes
+
+- Support for Node.js v18.x has been dropped as that version has reached end-of-life.
+
 ### Patch changes
 
 - Removed the legacy behavior in the internal `getWellKnownSolid` method so that the only place it looks for
