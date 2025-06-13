@@ -60,7 +60,7 @@ describe("fromRdfJsDataset", () => {
       DF.literal(serializeDecimal(value), DF.namedNode(xmlSchemaTypes.decimal)),
     );
   const fcDatetime = fc
-    .date()
+    .date({ noInvalidDate: true })
     .map((value) =>
       DF.literal(
         serializeDatetime(value),
@@ -690,7 +690,7 @@ describe("toRdfJsDataset", () => {
       })),
   });
 
-  it("loses no data when serialising and deserialising to RDF/JS Datasets", () => {
+  it("loses no data when serializing and deserializing to RDF/JS Datasets", () => {
     const runs = process.env.CI ? 100 : 1;
     expect.assertions(runs + 2);
 

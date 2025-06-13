@@ -48,7 +48,7 @@ import type { LocalNode } from "./interfaces";
 import { localNodeSkolemPrefix } from "./rdf.internal";
 
 describe("stress-testing serialisations", () => {
-  it("should always return the input value when serialising, then deserialing a boolean", () => {
+  it("should always return the input value when serializing, then deserializing a boolean", () => {
     const runs = 100;
     expect.assertions(runs + 2);
 
@@ -65,12 +65,12 @@ describe("stress-testing serialisations", () => {
     expect(fcResult.failed).toBe(false);
   });
 
-  it("should always return the input value when serialising, then deserialing a datetime", () => {
+  it("should always return the input value when serializing, then deserializing a datetime", () => {
     const runs = 100;
     expect.assertions(runs + 2);
 
     const fcResult = fc.check(
-      fc.property(fc.date(), (inputDatetime) => {
+      fc.property(fc.date({ noInvalidDate: true }), (inputDatetime) => {
         expect(
           deserializeDatetime(serializeDatetime(inputDatetime))?.getTime(),
         ).toBe(inputDatetime.getTime());
@@ -82,11 +82,11 @@ describe("stress-testing serialisations", () => {
     expect(fcResult.failed).toBe(false);
   });
 
-  it("should always return the input value when serialising -0, then deserialing to 0", () => {
+  it("should always return the input value when serializing -0, then deserializing to 0", () => {
     expect(deserializeDecimal(serializeDecimal(-0))).toBe(0);
   });
 
-  it("should always return the input value when serialising, then deserialing a decimal", () => {
+  it("should always return the input value when serializing, then deserializing a decimal", () => {
     const runs = 100;
     expect.assertions(runs + 2);
 
@@ -103,7 +103,7 @@ describe("stress-testing serialisations", () => {
     expect(fcResult.failed).toBe(false);
   });
 
-  it("should always return the input value when serialising, then deserialing a integer", () => {
+  it("should always return the input value when serializing, then deserializing a integer", () => {
     const runs = 100;
     expect.assertions(runs + 2);
 
