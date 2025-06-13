@@ -1,4 +1,3 @@
-//
 // Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -207,17 +206,17 @@ const mockPolicy = (
   url: NamedNode,
   matchers?: { allOf?: Matcher[]; anyOf?: Matcher[]; noneOf?: Matcher[] },
 ): Policy => {
-  let mockPolicy = createThing({ url: url.value });
+  let mockedPolicy = createThing({ url: url.value });
   if (matchers?.noneOf) {
-    mockPolicy = addAllThingObjects(mockPolicy, ACP_NONE, matchers.noneOf);
+    mockedPolicy = addAllThingObjects(mockedPolicy, ACP_NONE, matchers.noneOf);
   }
   if (matchers?.anyOf) {
-    mockPolicy = addAllThingObjects(mockPolicy, ACP_ANY, matchers.anyOf);
+    mockedPolicy = addAllThingObjects(mockedPolicy, ACP_ANY, matchers.anyOf);
   }
   if (matchers?.allOf) {
-    mockPolicy = addAllThingObjects(mockPolicy, ACP_ALL, matchers.allOf);
+    mockedPolicy = addAllThingObjects(mockedPolicy, ACP_ALL, matchers.allOf);
   }
-  return mockPolicy;
+  return mockedPolicy;
 };
 
 describe("addNoneOfMatcherUrl", () => {

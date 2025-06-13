@@ -8,9 +8,9 @@ This PR fixes #<issue ID>.
 
 <!-- When adding a new feature: -->
 
-# New feature description
+## New feature description
 
-# Checklist
+## Checklist
 
 - [ ] All acceptance criteria are met.
 - [ ] Relevant documentation, if any, has been written/updated.
@@ -24,7 +24,7 @@ This PR fixes #<issue ID>.
 
 This PR bumps the version to <version number>.
 
-# Checklist
+## Checklist
 
 - [ ] I inspected the changelog to determine if the release was major, minor or patch. I then used the command `npm version <major|minor|patch>` to update the `package.json` and `package-lock.json` (and locally create a tag).
 - [ ] The CHANGELOG has been updated to show version and release date - https://keepachangelog.com/en/1.0.0/.

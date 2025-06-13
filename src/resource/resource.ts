@@ -1,4 +1,3 @@
-//
 // Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -20,7 +19,6 @@
 //
 
 // This linter exception is introduced for legacy reasons.
-/* eslint-disable max-classes-per-file */
 
 import { ClientHttpError } from "@inrupt/solid-client-errors";
 import type {

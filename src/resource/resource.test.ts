@@ -1,4 +1,3 @@
-//
 // Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -359,16 +358,16 @@ describe("getResourceInfo", () => {
   });
 
   it("returns a meaningful error when the server returns a 403", async () => {
-    const mockResponse = new Response("Not allowed", {
+    const mockedResponse = new Response("Not allowed", {
       status: 403,
       statusText: "Forbidden",
     });
     jest
-      .spyOn(mockResponse, "url", "get")
+      .spyOn(mockedResponse, "url", "get")
       .mockReturnValue("https://some.pod/resource");
     const mockFetch = jest
       .fn<typeof fetch>()
-      .mockReturnValue(Promise.resolve(mockResponse));
+      .mockReturnValue(Promise.resolve(mockedResponse));
 
     const fetchPromise = getResourceInfo("https://some.pod/resource", {
       fetch: mockFetch,

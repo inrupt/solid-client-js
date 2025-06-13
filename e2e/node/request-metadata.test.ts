@@ -1,4 +1,3 @@
-//
 // Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -51,7 +50,7 @@ if (
 if (
   typeof env.features?.APPLICATION_DEFINED_REQUEST_METADATA_HEADERS === "string"
 ) {
-  const headers: Record<string, string>[] = [];
+  const metadataHeaders: Record<string, string>[] = [];
   try {
     const rawHeaders = JSON.parse(
       env.features?.APPLICATION_DEFINED_REQUEST_METADATA_HEADERS,
@@ -60,7 +59,7 @@ if (
       if (typeof value !== "string") {
         throw new Error();
       }
-      headers.push({ [key]: value });
+      metadataHeaders.push({ [key]: value });
     }
   } catch {
     throw new Error(
@@ -91,7 +90,7 @@ if (
   // If these tests should be skipped, the table used by the .each is empty, which fails the test.
   // The dummy header on the next line is therefore never actually used, but it prevents jest
   // from complaining.
-  describe.each(headers)(
+  describe.each(metadataHeaders)(
     "End-to-end application-defined request metadata: %s",
     (returnedHeaders: Record<string, string>) => {
       let session: Session;
@@ -256,6 +255,5 @@ if (
     },
   );
 } else {
-  // eslint-disable-next-line jest/expect-expect, jest/no-focused-tests
   test.only(`Skipping unsupported application-defined request metadata tests in ${env.environment}`, () => {});
 }

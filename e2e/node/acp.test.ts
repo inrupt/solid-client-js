@@ -1,4 +1,3 @@
-//
 // Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -60,7 +59,6 @@ const TEST_SLUG = "solid-client-test-e2e-acp";
 const env = getNodeTestingEnvironment();
 
 if (env?.features?.ACP === "false" || env?.features?.ACP === "") {
-  // eslint-disable-next-line jest/no-focused-tests
   test.only(`Skipping unsupported ACP tests in ${env.environment}`, () => {});
 }
 
@@ -147,7 +145,7 @@ describe("An ACP Solid server", () => {
   });
 
   // TODO: re-enable once there is support for external access controls.
-  // eslint-disable-next-line jest/no-disabled-tests
+
   it.skip("understands an Access Control Resource's default agent access", async () => {
     expect(
       await getAgentAccess(sessionResource, session.info.webId!, fetchOptions),

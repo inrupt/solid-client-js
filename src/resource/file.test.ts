@@ -1,4 +1,3 @@
-//
 // Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -63,7 +62,6 @@ describe("flattenHeaders", () => {
   });
 
   it("supports non-iterable headers if they provide a reasonably standard way of browsing them", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const myHeaders: any = {};
     myHeaders.forEach = (
       callback: (value: string, key: string) => void,
@@ -571,7 +569,6 @@ describe("Write non-RDF data into a folder", () => {
       });
 
       if (mockBlob === data) {
-        // eslint-disable-next-line jest/no-conditional-expect
         expect(savedFile).toBeInstanceOf(Blob);
       }
       expect(savedFile!.internal_resourceInfo).toEqual({
@@ -835,7 +832,6 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
         body: data,
       });
       if (mockBlob === data) {
-        // eslint-disable-next-line jest/no-conditional-expect
         expect(savedFile).toBeInstanceOf(Blob);
       }
       expect(savedFile.internal_resourceInfo).toEqual({
@@ -886,7 +882,6 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
       });
 
       if (mockBlob === data) {
-        // eslint-disable-next-line jest/no-conditional-expect
         expect(savedFile).toBeInstanceOf(Blob);
       }
       expect(savedFile.internal_resourceInfo).toEqual({

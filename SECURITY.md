@@ -19,7 +19,7 @@ in exposing data beyond what is intended. Please do open an
 [issue](https://github.com/inrupt/solid-client-js/issues) if you face difficulties
 with our access control APIs.
 
-# Reporting a vulnerability
+## Reporting a vulnerability
 
 If you discover a vulnerability in our code, or experience a bug related to security,
 please report it following the instructions provided on [Inrupt’s security page](https://inrupt.com/security/).

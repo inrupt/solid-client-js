@@ -55,7 +55,7 @@ Please run
 in your project folder and paste the output here:
 -->
 
-```
+```sh
 $ npx envinfo --system --npmPackages --binaries --npmGlobalPackages --browsers
 ```
 
