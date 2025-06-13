@@ -61,4 +61,10 @@ export default defineConfig([
       "no-param-reassign": "warn",
     },
   },
+  {
+    rules: {
+      "import/no-unresolved": "off",
+    },
+    files: ["**/e2e/browser/test-app/**"],
+  },
 ]);
