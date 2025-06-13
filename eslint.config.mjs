@@ -41,4 +41,24 @@ export default defineConfig([
     },
     files: ["e2e/browser/test-app/"],
   },
+  {
+    rules: {
+      camelcase: [
+        "error",
+        {
+          allow: [
+            "^internal_",
+            "^acp_ess_",
+            "^acp_v*",
+            "^access_v*",
+            "^Quad_*",
+            "^reexport_*",
+            "^latest_*",
+            "^legacy_*",
+          ],
+        },
+      ],
+      "no-param-reassign": "warn",
+    },
+  },
 ]);
