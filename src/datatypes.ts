@@ -1,4 +1,3 @@
-//
 // Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -504,7 +503,6 @@ export function internal_isValidUrl(iri: Iri | IriString): iri is Iri {
     return true;
   }
   try {
-    // eslint-disable-next-line no-new
     new URL(iriString);
     return true;
   } catch {

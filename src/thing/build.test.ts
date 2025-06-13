@@ -1,4 +1,3 @@
-//
 // Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -191,7 +190,7 @@ describe("Thing Builder API", () => {
     // We're only going to check for expected TypeScript errors:
     expect.assertions(0);
 
-    /* eslint-disable @typescript-eslint/no-unused-vars, no-underscore-dangle */
+    /* eslint-disable @typescript-eslint/no-unused-vars */
 
     // @ts-expect-error Since we're passing the `url` option, `buildThing`
     // should return a ThingPersisted, which should cause an error when
@@ -218,7 +217,7 @@ describe("Thing Builder API", () => {
       createThing({ name: "thing" }),
     ).build();
 
-    /* eslint-enable @typescript-eslint/no-unused-vars, no-underscore-dangle */
+    /* eslint-enable @typescript-eslint/no-unused-vars */
   });
 
   it("has equivalents for every adder", () => {

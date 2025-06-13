@@ -18,9 +18,9 @@ Webpack, Rollup, or Parcel.
 @inrupt/solid-client is part of a family open source JavaScript libraries
 designed to support developers building Solid applications.
 
-# Inrupt Solid JavaScript Client Libraries
+## Inrupt Solid JavaScript Client Libraries
 
-## Data access and permissions management - solid-client
+### Data access and permissions management - solid-client
 
 [@inrupt/solid-client](https://docs.inrupt.com/developer-tools/javascript/client-libraries/)
 allows developers to access data and manage permissions on data stored in Solid
@@ -31,7 +31,7 @@ allows apps running in a browser to authenticate against a Solid server. This is
 only necessary if you wish to access private resources in a Pod (to access
 public resources you could simply use standard `fetch()`).
 
-## Vocabularies and interoperability
+### Vocabularies and interoperability
 
 A fundamental requirement for any two systems to interoperate at all is that
 they have a shared understanding of the concepts and ideas relevant to those
@@ -61,27 +61,27 @@ By simply importing one of these NPM modules, developers have immediate access
 to all the terms described in all the RDF vocabularies referenced by that
 module.
 
-### Common RDF vocabularies
+#### Common RDF vocabularies
 
 This module bundles together JavaScript classes representing many of the most
 common RDF vocabularies published on the web today (e.g. FOAF, Schema.org,
 vCard, SKOS, etc.):
 [@inrupt/vocab-common-rdf](https://www.npmjs.com/package/@inrupt/vocab-common-rdf)
 
-### Solid-specific RDF vocabularies
+#### Solid-specific RDF vocabularies
 
 This module bundles together JavaScript classes representing all the RDF
 vocabularies related to Solid (e.g. Solid terms, WebACL, ACP, etc.):
 [@inrupt/vocab-solid-common](https://www.npmjs.com/package/@inrupt/vocab-solid-common)
 
-### Inrupt-specific RDF vocabularies
+#### Inrupt-specific RDF vocabularies
 
 This module bundles together JavaScript classes representing all the RDF
 vocabularies created and maintained by Inrupt (e.g. an Inrupt test vocabulary,
 Inrupt glossaries, Inrupt product vocabularies, etc.):
 [@inrupt/vocab-inrupt-common](https://www.npmjs.com/package/@inrupt/vocab-inrupt-common)
 
-# Supported environments
+## Supported environments
 
 Our JavaScript Client Libraries use relatively modern JavaScript, aligned with
 the [ES2018](https://262.ecma-international.org/9.0/) Specification features, we
@@ -100,12 +100,12 @@ through a tool like [Babel](https://babeljs.io), and to add polyfills for e.g.
 `Map`, `Set`, `Promise`, `Headers`, `Array.prototype.includes`, `Object.entries`
 and `String.prototype.endsWith`.
 
-## Node.js Support
+### Node.js Support
 
 See [Inrupt Solid Javascript Client
 Libraries](https://docs.inrupt.com/developer-tools/javascript/client-libraries/#node-js-support).
 
-# Installation
+## Installation
 
 For the latest stable version of solid-client:
 
@@ -119,32 +119,32 @@ For the latest stable version of all Inrupt Solid JavaScript libraries:
 npm install @inrupt/solid-client @inrupt/solid-client-authn-browser @inrupt/vocab-common-rdf
 ```
 
-# Issues & Help
+## Issues & Help
 
-## Solid Community Forum
+### Solid Community Forum
 
 If you have questions about working with Solid or just want to share what you’re
 working on, visit the [Solid forum](https://forum.solidproject.org/). The Solid
 forum is a good place to meet the rest of the community.
 
-## Bugs and Feature Requests
+### Bugs and Feature Requests
 
 - For public feedback, bug reports, and feature requests please file an issue
   via [Github](https://github.com/inrupt/solid-client-js/issues/).
 - For non-public feedback or support inquiries please use the [Inrupt Service
   Desk](https://inrupt.atlassian.net/servicedesk).
 
-## Documentation
+### Documentation
 
 - [Inrupt Solid Javascript Client
   Libraries](https://docs.inrupt.com/developer-tools/javascript/client-libraries/)
 - [Homepage](https://docs.inrupt.com/)
 
-# Changelog
+## Changelog
 
 See [the release
 notes](https://github.com/inrupt/solid-client-js/blob/main/CHANGELOG.md).
 
-# License
+## License
 
 MIT © [Inrupt](https://inrupt.com)

@@ -1,4 +1,3 @@
-//
 // Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -68,14 +67,14 @@ function getMockDataset(
   return setMockAclUrl(result, aclIri);
 }
 
-const resource = getMockDataset(
+const mockedResource = getMockDataset(
   "https://some.pod/resource",
   "https://some.pod/resource.acl",
 );
 
 describe("getAgentAccess", () => {
   it("calls the included fetcher by default", async () => {
-    await getAgentAccess(resource, "https://some.pod/profile#agent");
+    await getAgentAccess(mockedResource, "https://some.pod/profile#agent");
     expect(fetch).toHaveBeenCalledWith(
       "https://some.pod/resource.acl",
       expect.anything(),
@@ -83,19 +82,23 @@ describe("getAgentAccess", () => {
   });
 
   it("returns null if no ACL is accessible", async () => {
-    const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
-      fetch: async (url) => {
-        switch (url.toString()) {
-          case "https://some.pod/resource.acl":
-          case "https://some.pod/.acl":
-            return new Response("", { status: 404 });
-          case "https://some.pod/":
-            return new Response('<.acl>; rel="acl"', { status: 200 });
-          default:
-            throw new Error("Unepxected URL");
-        }
+    const result = getAgentAccess(
+      mockedResource,
+      "https://some.pod/profile#agent",
+      {
+        fetch: async (url) => {
+          switch (url.toString()) {
+            case "https://some.pod/resource.acl":
+            case "https://some.pod/.acl":
+              return new Response("", { status: 404 });
+            case "https://some.pod/":
+              return new Response('<.acl>; rel="acl"', { status: 200 });
+            default:
+              throw new Error("Unepxected URL");
+          }
+        },
       },
-    });
+    );
 
     await expect(result).resolves.toBeNull();
   });
@@ -123,21 +126,25 @@ describe("getAgentAccess", () => {
       "resource",
     );
 
-    const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
-      fetch: async (url) => {
-        if (url.toString() === "https://some.pod/resource.acl") {
-          return Object.defineProperty(
-            new Response(await triplesToTurtle(toRdfJsQuads(aclResource)), {
-              status: 200,
-              headers: { "Content-Type": "text/turtle" },
-            }),
-            "url",
-            { value: url.toString() },
-          );
-        }
-        throw new Error("Unepxected URL");
+    const result = getAgentAccess(
+      mockedResource,
+      "https://some.pod/profile#agent",
+      {
+        fetch: async (url) => {
+          if (url.toString() === "https://some.pod/resource.acl") {
+            return Object.defineProperty(
+              new Response(await triplesToTurtle(toRdfJsQuads(aclResource)), {
+                status: 200,
+                headers: { "Content-Type": "text/turtle" },
+              }),
+              "url",
+              { value: url.toString() },
+            );
+          }
+          throw new Error("Unepxected URL");
+        },
       },
-    });
+    );
 
     await expect(result).resolves.toStrictEqual({
       read: true,
@@ -290,9 +297,13 @@ describe("getAgentAccess", () => {
       ),
     );
 
-    const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
-      fetch: mockFetch,
-    });
+    const result = getAgentAccess(
+      mockedResource,
+      "https://some.pod/profile#agent",
+      {
+        fetch: mockFetch,
+      },
+    );
 
     await expect(result).resolves.toStrictEqual({
       read: false,
@@ -323,9 +334,13 @@ describe("getAgentAccess", () => {
       ),
     );
 
-    const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
-      fetch: mockFetch,
-    });
+    const result = getAgentAccess(
+      mockedResource,
+      "https://some.pod/profile#agent",
+      {
+        fetch: mockFetch,
+      },
+    );
 
     await expect(result).resolves.toStrictEqual({
       read: false,
@@ -356,9 +371,13 @@ describe("getAgentAccess", () => {
       ),
     );
 
-    const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
-      fetch: mockFetch,
-    });
+    const result = getAgentAccess(
+      mockedResource,
+      "https://some.pod/profile#agent",
+      {
+        fetch: mockFetch,
+      },
+    );
 
     await expect(result).resolves.toStrictEqual({
       read: false,
@@ -389,9 +408,13 @@ describe("getAgentAccess", () => {
       ),
     );
 
-    const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
-      fetch: mockFetch,
-    });
+    const result = getAgentAccess(
+      mockedResource,
+      "https://some.pod/profile#agent",
+      {
+        fetch: mockFetch,
+      },
+    );
 
     await expect(result).resolves.toStrictEqual({
       read: false,
@@ -424,9 +447,13 @@ describe("getAgentAccess", () => {
       ),
     );
 
-    const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
-      fetch: mockFetch,
-    });
+    const result = getAgentAccess(
+      mockedResource,
+      "https://some.pod/profile#agent",
+      {
+        fetch: mockFetch,
+      },
+    );
 
     await expect(result).resolves.toStrictEqual({
       read: false,
@@ -459,9 +486,13 @@ describe("getAgentAccess", () => {
       ),
     );
 
-    const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
-      fetch: mockFetch,
-    });
+    const result = getAgentAccess(
+      mockedResource,
+      "https://some.pod/profile#agent",
+      {
+        fetch: mockFetch,
+      },
+    );
 
     await expect(result).resolves.toStrictEqual({
       read: false,
@@ -494,9 +525,13 @@ describe("getAgentAccess", () => {
       ),
     );
 
-    const result = getAgentAccess(resource, "https://some.pod/profile#agent", {
-      fetch: mockFetch,
-    });
+    const result = getAgentAccess(
+      mockedResource,
+      "https://some.pod/profile#agent",
+      {
+        fetch: mockFetch,
+      },
+    );
 
     await expect(result).resolves.toStrictEqual({
       read: false,
@@ -510,7 +545,7 @@ describe("getAgentAccess", () => {
 
 describe("getGroupAccess", () => {
   it("calls the included fetcher by default", async () => {
-    await getGroupAccess(resource, "https://some.pod/groups#group");
+    await getGroupAccess(mockedResource, "https://some.pod/groups#group");
 
     expect(fetch).toHaveBeenCalledWith(
       "https://some.pod/resource.acl",
@@ -555,9 +590,13 @@ describe("getGroupAccess", () => {
         ),
       );
 
-    const result = getGroupAccess(resource, "https://some.pod/groups#group", {
-      fetch: mockFetch,
-    });
+    const result = getGroupAccess(
+      mockedResource,
+      "https://some.pod/groups#group",
+      {
+        fetch: mockFetch,
+      },
+    );
 
     await expect(result).resolves.toBeNull();
   });
@@ -603,9 +642,13 @@ describe("getGroupAccess", () => {
       ),
     );
 
-    const result = getGroupAccess(resource, "https://some.pod/groups#group", {
-      fetch: mockFetch,
-    });
+    const result = getGroupAccess(
+      mockedResource,
+      "https://some.pod/groups#group",
+      {
+        fetch: mockFetch,
+      },
+    );
 
     await expect(result).resolves.toStrictEqual({
       read: true,
@@ -664,9 +707,13 @@ describe("getGroupAccess", () => {
         ),
       );
 
-    const result = getGroupAccess(resource, "https://some.pod/groups#group", {
-      fetch: mockFetch,
-    });
+    const result = getGroupAccess(
+      mockedResource,
+      "https://some.pod/groups#group",
+      {
+        fetch: mockFetch,
+      },
+    );
     await expect(result).resolves.toStrictEqual({
       read: true,
       append: false,
@@ -735,9 +782,13 @@ describe("getGroupAccess", () => {
         ),
       );
 
-    const result = getGroupAccess(resource, "https://some.pod/groups#group", {
-      fetch: mockFetch,
-    });
+    const result = getGroupAccess(
+      mockedResource,
+      "https://some.pod/groups#group",
+      {
+        fetch: mockFetch,
+      },
+    );
     await expect(result).resolves.toStrictEqual({
       append: true,
       read: false,
@@ -769,9 +820,13 @@ describe("getGroupAccess", () => {
       ),
     );
 
-    const result = getGroupAccess(resource, "https://some.pod/groups#group", {
-      fetch: mockFetch,
-    });
+    const result = getGroupAccess(
+      mockedResource,
+      "https://some.pod/groups#group",
+      {
+        fetch: mockFetch,
+      },
+    );
 
     await expect(result).resolves.toStrictEqual({
       read: false,
@@ -804,9 +859,13 @@ describe("getGroupAccess", () => {
       ),
     );
 
-    const result = getGroupAccess(resource, "https://some.pod/groups#group", {
-      fetch: mockFetch,
-    });
+    const result = getGroupAccess(
+      mockedResource,
+      "https://some.pod/groups#group",
+      {
+        fetch: mockFetch,
+      },
+    );
 
     await expect(result).resolves.toStrictEqual({
       read: false,
@@ -839,9 +898,13 @@ describe("getGroupAccess", () => {
       ),
     );
 
-    const result = getGroupAccess(resource, "https://some.pod/groups#group", {
-      fetch: mockFetch,
-    });
+    const result = getGroupAccess(
+      mockedResource,
+      "https://some.pod/groups#group",
+      {
+        fetch: mockFetch,
+      },
+    );
 
     await expect(result).resolves.toStrictEqual({
       read: false,
@@ -874,9 +937,13 @@ describe("getGroupAccess", () => {
       ),
     );
 
-    const result = getGroupAccess(resource, "https://some.pod/groups#group", {
-      fetch: mockFetch,
-    });
+    const result = getGroupAccess(
+      mockedResource,
+      "https://some.pod/groups#group",
+      {
+        fetch: mockFetch,
+      },
+    );
 
     await expect(result).resolves.toStrictEqual({
       read: false,
@@ -890,7 +957,7 @@ describe("getGroupAccess", () => {
 
 describe("getPublicAccess", () => {
   it("calls the included fetcher by default", async () => {
-    await getPublicAccess(resource);
+    await getPublicAccess(mockedResource);
 
     expect(fetch).toHaveBeenCalledWith(
       "https://some.pod/resource.acl",
@@ -935,7 +1002,7 @@ describe("getPublicAccess", () => {
         ),
       );
 
-    const result = getPublicAccess(resource, {
+    const result = getPublicAccess(mockedResource, {
       fetch: mockFetch,
     });
 
@@ -983,7 +1050,7 @@ describe("getPublicAccess", () => {
       ),
     );
 
-    const result = getPublicAccess(resource, {
+    const result = getPublicAccess(mockedResource, {
       fetch: mockFetch,
     });
 
@@ -1044,7 +1111,7 @@ describe("getPublicAccess", () => {
         ),
       );
 
-    const result = getPublicAccess(resource, {
+    const result = getPublicAccess(mockedResource, {
       fetch: mockFetch,
     });
     await expect(result).resolves.toStrictEqual({
@@ -1115,7 +1182,7 @@ describe("getPublicAccess", () => {
         ),
       );
 
-    const result = getPublicAccess(resource, {
+    const result = getPublicAccess(mockedResource, {
       fetch: mockFetch,
     });
     await expect(result).resolves.toStrictEqual({
@@ -1149,7 +1216,7 @@ describe("getPublicAccess", () => {
       ),
     );
 
-    const result = getPublicAccess(resource, {
+    const result = getPublicAccess(mockedResource, {
       fetch: mockFetch,
     });
 
@@ -1184,7 +1251,7 @@ describe("getPublicAccess", () => {
       ),
     );
 
-    const result = getPublicAccess(resource, {
+    const result = getPublicAccess(mockedResource, {
       fetch: mockFetch,
     });
 
@@ -1219,7 +1286,7 @@ describe("getPublicAccess", () => {
       ),
     );
 
-    const result = getPublicAccess(resource, {
+    const result = getPublicAccess(mockedResource, {
       fetch: mockFetch,
     });
 
@@ -1254,7 +1321,7 @@ describe("getPublicAccess", () => {
       ),
     );
 
-    const result = getPublicAccess(resource, {
+    const result = getPublicAccess(mockedResource, {
       fetch: mockFetch,
     });
 
@@ -1270,7 +1337,7 @@ describe("getPublicAccess", () => {
 
 describe("getAgentAccessAll", () => {
   it("uses the default fetcher if none is provided", async () => {
-    await getAgentAccessAll(resource);
+    await getAgentAccessAll(mockedResource);
 
     expect(fetch).toHaveBeenCalledWith(
       "https://some.pod/resource.acl",
@@ -1315,7 +1382,7 @@ describe("getAgentAccessAll", () => {
         ),
       );
 
-    const result = getAgentAccessAll(resource, {
+    const result = getAgentAccessAll(mockedResource, {
       fetch: mockFetch,
     });
 
@@ -1357,7 +1424,7 @@ describe("getAgentAccessAll", () => {
     };
     const getAgentAccessAllWac = jest.spyOn(wacModule, "getAgentAccessAll");
 
-    await getAgentAccessAll(resource, {
+    await getAgentAccessAll(mockedResource, {
       fetch: mockFetch,
     });
 
@@ -1377,7 +1444,7 @@ describe("getAgentAccessAll", () => {
     );
 
     await expect(
-      getAgentAccessAll(resource, {
+      getAgentAccessAll(mockedResource, {
         fetch: mockFetch,
       }),
     ).resolves.toStrictEqual({});
@@ -1411,7 +1478,7 @@ describe("getAgentAccessAll", () => {
     );
 
     await expect(
-      getAgentAccessAll(resource, {
+      getAgentAccessAll(mockedResource, {
         fetch: mockFetch,
       }),
     ).resolves.toStrictEqual({
@@ -1452,7 +1519,7 @@ describe("getAgentAccessAll", () => {
       ),
     );
 
-    const result = getAgentAccessAll(resource, {
+    const result = getAgentAccessAll(mockedResource, {
       fetch: mockFetch,
     });
 
@@ -1470,7 +1537,7 @@ describe("getAgentAccessAll", () => {
 
 describe("getGroupAccessAll", () => {
   it("uses the default fetcher if none is provided", async () => {
-    await getGroupAccessAll(resource);
+    await getGroupAccessAll(mockedResource);
 
     expect(fetch).toHaveBeenCalledWith(
       "https://some.pod/resource.acl",
@@ -1515,7 +1582,7 @@ describe("getGroupAccessAll", () => {
         ),
       );
 
-    const result = getGroupAccessAll(resource, {
+    const result = getGroupAccessAll(mockedResource, {
       fetch: mockFetch,
     });
 
@@ -1557,7 +1624,7 @@ describe("getGroupAccessAll", () => {
     };
     const getGroupAccessAllWac = jest.spyOn(wacModule, "getGroupAccessAll");
 
-    await getGroupAccessAll(resource, {
+    await getGroupAccessAll(mockedResource, {
       fetch: mockFetch,
     });
 
@@ -1577,7 +1644,7 @@ describe("getGroupAccessAll", () => {
     );
 
     await expect(
-      getGroupAccessAll(resource, {
+      getGroupAccessAll(mockedResource, {
         fetch: mockFetch,
       }),
     ).resolves.toStrictEqual({});
@@ -1615,7 +1682,7 @@ describe("getGroupAccessAll", () => {
     );
 
     await expect(
-      getGroupAccessAll(resource, {
+      getGroupAccessAll(mockedResource, {
         fetch: mockFetch,
       }),
     ).resolves.toStrictEqual({
@@ -1658,7 +1725,7 @@ describe("getGroupAccessAll", () => {
       ),
     );
 
-    const result = getGroupAccessAll(resource, {
+    const result = getGroupAccessAll(mockedResource, {
       fetch: mockFetch,
     });
 
@@ -1676,13 +1743,17 @@ describe("getGroupAccessAll", () => {
 
 describe("setAgentAccess", () => {
   it("calls the included fetcher by default", async () => {
-    await setAgentResourceAccess(resource, "https://some.pod/profile#agent", {
-      read: true,
-      append: undefined,
-      write: undefined,
-      controlRead: undefined,
-      controlWrite: undefined,
-    });
+    await setAgentResourceAccess(
+      mockedResource,
+      "https://some.pod/profile#agent",
+      {
+        read: true,
+        append: undefined,
+        write: undefined,
+        controlRead: undefined,
+        controlWrite: undefined,
+      },
+    );
 
     expect(fetch).toHaveBeenCalledWith(
       "https://some.pod/resource.acl",
@@ -1728,7 +1799,7 @@ describe("setAgentAccess", () => {
       );
 
     const result = setAgentResourceAccess(
-      resource,
+      mockedResource,
       "https://some.pod/profile#agent",
       {
         read: true,
@@ -1796,7 +1867,7 @@ describe("setAgentAccess", () => {
     );
 
     const result = await setAgentResourceAccess(
-      resource,
+      mockedResource,
       "https://some.pod/profile#agent",
       {
         read: true,
@@ -1840,7 +1911,7 @@ describe("setAgentAccess", () => {
     );
 
     const result = await setAgentResourceAccess(
-      resource,
+      mockedResource,
       "https://some.pod/profile#agent",
       {
         append: true,
@@ -1884,7 +1955,7 @@ describe("setAgentAccess", () => {
     );
 
     const result = await setAgentResourceAccess(
-      resource,
+      mockedResource,
       "https://some.pod/profile#agent",
       {
         write: true,
@@ -1928,7 +1999,7 @@ describe("setAgentAccess", () => {
     );
 
     const result = await setAgentResourceAccess(
-      resource,
+      mockedResource,
       "https://some.pod/profile#agent",
       {
         controlRead: true,
@@ -1974,7 +2045,7 @@ describe("setAgentAccess", () => {
     );
 
     const result = await setAgentResourceAccess(
-      resource,
+      mockedResource,
       "https://some.pod/profile#agent",
       {
         read: true,
@@ -2018,7 +2089,7 @@ describe("setAgentAccess", () => {
     );
 
     const result = await setAgentResourceAccess(
-      resource,
+      mockedResource,
       "https://some.pod/profile#agent",
       {
         append: false,
@@ -2063,7 +2134,7 @@ describe("setAgentAccess", () => {
     );
 
     const result = await setAgentResourceAccess(
-      resource,
+      mockedResource,
       "https://some.pod/profile#agent",
       {
         read: true,
@@ -2147,7 +2218,7 @@ describe("setAgentAccess", () => {
       );
 
     const result = await setAgentResourceAccess(
-      resource,
+      mockedResource,
       "https://some.pod/profile#agent",
       {
         append: true,
@@ -2226,7 +2297,7 @@ describe("setAgentAccess", () => {
       );
 
     const result = await setAgentResourceAccess(
-      resource,
+      mockedResource,
       "https://some.pod/profile#agent",
       {
         append: true,
@@ -2273,7 +2344,7 @@ describe("setAgentAccess", () => {
 
     await expect(
       setAgentResourceAccess(
-        resource,
+        mockedResource,
         "https://some.pod/profile#agent",
         {
           controlRead: true,
@@ -2322,7 +2393,7 @@ describe("setAgentAccess", () => {
       );
 
     const result = await setAgentResourceAccess(
-      resource,
+      mockedResource,
       "https://some.pod/profile#agent",
       {
         read: true,
@@ -2363,7 +2434,7 @@ describe("setAgentAccess", () => {
     const saveAclForWac = jest.spyOn(aclModule, "saveAclFor");
 
     await setAgentResourceAccess(
-      resource,
+      mockedResource,
       "https://some.pod/profile#agent",
       {
         read: undefined,
@@ -2383,9 +2454,13 @@ describe("setAgentAccess", () => {
 
 describe("setGroupResourceAccess", () => {
   it("calls the included fetcher by default", async () => {
-    await setGroupResourceAccess(resource, "https://some.pod/groups#group", {
-      read: true,
-    });
+    await setGroupResourceAccess(
+      mockedResource,
+      "https://some.pod/groups#group",
+      {
+        read: true,
+      },
+    );
 
     expect(fetch).toHaveBeenCalledWith(
       "https://some.pod/resource.acl",
@@ -2431,7 +2506,7 @@ describe("setGroupResourceAccess", () => {
       );
 
     const result = setGroupResourceAccess(
-      resource,
+      mockedResource,
       "https://some.pod/groups#group",
       {
         read: true,
@@ -2493,7 +2568,7 @@ describe("setGroupResourceAccess", () => {
     );
 
     const result = await setGroupResourceAccess(
-      resource,
+      mockedResource,
       "https://some.pod/groups#group",
       {
         read: true,
@@ -2539,7 +2614,7 @@ describe("setGroupResourceAccess", () => {
     );
 
     const result = await setGroupResourceAccess(
-      resource,
+      mockedResource,
       "https://some.pod/groups#group",
       {
         append: true,
@@ -2585,7 +2660,7 @@ describe("setGroupResourceAccess", () => {
     );
 
     const result = await setGroupResourceAccess(
-      resource,
+      mockedResource,
       "https://some.pod/groups#group",
       {
         write: true,
@@ -2631,7 +2706,7 @@ describe("setGroupResourceAccess", () => {
     );
 
     const result = await setGroupResourceAccess(
-      resource,
+      mockedResource,
       "https://some.pod/groups#group",
       {
         controlRead: true,
@@ -2679,7 +2754,7 @@ describe("setGroupResourceAccess", () => {
     );
 
     const result = await setGroupResourceAccess(
-      resource,
+      mockedResource,
       "https://some.pod/groups#group",
       {
         read: true,
@@ -2725,7 +2800,7 @@ describe("setGroupResourceAccess", () => {
     );
 
     const result = await setGroupResourceAccess(
-      resource,
+      mockedResource,
       "https://some.pod/groups#group",
       {
         append: false,
@@ -2771,7 +2846,7 @@ describe("setGroupResourceAccess", () => {
     );
 
     const result = await setGroupResourceAccess(
-      resource,
+      mockedResource,
       "https://some.pod/groups#group",
       {
         read: true,
@@ -2857,7 +2932,7 @@ describe("setGroupResourceAccess", () => {
       );
 
     const result = await setGroupResourceAccess(
-      resource,
+      mockedResource,
       "https://some.pod/groups#group",
       {
         append: true,
@@ -2940,7 +3015,7 @@ describe("setGroupResourceAccess", () => {
       );
 
     const result = await setGroupResourceAccess(
-      resource,
+      mockedResource,
       "https://some.pod/groups#group",
       {
         append: true,
@@ -2989,7 +3064,7 @@ describe("setGroupResourceAccess", () => {
 
     await expect(
       setAgentResourceAccess(
-        resource,
+        mockedResource,
         "https://some.pod/groups#group",
         {
           controlRead: true,
@@ -3040,7 +3115,7 @@ describe("setGroupResourceAccess", () => {
       );
 
     const result = await setGroupResourceAccess(
-      resource,
+      mockedResource,
       "https://some.pod/groups#group",
       {
         read: true,
@@ -3081,7 +3156,7 @@ describe("setGroupResourceAccess", () => {
     const saveAclForWac = jest.spyOn(aclModule, "saveAclFor");
 
     await setGroupResourceAccess(
-      resource,
+      mockedResource,
       "https://some.pod/groups#group",
       {
         read: undefined,
@@ -3101,7 +3176,7 @@ describe("setGroupResourceAccess", () => {
 
 describe("setPublicResourceAccess", () => {
   it("calls the included fetcher by default", async () => {
-    await setPublicResourceAccess(resource, {
+    await setPublicResourceAccess(mockedResource, {
       read: true,
     });
 
@@ -3149,7 +3224,7 @@ describe("setPublicResourceAccess", () => {
       );
 
     const result = setPublicResourceAccess(
-      resource,
+      mockedResource,
       {
         read: true,
       },
@@ -3209,7 +3284,7 @@ describe("setPublicResourceAccess", () => {
     );
 
     const result = await setPublicResourceAccess(
-      resource,
+      mockedResource,
       {
         read: true,
       },
@@ -3251,7 +3326,7 @@ describe("setPublicResourceAccess", () => {
     );
 
     const result = await setPublicResourceAccess(
-      resource,
+      mockedResource,
       {
         append: true,
       },
@@ -3293,7 +3368,7 @@ describe("setPublicResourceAccess", () => {
     );
 
     const result = await setPublicResourceAccess(
-      resource,
+      mockedResource,
       {
         write: true,
       },
@@ -3335,7 +3410,7 @@ describe("setPublicResourceAccess", () => {
     );
 
     const result = await setPublicResourceAccess(
-      resource,
+      mockedResource,
       {
         controlRead: true,
         controlWrite: true,
@@ -3378,7 +3453,7 @@ describe("setPublicResourceAccess", () => {
     );
 
     const result = await setPublicResourceAccess(
-      resource,
+      mockedResource,
       {
         read: true,
       },
@@ -3420,7 +3495,7 @@ describe("setPublicResourceAccess", () => {
     );
 
     const result = await setPublicResourceAccess(
-      resource,
+      mockedResource,
       {
         append: false,
       },
@@ -3462,7 +3537,7 @@ describe("setPublicResourceAccess", () => {
     );
 
     const result = await setPublicResourceAccess(
-      resource,
+      mockedResource,
       {
         read: true,
         append: true,
@@ -3544,7 +3619,7 @@ describe("setPublicResourceAccess", () => {
       );
 
     const result = await setPublicResourceAccess(
-      resource,
+      mockedResource,
       {
         append: true,
       },
@@ -3623,7 +3698,7 @@ describe("setPublicResourceAccess", () => {
       );
 
     const result = await setPublicResourceAccess(
-      resource,
+      mockedResource,
       {
         write: true,
       },
@@ -3669,7 +3744,7 @@ describe("setPublicResourceAccess", () => {
 
     await expect(
       setPublicResourceAccess(
-        resource,
+        mockedResource,
         {
           controlRead: true,
           controlWrite: undefined,
@@ -3708,7 +3783,7 @@ describe("setPublicResourceAccess", () => {
     const saveAclForWac = jest.spyOn(aclModule, "saveAclFor");
 
     await setPublicResourceAccess(
-      resource,
+      mockedResource,
       {
         read: undefined,
         append: true,

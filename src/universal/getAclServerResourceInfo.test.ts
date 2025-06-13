@@ -1,4 +1,3 @@
-//
 // Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,8 +22,6 @@ import { jest, describe, it, expect } from "@jest/globals";
 import * as ResourceModule from "../resource/resource";
 import { getAclServerResourceInfo } from "./getAclServerResourceInfo";
 import type { WithServerResourceInfo } from "../interfaces";
-
-const { getResourceInfo } = ResourceModule;
 
 jest.mock("../resource/resource", () => ({
   getResourceInfo: jest.fn(),
@@ -80,6 +77,7 @@ describe("getAclServerResourceInfo", () => {
 
   it("passes the fetch option to fetch the ACL resource info", async () => {
     const mockedFetch = jest.fn<typeof fetch>();
+    const { getResourceInfo } = ResourceModule;
     await getAclServerResourceInfo(
       {
         internal_resourceInfo: mockResourceInfo({

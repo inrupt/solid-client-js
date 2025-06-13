@@ -1,4 +1,3 @@
-//
 // Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -154,10 +153,10 @@ describe("fromRdfJsDataset", () => {
     }
 
     const fcResult = fc.check(
-      fc.property(fcDatasetWithReusedBlankNodes, (dataset) => {
-        const thereAndBackAgain = toRdfJsDataset(fromRdfJsDataset(dataset));
-        expect(thereAndBackAgain.size).toBe(dataset.size);
-        expect(hasMatchingQuads(thereAndBackAgain, dataset)).toBe(true);
+      fc.property(fcDatasetWithReusedBlankNodes, (data) => {
+        const thereAndBackAgain = toRdfJsDataset(fromRdfJsDataset(data));
+        expect(thereAndBackAgain.size).toBe(data.size);
+        expect(hasMatchingQuads(thereAndBackAgain, data)).toBe(true);
       }),
       { numRuns: runs },
     );
@@ -381,9 +380,9 @@ describe("fromRdfJsDataset", () => {
         DF.blankNode("some-blank-node"),
         DF.defaultGraph(),
       );
-      const dataset = addRdfJsQuadToDataset(mockDataset, mockQuad);
+      const data = addRdfJsQuadToDataset(mockDataset, mockQuad);
 
-      expect(dataset).toStrictEqual({
+      expect(data).toStrictEqual({
         type: "Dataset",
         graphs: {
           default: {
@@ -695,10 +694,10 @@ describe("toRdfJsDataset", () => {
     expect.assertions(runs + 2);
 
     const fcResult = fc.check(
-      fc.property(fcDataset, (dataset) => {
+      fc.property(fcDataset, (data) => {
         expect(
-          sortObject(fromRdfJsDataset(toRdfJsDataset(dataset as any))),
-        ).toStrictEqual(sortObject(dataset));
+          sortObject(fromRdfJsDataset(toRdfJsDataset(data as any))),
+        ).toStrictEqual(sortObject(data));
       }),
       { numRuns: runs },
     );

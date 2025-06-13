@@ -1,4 +1,3 @@
-//
 // Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -383,5 +382,4 @@ it("exports preview API's for early adopters", () => {
   expect(responseToResourceInfo).toBeDefined();
 });
 
-// eslint-disable-next-line jest/expect-expect -- no deprecated functions are currently included:
 it("still exports deprecated methods", () => {});

@@ -1,4 +1,3 @@
-//
 // Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -18,8 +17,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// There are multiple classes in this file for legacy reasons.
-/* eslint-disable max-classes-per-file */
+
 import { v4 as uuidv4 } from "uuid";
 import {
   isNamedNode,

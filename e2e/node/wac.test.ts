@@ -1,4 +1,3 @@
-//
 // Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -59,7 +58,6 @@ import {
 const env = getNodeTestingEnvironment();
 const sessionResourcePrefix = "solid-client-tests/node/wac-";
 if (env.features?.WAC === "false" || env.features?.WAC === "") {
-  // eslint-disable-next-line jest/no-focused-tests
   test.only(`Skipping unsupported WAC tests in ${env.environment}`, () => {});
 }
 

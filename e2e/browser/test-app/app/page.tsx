@@ -1,4 +1,3 @@
-//
 // Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,7 +22,7 @@
 
 // Disabling the following prevents from having to install before linting from
 // the root.
-// eslint-disable-next-line import/no-unresolved
+
 import React, { useState, useEffect } from "react";
 import type { ISessionInfo } from "@inrupt/solid-client-authn-browser";
 import {

@@ -2,7 +2,7 @@
 
 This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Deprecation notice]
+## Deprecation notice
 
 The following changes are pending, and will be applied on the next major release:
 
@@ -48,7 +48,7 @@ The following changes are pending, and will be applied on the next major release
   subjects in the Dataset, in particular including those part of a single chain of
   predicates. For instance, given the following dataset:
 
-  ```
+  ```turtle
   @prefix ex: <https://example.org/> .
   @prefix foaf: <http://xmlns.com/foaf/0.1/> .
 
@@ -64,7 +64,7 @@ The following changes are pending, and will be applied on the next major release
   element for the Blank Node. Blank Node identifiers are by definition unstable and shouldn't
   be relied upon beyond local resolution.
 
-## [2.0.1]
+## [2.0.1](https://github.com/inrupt/solid-client-js/releases/tag/v2.0.1)
 
 The following changes have been implemented but not released yet:
 
@@ -72,7 +72,7 @@ The following changes have been implemented but not released yet:
 
 - Normalize input URLs for `getSolidDataset`, `getFile`, `saveSolidDatasetAt`, `overwriteFile`, `createContainerAt`, `deleteSolidDataset`, `deleteFile`, `deleteContainer`, `saveSolidDatasetInContainer`, `createContainerInContainer`, `saveFileInContainer`, `getResourceInfo`: Input URLs are now normalized by collapsing slash sequences (`foo///bar` becomes `foo/bar`), and resolving relative URL segments (`foo/bar/..` becomes `foo/`).
 
-## [2.0.0] - 2023-12-19
+## [2.0.0](https://github.com/inrupt/solid-client-js/releases/tag/v2.0.0) - 2023-12-19
 
 ### Breaking Changes
 
@@ -84,13 +84,13 @@ The following changes have been implemented but not released yet:
   the `Parser` type definition.
 - Remove deprecated ACP APIs; including all APIs for ESS 1.1.
 
-## [1.30.2] - 2023-09-26
+## [1.30.2](https://github.com/inrupt/solid-client-js/releases/tag/v1.30.2) - 2023-09-26
 
 ### Bugfixes
 
 - [1549](https://github.com/inrupt/solid-client-js/issues/1549): The universal API had a bug preventing it from handling correctly resources with a missing ACL. This is now resolved, and it correctly proceeds to creating the target ACL if required.
 
-## [1.30.1] - 2023-09-15
+## [1.30.1](https://github.com/inrupt/solid-client-js/releases/tag/v1.30.1) - 2023-09-15
 
 ### Patch
 
@@ -100,7 +100,7 @@ The following changes have been implemented but not released yet:
   the gap and implementing the missing test.
 - Build system (bundler and TypeScript) updates. This should be transparent to dependants.
 
-## [1.30.0] - 2023-07-30
+## [1.30.0](https://github.com/inrupt/solid-client-js/releases/tag/v1.30.0) - 2023-07-30
 
 ### New features
 
@@ -118,13 +118,13 @@ The following changes have been implemented but not released yet:
   of the `ldp:contains` statements in the container. Resources from a different
   origin are also be excluded by this change.
 
-## [1.29.0] - 2023-05-18
+## [1.29.0](https://github.com/inrupt/solid-client-js/releases/tag/v1.29.0) - 2023-05-18
 
 ### New feature
 
 - Support `File` type from `@types/node` in `overwriteFile` and `saveFileInContainer`.
 
-## [1.28.1] - 2023-05-10
+## [1.28.1](https://github.com/inrupt/solid-client-js/releases/tag/v1.28.1) - 2023-05-10
 
 ### Bugfixes
 
@@ -133,19 +133,19 @@ The following changes have been implemented but not released yet:
   use that in order to be compatible with web buffer types and node
   buffer types.
 
-## [1.28.0] - 2023-05-09
+## [1.28.0](https://github.com/inrupt/solid-client-js/releases/tag/v1.28.0) - 2023-05-09
 
 ### New feature
 
 - Node 20 support
 
-## [1.27.1] - 2023-04-17
+## [1.27.1](https://github.com/inrupt/solid-client-js/releases/tag/v1.27.1) - 2023-04-17
 
 ### Bugfixes
 
 - `universal`: Ignore errors when ACL is not found, so that it can be handled properly for WAC.
 
-## [1.27.0] - 2023-04-14
+## [1.27.0](https://github.com/inrupt/solid-client-js/releases/tag/v1.27.0) - 2023-04-14
 
 ### Documentation
 
@@ -155,7 +155,7 @@ The following changes have been implemented but not released yet:
 
 - Node 18 support
 
-## [1.26.0] - 2023-03-24
+## [1.26.0](https://github.com/inrupt/solid-client-js/releases/tag/v1.26.0) - 2023-03-24
 
 ### New feature
 
@@ -174,7 +174,7 @@ The following changes have been implemented but not released yet:
   data useful for the user to have in order to fix the issue the server describes.
 - Export the `AccessModes` type from the `interfaces` module.
 
-## [1.25.2] - 2023-02-09
+## [1.25.2](https://github.com/inrupt/solid-client-js/releases/tag/v1.25.2) - 2023-02-09
 
 - Moved `@types/rdfjs__dataset` back to dependencies from devDependencies to fix
   the issues with TypeScript and related tooling complaining about missing
@@ -182,7 +182,7 @@ The following changes have been implemented but not released yet:
   We'd initially only thought this issue affected Typedoc, not all TypeScript
   projects.
 
-## [1.25.1] - 2023-02-01
+## [1.25.1](https://github.com/inrupt/solid-client-js/releases/tag/v1.25.1) - 2023-02-01
 
 - Fixed the changelog data structure creation to avoid potential prototype pollution attacks.
 - Fixed the generation of unique identifiers to use UUIDs instead of
@@ -192,7 +192,7 @@ The following changes have been implemented but not released yet:
   of existing IRIs when making modifications, we've a ticket to address this in
   the future).
 
-## [1.25.0] - 2023-01-24
+## [1.25.0](https://github.com/inrupt/solid-client-js/releases/tag/v1.25.0) - 2023-01-24
 
 ### New features
 
@@ -201,21 +201,21 @@ The following changes have been implemented but not released yet:
   the newly set VC access applies not only to the target resource, but to its
   contained resources too.
 
-## [1.24.1] - 2023-01-23
+## [1.24.1](https://github.com/inrupt/solid-client-js/releases/tag/v1.24.1) - 2023-01-23
 
 - Change targeted environment to ES2018
 - Dependency updates
 
-## [1.24.0] - 2022-12-20
+## [1.24.0](https://github.com/inrupt/solid-client-js/releases/tag/v1.24.0) - 2022-12-20
 
 - Added `getWebIdDataset` method to fetch the WebId Profile document as a
   Solid Dataset. This method is part of the `profile/webid` module.
 
-## [1.23.3] - 2022-08-31
+## [1.23.3](https://github.com/inrupt/solid-client-js/releases/tag/v2.1.0) - 2022-08-31
 
 - Export the `WithAcp` and `WithAccessibleAcr` types.
 
-## [1.23.2] - 2022-08-19
+## [1.23.2](https://github.com/inrupt/solid-client-js/releases/tag/v1.23.2) - 2022-08-19
 
 ### Bugfixes
 
@@ -233,7 +233,7 @@ The following changes have been implemented but not released yet:
   large amount of code changes, though everything should appear the same to
   consumers.
 
-## [1.23.1] - 2022-06-01
+## [1.23.1](https://github.com/inrupt/solid-client-js/releases/tag/v1.23.1) - 2022-06-01
 
 ### Bugfixes
 
@@ -245,13 +245,13 @@ The following changes have been implemented but not released yet:
 
 - Support for Node.js v12.x has been dropped as that version has reached end-of-life.
 
-## [1.23.0] - 2022-05-18
+## [1.23.0](https://github.com/inrupt/solid-client-js/releases/tag/v1.23.0) - 2022-05-18
 
 ### Bugfixes
 
 - `getWellKnownSolid` fetches well-known solid from the server's root by default.
 
-## [1.22.0] - 2022-04-26
+## [1.22.0](https://github.com/inrupt/solid-client-js/releases/tag/v1.22.0) - 2022-04-26
 
 ### New features
 
@@ -263,7 +263,7 @@ The following changes have been implemented but not released yet:
 - Removed `getWellKnownSolid` from public documentation, as this method is too
   unstable for end-users of the SDK to be using right now.
 
-## [1.21.0] - 2022-03-22
+## [1.21.0](https://github.com/inrupt/solid-client-js/releases/tag/v1.21.0) - 2022-03-22
 
 ### New features
 
@@ -275,20 +275,20 @@ The following changes have been implemented but not released yet:
 - `getProfileAll` and `getPodUrlAll` no longer make an authenticated request to the
   WebID profile, which should be a public resource in the first place.
 
-## [1.20.2] - 2022-03-18
+## [1.20.2](https://github.com/inrupt/solid-client-js/releases/tag/v1.20.2) - 2022-03-18
 
 ### Bugfixes
 
 - Export the `Actor` type in the `universal_v1` module.
 
-## [1.20.1] - 2022-03-08
+## [1.20.1](https://github.com/inrupt/solid-client-js/releases/tag/v1.20.1) - 2022-03-08
 
 ### Bugfixes
 
 - `getPodUrlAll` no longer throws if the WebID only appears as the object in an
   alternative profile (and not as a subject), which is a valid case.
 
-## [1.20.0] - 2022-02-23
+## [1.20.0](https://github.com/inrupt/solid-client-js/releases/tag/v1.20.0) - 2022-02-23
 
 ### New features
 
@@ -307,7 +307,7 @@ The following changes have been implemented but not released yet:
   out if fetching one or more alternative profiles failed. Note that this also resolves
   this bug in other functions based on this one, such as `getPodUrlAll`.
 
-## [1.19.0] - 2022-02-09
+## [1.19.0](https://github.com/inrupt/solid-client-js/releases/tag/v1.19.0) - 2022-02-09
 
 ### New features
 
@@ -328,7 +328,7 @@ The following changes have been implemented but not released yet:
   serialisation for example and if we come to natural language, the feature might
   be given more attention as a generic markdown serialisation framework.
 
-# [1.18.0] - 2022-01-13
+## [1.18.0](https://github.com/inrupt/solid-client-js/releases/tag/v1.18.0) - 2022-01-13
 
 ### New features
 
@@ -340,7 +340,7 @@ The following changes have been implemented but not released yet:
 - The ACP v4 low-level API is amended so that new policies use the default access controls.
   Implemented `setResourcePolicy` and removed obsolete `setResourceAcrPolicy`.
 
-# [1.17.0] - 2021-11-29
+## [1.17.0](https://github.com/inrupt/solid-client-js/releases/tag/v1.17.0) - 2021-11-29
 
 ### New features
 
@@ -348,11 +348,11 @@ The following changes have been implemented but not released yet:
   set Access Modes for a resource applicable when an Access Grant for the given resource
   is issued.
 
-# [1.16.1] - 2021-11-20
+## [1.16.1](https://github.com/inrupt/solid-client-js/releases/tag/v1.16.1) - 2021-11-20
 
 - The ACP low-level API is amended to align with the latest specification draft.
 
-## [1.16.0] - 2021-11-16
+## [1.16.0](https://github.com/inrupt/solid-client-js/releases/tag/v1.16.0) - 2021-11-16
 
 ### New features
 
@@ -365,7 +365,7 @@ The following changes have been implemented but not released yet:
   when we wish to include meta-data for a new container, things like a textual
   label or comment.
 
-## [1.15.0] - 2021-11-02
+## [1.15.0](https://github.com/inrupt/solid-client-js/releases/tag/v1.15.0) - 2021-11-02
 
 ### New features
 
@@ -379,7 +379,7 @@ The following changes have been implemented but not released yet:
 - In some cases, the ACP functions failed to find the Access Control node within
   an Access Control Resource, leading to policies being unapplied.
 
-## [1.14.0] - 2021-10-15
+## [1.14.0](https://github.com/inrupt/solid-client-js/releases/tag/v1.14.0) - 2021-10-15
 
 ### Bugfixes
 
@@ -392,14 +392,14 @@ The following changes have been implemented but not released yet:
 - `isAcpControlled` is a function verifying whether a given resource is controlled
   using ACP. This is useful for apps not yet migrated to the universal API.
 
-## [1.13.3] - 2021-10-11
+## [1.13.3](https://github.com/inrupt/solid-client-js/releases/tag/v1.13.3) - 2021-10-11
 
 ### Bugfixes
 
 - The discovery of the `.well-known/solid` document failed if the Pod server
   returned a Link to the Pod root missing the trailing slash.
 
-## [1.13.2] - 2021-10-07
+## [1.13.2](https://github.com/inrupt/solid-client-js/releases/tag/v1.13.2) - 2021-10-07
 
 ### Bugfixes
 
@@ -407,14 +407,14 @@ The following changes have been implemented but not released yet:
   error, which prevented some legitimate use cases, e.g. the Pod root discovery from
   a given resource.
 
-## [1.13.1] - 2021-10-04
+## [1.13.1](https://github.com/inrupt/solid-client-js/releases/tag/v1.13.1) - 2021-10-04
 
 ### Bugfix
 
 - The change on `getThingAll` introduced in 1.13.0 was actually breaking for some
   users, so this makes it opt-in rather than default.
 
-## [1.13.0] - 2021-09-30
+## [1.13.0](https://github.com/inrupt/solid-client-js/releases/tag/v1.13.0) - 2021-09-30
 
 ### New features
 
@@ -431,7 +431,7 @@ The following changes have been implemented but not released yet:
   with a blank node as a subject. This prevents some legitimate use cases, such as
   parsing the `.well-known/solid` document (which only contains one blank node).
 
-## [1.12.0] - 2021-09-08
+## [1.12.0](https://github.com/inrupt/solid-client-js/releases/tag/v1.12.0) - 2021-09-08
 
 ### New features
 
@@ -441,7 +441,7 @@ The following changes have been implemented but not released yet:
 - Add `getWellKnownSolid`, to return the contents of the `.well-known/solid`
   endpoint for a given resource url.
 
-## [1.11.1] - 2021-09-02
+## [1.11.1](https://github.com/inrupt/solid-client-js/releases/tag/v1.11.1) - 2021-09-02
 
 ### Bugs fixed
 
@@ -449,7 +449,7 @@ The following changes have been implemented but not released yet:
   called prior. Thanks to a contribution from @AJamesPhillips, this is now fixed.
 - The submodule export for `./access/universal` was broken.
 
-## [1.11.0] - 2021-08-12
+## [1.11.0](https://github.com/inrupt/solid-client-js/releases/tag/v1.11.0) - 2021-08-12
 
 ### New features
 
@@ -475,7 +475,7 @@ The following changes have been implemented but not released yet:
   const bookmark = bookmarkBuilder.build();
   ```
 
-## [1.10.1] - 2021-08-03
+## [1.10.1](https://github.com/inrupt/solid-client-js/releases/tag/v1.10.1) - 2021-08-03
 
 ### Deprecations
 
@@ -494,7 +494,7 @@ The following changes have been implemented but not released yet:
   It will still be unable to report access settings that the current user is not
   allowed to see.
 
-## [1.10.0] - 2021-07-01
+## [1.10.0](https://github.com/inrupt/solid-client-js/releases/tag/v1.10.0) - 2021-07-01
 
 ### New features
 
@@ -522,7 +522,7 @@ The added methods are: `setDate`, `setTime`, `getDate`, `getDateAll`,
   the functions to get data from a Thing (`getInteger`, `getUrl`, etc.) to
   break when used in Node.
 
-## [1.9.0] - 2021-06-15
+## [1.9.0](https://github.com/inrupt/solid-client-js/releases/tag/v1.9.0) - 2021-06-15
 
 ### New features
 
@@ -554,14 +554,14 @@ const newThing = buildThing()
   second argument to `asUrl` in cases where it's required, thereby risking
   runtime errors. In most of these cases, TypeScript should now warn you again.
 
-## [1.8.1] - 2021-05-25
+## [1.8.1](https://github.com/inrupt/solid-client-js/releases/tag/v1.8.1) - 2021-05-25
 
 ### Bugs fixed
 
 - The Universal access API's would sometimes attempt to create Access Policies
   and Rules with invalid URLs, which could be rejected by some Solid servers.
 
-## [1.8.0] - 2021-05-18
+## [1.8.0](https://github.com/inrupt/solid-client-js/releases/tag/v1.8.0) - 2021-05-18
 
 ### Changed
 
@@ -579,7 +579,7 @@ const newThing = buildThing()
   with other tools in the JavaScript ecosystem, easier to debug, and easier to
   serialise.
 
-## [1.7.0] - 2021-05-06
+## [1.7.0](https://github.com/inrupt/solid-client-js/releases/tag/v1.7.0) - 2021-05-06
 
 ### Deprecated
 
@@ -603,7 +603,7 @@ const newThing = buildThing()
 - While the API documentation mentioned an `isThingLocal` function, it could not
   actually be imported from `@inrupt/solid-client`.
 
-## [1.6.1] - 2021-04-01
+## [1.6.1](https://github.com/inrupt/solid-client-js/releases/tag/v1.6.1) - 2021-04-01
 
 ### Bugs fixed
 
@@ -614,7 +614,7 @@ const newThing = buildThing()
   investigate further. For more info, see
   https://github.com/inrupt/solid-client-js/issues/957.
 
-## [1.6.0] - 2021-03-22
+## [1.6.0](https://github.com/inrupt/solid-client-js/releases/tag/v1.6.0) - 2021-03-22
 
 ### New features
 
@@ -622,7 +622,7 @@ const newThing = buildThing()
   directly with Access Control Policies on Pod servers that implement this
   experimental proposal.
 
-## [1.5.0] - 2021-03-08
+## [1.5.0](https://github.com/inrupt/solid-client-js/releases/tag/v1.5.0) - 2021-03-08
 
 ### New features
 
@@ -632,7 +632,7 @@ const newThing = buildThing()
   support the two known access controls for Solid, i.e. Web Access Control and
   Access Control Policies.
 
-## [1.4.0] - 2021-02-19
+## [1.4.0](https://github.com/inrupt/solid-client-js/releases/tag/v1.4.0) - 2021-02-19
 
 ### Bugs fixed
 
@@ -647,7 +647,7 @@ const newThing = buildThing()
 - `setGroupResourceAccess`: A function to set a Group's access modes for a given Resource, in the case this Resource is
   controlled using WAC.
 
-## [1.3.0] - 2021-01-07
+## [1.3.0](https://github.com/inrupt/solid-client-js/releases/tag/v1.3.0) - 2021-01-07
 
 ### New features
 
@@ -664,7 +664,7 @@ const newThing = buildThing()
   the Solid specification says it should do. To avoid this, solid-client now sets the content type
   to `application/octet-stream` by default if no content type is known for the given file.
 
-## [1.2.0] - 2020-12-02
+## [1.2.0](https://github.com/inrupt/solid-client-js/releases/tag/v1.2.0) - 2020-12-02
 
 ### New features
 
@@ -678,7 +678,7 @@ const newThing = buildThing()
 - While the documentation mentioned `hasAcl()`, solid-client did not actually export that function.
 - Dates in between the years 0 and 100 AD were not parsed properly.
 
-## [1.1.0] - 2020-11-16
+## [1.1.0](https://github.com/inrupt/solid-client-js/releases/tag/v1.1.0) - 2020-11-16
 
 ### New features
 
@@ -698,7 +698,7 @@ const newThing = buildThing()
   `error TS2305: Module '"../constants"' has no exported member 'acp'.` This is now fixed, and we
   are working on preventing such errors in the future.
 
-## [1.0.0] - 2020-11-04
+## [1.0.0](https://github.com/inrupt/solid-client-js/releases/tag/v1.0.0) - 2020-11-04
 
 The big v1! There are no major changes in this release, but from now on, when we intend to change
 our publicly-documented non-experimental API's, we will bump up the major version to help you plan
@@ -712,24 +712,24 @@ the impact of the upgrade.
   instead. It will remain possible to pass a `fetch` function generated by solid-auth-client to the
   data fetching functions in solid-client.
 
-## [0.6.4] - 2020-11-03
+## [0.6.4](https://github.com/inrupt/solid-client-js/releases/tag/v0.6.4) - 2020-11-03
 
 ### Bugs fixed
 
 - The compiled code of solid-client was not sent to the correct location, causing imports to fail.
   This bug was introduced in version 0.6.2.
 
-## [0.6.3] - 2020-11-03
+## [0.6.3](https://github.com/inrupt/solid-client-js/releases/tag/v0.6.3) - 2020-11-03
 
 This release contains no public changes.
 
-## [0.6.2] - 2020-10-30
+## [0.6.2](https://github.com/inrupt/solid-client-js/releases/tag/v0.6.2) - 2020-10-30
 
 ### Bugs fixed
 
 - When writing non-RDF data, the request headers were incorrectly set.
 
-## [0.6.1] - 2020-10-15
+## [0.6.1](https://github.com/inrupt/solid-client-js/releases/tag/v0.6.1) - 2020-10-15
 
 ### Bugs fixed
 
@@ -739,7 +739,7 @@ This release contains no public changes.
   will now only attempt to fetch the Fallback ACL if the Resource's own ACL is not available. Hence,
   only at most one of the two will be available at any time.
 
-## [0.6.0] - 2020-10-14
+## [0.6.0](https://github.com/inrupt/solid-client-js/releases/tag/v0.6.0) - 2020-10-14
 
 ### New features
 
@@ -750,14 +750,14 @@ This release contains no public changes.
 - `getPodOwner` and `isPodOwner` allow you to check who owns the Pod that contains a given Resource,
   if supported by the Pod server and exposed to the current user.
 
-## [0.5.1] - 2020-10-13
+## [0.5.1](https://github.com/inrupt/solid-client-js/releases/tag/v0.5.1) - 2020-10-13
 
 ### Bugs fixed
 
 - The type definition of `asUrl` caused the compiler to complain when passing it a Thing of which
   the final URL was either known or not known yet, when using TypeScript.
 
-## [0.5.0] - 2020-09-24
+## [0.5.0](https://github.com/inrupt/solid-client-js/releases/tag/v0.5.0) - 2020-09-24
 
 ### Breaking changes
 
@@ -771,7 +771,7 @@ This release contains no public changes.
   applicable Resource's children _before_ the new ACL was created (i.e. defined in the fallback ACL)
   no longer applied after saving the new one. This is now fixed.
 
-## [0.4.0] - 2020-09-15
+## [0.4.0](https://github.com/inrupt/solid-client-js/releases/tag/v0.4.0) - 2020-09-15
 
 ### Deprecations
 
@@ -794,7 +794,7 @@ This release contains no public changes.
   your own `fetch` function, was not included in our type definitions. This prevented editors from
   autocompleting them, and could cause compilation errors for developers using TypeScript.
 
-## [0.3.0] - 2020-09-03
+## [0.3.0](https://github.com/inrupt/solid-client-js/releases/tag/v0.3.0) - 2020-09-03
 
 ### New features
 
@@ -802,7 +802,7 @@ This release contains no public changes.
   Thing and SolidDataset (with local changes), respectively, and returns a string representation of
   it that can assist in debugging issues.
 
-## [0.2.0] - 2020-08-27
+## [0.2.0](https://github.com/inrupt/solid-client-js/releases/tag/v0.2.0) - 2020-08-27
 
 ### New features
 
@@ -832,7 +832,7 @@ This release contains no public changes.
   XML Schema Datatypes specification: https://www.w3.org/TR/xmlschema-2. solid-client now recognises
   all valid serialisations of all supported data types as defined by that specification.
 
-## [0.1.0] - 2020-08-06
+## [0.1.0](https://github.com/inrupt/solid-client-js/releases/tag/v0.1.0) - 2020-08-06
 
 ### New features
 

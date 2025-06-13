@@ -1,3 +1,5 @@
+# `@inrupt/solid-client` architectural overview
+
 This document describes the general design principles and modules of solid-client,
 to help contributors make sure their and others' work is coherent with what's
 there. It assumes that you are already familiar with the external API and
@@ -13,9 +15,9 @@ It can also be insightful to use `git blame` liberally. We've generally kept
 fairly good Git hygiene, so reading the commit that introduced some code can be
 helpful in understanding how it relates to the rest of the codebase.
 
-# Design principles
+## Design principles
 
-## Avoidance of side effects
+### Avoidance of side effects
 
 Generally, our API's tend to avoid side effects whenever possible. That means
 that we have a number of functions that only perform the side effects we cannot
@@ -32,7 +34,7 @@ support this common use case. (SolidDatasets used to be built on top of
 [RDF/JS Datasets](https://rdf.js.org/dataset-spec/), but we moved away from that
 to avoid its mutability and lack of serialisability because of the above.)
 
-## Lumping ACLs and Resources together
+### Lumping ACLs and Resources together
 
 Linked Resources, such as an Access Control Lists, are currently attached to the
 same object that represents the Resource they are linked to. The reason for this
@@ -57,9 +59,9 @@ Resource itself, but also that in one or more linked Resources.
 This concern was mainly brought up by @pmcb55, so further questions regarding
 this can be directed to him.
 
-# Concepts
+## Concepts
 
-## Resources, Files and SolidDatasets
+### Resources, Files and SolidDatasets
 
 `solid-client` refers to everything that can be fetched from a URL as a Resource.
 There are two types of Resources: those containing RDF in a serialisation that
@@ -82,7 +84,7 @@ XML or OpenDocument) or files containing structured data in an RDF format not re
 by the Solid Protocol (for example RDF/XML) it is up to the server to accept that
 payload and treat it as a binary resource, interpret it as RDF, or reject it.
 
-## `With*` types
+### `With*` types
 
 Although SolidDatasets and Files (see previous section) are different types of
 Resources, there is certain data that is common to all Resources. This data is
@@ -106,9 +108,9 @@ the implementation of these data structures. If developers want to access the
 data contained in them, they should use the functions we provide for them, such
 as `getContentType`. We can, of course, use those internally as well.
 
-# Module map
+## Module map
 
-## `src/resource/*`
+### `src/resource/*`
 
 Everything related to fetching and storing data. `file.ts` has everything
 related to fetching Files, which is mostly a thin wrapper around a regular
@@ -123,18 +125,18 @@ SolidDatasets with the appropriate meta data in their unit tests. This helps
 avoiding developers from attempting to recreate our metadata data structures,
 and then breaking in a non-major version.
 
-## `src/thing/*`
+### `src/thing/*`
 
 Everything related to reading and manipulating data in a SolidDataset.
 
-## `src/formats/*`
+### `src/formats/*`
 
 We currently just support parsing Turtle natively (though developers can pass in
 their own parsers), since the spec mandates that all servers should be able to
 serialise RDF to that, and since we already have a Turtle library to produce
 serialisations for PATCH requests.
 
-## `universalAccess`, `src/acl/*` and `acp_ess_`
+### `universalAccess`, `src/acl/*` and `acp_ess_`
 
 At first, there was one [authorization mechanism in Solid](https://solidproject.org/TR/protocol#authorization):
 Web Access Control ([WAC](https://solidproject.org/TR/wac)). WAC uses the Access
@@ -153,7 +155,7 @@ authorization systems (ACL: `src/acl/*` and ACP: `acp_ess_`). Those lower level
 functions are for the time being still experimental and we don't advise using
 them in production code.
 
-## `e2e/browser` and `e2e/node`
+### `e2e/browser` and `e2e/node`
 
 `solid-client` can run in both Node and in the browser. To ensure that everything
 works as intended, we have a suite of tests that attempts to use its APIs to
@@ -170,7 +172,7 @@ The Node-based end-to-end test suite is the more extensive one. It verifies not
 just that the library works in Node, but also that e.g. manipulating access
 correctly prevents or allows the right people access _in practice_.
 
-# Opportunities for improvement
+## Opportunities for improvement
 
 Given that the code base has existed for more than a day, some parts of the code
 have evolved in a certain way that would have been done differently if they had
@@ -180,7 +182,7 @@ across them and start wondering whether there's a good reason for things to be
 that way. In the spirit of [Chesterton's Fence](https://en.wikipedia.org/wiki/Wikipedia:Chesterton%27s_fence),
 if I tell you why they are the way they are, you can feel safe to change them!
 
-## Using the solid-client-authn-browser default session
+### Using the solid-client-authn-browser default session
 
 Currently, developers wanting to make authenticated requests will have to make
 sure they pass in an authenticated `fetch` function. However, in the browser,
@@ -195,7 +197,7 @@ implemented yet.
 The interaction with bundlers here can be pretty tricky so, when implementing
 this, be sure to test it well.
 
-## The entire low-level Access Control Policies API
+### The entire low-level Access Control Policies API
 
 (i.e. `acp_ess_1` and `acp_ess_2`)
 
@@ -222,27 +224,27 @@ mechanism to attach linked Resources in general. (Keep in mind that that will
 not work for Web Access Control, since that might require fetching a Resource
 linked to a Resource higher up in the Container hierarchy.)
 
-## `WithServerResourceInfo["aclUrl"]`
+### `WithServerResourceInfo["aclUrl"]`
 
 When the `aclUrl` property was added to the `WithServerResourceInfo` interface,
 it was not clear to us that linked resources (i.e. those linked in the HTTP
 Link header) would be a commonly-used mechanism to expose related data.
-We later added the `WithServerResourceInfo["linkedResources"] property, which
+We later added the `WithServerResourceInfo["linkedResources"]` property, which
 _also_ exposes the ACL URL, but didn't bother to update the old code to make
 use of that instead.
 
-## `src/interfaces.ts`
+### `src/interfaces.ts`
 
 The interfaces defined here would probably make more sense defined in the
 relevant modules. It might not even be necessary to add aliases from the old
 module to the new one, as long as TypeScript does not support exports maps
 yet. (Though adding them just to be sure probably isn't a bad idea.)
 
-## ChangeLog
+### ChangeLog
 
 The ChangeLog currently consists of two arrays of RDF/JS Quads. This can be
 problematic since those are instantiated classes, conflicting with e.g. [Vue's
-desire to keep [data] plain](https://vuex.vuejs.org/guide/state.html#single-state-tree)
+desire to keep data plain](https://vuex.vuejs.org/guide/state.html#single-state-tree)
 or [SWR only considering own properties](https://swr.vercel.app/advanced/performance#deep-comparison).
 In practice this is probably not much of a problem, since the ChangeLog is only
 updated when the SolidDataset itself is as well. However, if it turns out
@@ -251,7 +253,7 @@ objects.
 
 Or alternatively...
 
-## PATCH and 412 conflicts
+### PATCH and 412 conflicts
 
 ...it could be considered to remove the ChangeLog functionality altogether. One
 of the most recurring problems people run into is not using the return value
@@ -266,7 +268,7 @@ calling `overwriteFile`. This might more often do what the developer expects,
 at the cost of sending bigger payloads and bigger risk of overwriting data that
 was inserted in parallel on a different device or by a different user.
 
-## `File`
+### `File`
 
 `File` is a bit awkward now for two reasons:
 
@@ -281,7 +283,7 @@ was inserted in parallel on a different device or by a different user.
    This too, is hard to change without being breaking, although of course an
    alias could be added.
 
-## ThingBuilder
+### ThingBuilder
 
 `ThingBuilder` was created after the observation that this was a common pattern:
 
@@ -318,7 +320,7 @@ Given that ThingBuilders are usually limited to a local scope, making it
 stateful could be a nice quality of life improvement, and can be implemented
 without breaking anything.
 
-## `*StringNoLocale`
+### `*StringNoLocale`
 
 It might seem weird that there are `*StringNoLocale` and `*StringWithLocale`
 functions, rather than just `*String` functions with an optional `locale`

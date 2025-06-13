@@ -1,4 +1,3 @@
-//
 // Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -3391,7 +3390,7 @@ describe("getWellKnownSolid", () => {
 
     const wellKnownSolidResponse = await getWellKnownSolid(resourceUrl);
     // skipIf confuses jest
-    // eslint-disable-next-line jest/no-standalone-expect
+
     expect(wellKnownSolidResponse).toMatchSnapshot();
   });
 });

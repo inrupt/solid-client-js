@@ -1,4 +1,3 @@
-//
 // Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,7 +20,6 @@
 
 // Assertions are made conditionally on problem details responses because not all
 // servers support this feature.
-/* eslint-disable jest/no-conditional-expect */
 
 import { File as NodeFile, Blob as NodeBlob } from "buffer";
 import {
@@ -190,9 +188,9 @@ describe("Authenticated end-to-end", () => {
 
     // Eslint isn't detecting the fact that this is inside an it statement
     // because of the conditional.
-    // eslint-disable-next-line jest/no-standalone-expect
+
     expect(isRawData(sessionDataset)).toBe(false);
-    // eslint-disable-next-line jest/no-standalone-expect
+
     expect(isRawData(sessionFile)).toBe(true);
 
     await deleteFile(fileUrl, fetchOptions);
@@ -213,9 +211,9 @@ describe("Authenticated end-to-end", () => {
 
     // Eslint isn't detecting the fact that this is inside an it statement
     // because of the conditional.
-    // eslint-disable-next-line jest/no-standalone-expect
+
     expect(isRawData(sessionDataset)).toBe(false);
-    // eslint-disable-next-line jest/no-standalone-expect
+
     expect(isRawData(sessionFile)).toBe(true);
 
     await deleteFile(fileUrl, fetchOptions);
@@ -236,9 +234,9 @@ describe("Authenticated end-to-end", () => {
 
     // Eslint isn't detecting the fact that this is inside an it statement
     // because of the conditional.
-    // eslint-disable-next-line jest/no-standalone-expect
+
     expect(isRawData(sessionDataset)).toBe(false);
-    // eslint-disable-next-line jest/no-standalone-expect
+
     expect(isRawData(sessionFile)).toBe(true);
 
     await deleteFile(fileUrl, fetchOptions);

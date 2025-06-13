@@ -1,4 +1,3 @@
-//
 // Copyright Inrupt Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -868,7 +867,7 @@ describe("asIri", () => {
   // and is therefore indistinguishable from a `ThingPersisted`. Not sure what the solution is yet.
   // Meanwhile TS users won't get a build-time error if they're passing a plain `Thing`,
   // which is annoying but not a major issue.
-  // eslint-disable-next-line jest/no-disabled-tests
+
   it.skip("triggers a TypeScript error when passed a Thing without a base IRI", () => {
     const plainThing = createThing() as Thing;
 

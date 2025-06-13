@@ -18,29 +18,53 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
-import type { ThingPersisted } from "../..";
-import { createThing, getThing } from "../..";
-import type { WithAccessibleAcr } from "../acp";
-import { internal_getAcr as getAccessControlResource } from "../control.internal";
-import type { DefaultAccessControlName } from "./getDefaultAccessControlUrl";
-import { getDefaultAccessControlUrl } from "./getDefaultAccessControlUrl";
+import inruptCfg, { ignoreTypedLinting } from "@inrupt/eslint-config-base";
+import next from "@next/eslint-plugin-next";
 
-/** @hidden */
-export function getDefaultAccessControlThing(
-  resource: WithAccessibleAcr,
-  name: DefaultAccessControlName,
-): ThingPersisted {
-  const acr = getAccessControlResource(resource);
-  const defaultAccessControlUrl = getDefaultAccessControlUrl(resource, name);
+import { defineConfig } from "eslint/config";
 
-  const accessControlThing = getThing(acr, defaultAccessControlUrl);
+ignoreTypedLinting([
+  "**/tests.internal.ts",
+  "playwright.config.ts",
+  "jest.config.ts",
+]);
 
-  if (
-    accessControlThing === null ||
-    typeof accessControlThing === "undefined"
-  ) {
-    return createThing({ url: defaultAccessControlUrl });
-  }
-
-  return accessControlThing;
-}
+export default defineConfig([
+  inruptCfg,
+  {
+    plugins: {
+      "@next/next": next,
+    },
+    rules: {
+      ...next.configs.recommended.rules,
+      ...next.configs["core-web-vitals"].rules,
+    },
+    files: ["e2e/browser/test-app/"],
+  },
+  {
+    rules: {
+      camelcase: [
+        "error",
+        {
+          allow: [
+            "^internal_",
+            "^acp_ess_",
+            "^acp_v*",
+            "^access_v*",
+            "^Quad_*",
+            "^reexport_*",
+            "^latest_*",
+            "^legacy_*",
+          ],
+        },
+      ],
+      "no-param-reassign": "warn",
+    },
+  },
+  {
+    rules: {
+      "import/no-unresolved": "off",
+    },
+    files: ["**/e2e/browser/test-app/**"],
+  },
+]);
