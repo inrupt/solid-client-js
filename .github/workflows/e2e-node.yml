@@ -20,7 +20,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         node-version: [22.x, 20.x]
-        environment-name: ["ESS PodSpaces", "ESS Release-2-3", "ESS Dev-2-4"]
+        environment-name: ["ESS PodSpaces", "ESS Release-2-3", "ESS Next"]
         experimental: [false]
     steps:
       - uses: actions/checkout@v4
