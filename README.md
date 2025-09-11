@@ -103,7 +103,7 @@ and `String.prototype.endsWith`.
 ### Node.js Support
 
 See [Inrupt Solid Javascript Client
-Libraries](https://docs.inrupt.com/developer-tools/javascript/client-libraries/#node-js-support).
+Libraries](https://docs.inrupt.com/sdk/javascript-sdk#node.js-support).
 
 ## Installation
 
@@ -137,7 +137,7 @@ forum is a good place to meet the rest of the community.
 ### Documentation
 
 - [Inrupt Solid Javascript Client
-  Libraries](https://docs.inrupt.com/developer-tools/javascript/client-libraries/)
+  Libraries](https://docs.inrupt.com/sdk/javascript-sdk)
 - [Homepage](https://docs.inrupt.com/)
 
 ## Changelog
