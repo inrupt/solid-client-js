@@ -22,7 +22,7 @@ designed to support developers building Solid applications.
 
 ### Data access and permissions management - solid-client
 
-[@inrupt/solid-client](https://docs.inrupt.com/sdk/javascript-sdk)
+[@inrupt/solid-client](https://www.npmjs.com/package/@inrupt/solid-client)
 allows developers to access data and manage permissions on data stored in Solid
 Pods.
 
