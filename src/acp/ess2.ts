@@ -33,7 +33,7 @@
  * them will be included in your bundle.
  *
  * For more information see: [Tutorial: Managing
- * Access](https://docs.inrupt.com/developer-tools/javascript/client-libraries/tutorial/manage-access/)
+ * Access](https://docs.inrupt.com/sdk/javascript-sdktutorial/manage-access/)
  * :::
  *
  * This module supports Inrupt's ESS 2.0 ACP implementation.

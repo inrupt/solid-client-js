@@ -70,7 +70,7 @@ function containsReserved(header: Record<string, string>): boolean {
  * ```
  *
  * For additional examples, see
- * [Read/Write Files](https://docs.inrupt.com/developer-tools/javascript/client-libraries/tutorial/read-write-files/#retrieve-a-file).
+ * [Read/Write Files](https://docs.inrupt.com/sdk/javascript-sdktutorial/read-write-files/#retrieve-a-file).
  *
  * @param fileUrl The URL of the file to return
  * @param options Fetching options: a custom fetcher and/or headers.
@@ -119,7 +119,7 @@ export async function getFile(
  * ```
  *
  * For additional examples, see
- * [Read/Write Files](https://docs.inrupt.com/developer-tools/javascript/client-libraries/tutorial/read-write-files/#delete-a-file).
+ * [Read/Write Files](https://docs.inrupt.com/sdk/javascript-sdktutorial/read-write-files/#delete-a-file).
  *
  * @param file The URL of the file to delete or the file itself (if it has ResourceInfo).
  */
@@ -176,7 +176,7 @@ type SaveFileOptions = WriteFileOptions & {
  * ```
  *
  * For additional example, see
- * [Read/Write Files](https://docs.inrupt.com/developer-tools/javascript/client-libraries/tutorial/read-write-files/#save-a-file-into-an-existing-container).
+ * [Read/Write Files](https://docs.inrupt.com/sdk/javascript-sdktutorial/read-write-files/#save-a-file-into-an-existing-container).
  *
  * In the `options` parameter,
  *
@@ -285,7 +285,7 @@ export type WriteFileOptions = GetFileOptions & {
  * ```
  *
  * For additional example, see
- * [Read/Write Files](https://docs.inrupt.com/developer-tools/javascript/client-libraries/tutorial/read-write-files/#write-a-file-to-a-specific-url).
+ * [Read/Write Files](https://docs.inrupt.com/sdk/javascript-sdktutorial/read-write-files/#write-a-file-to-a-specific-url).
  *
  * *Recommended:* In the `options` parameter, you can specify the
  * [media type](https://developer.mozilla.org/en-US/docs/Glossary/MIME_type)

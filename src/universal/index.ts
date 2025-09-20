@@ -34,7 +34,7 @@
  * applications.
  *
  * For more information see: [Tutorial: Managing
- * Access](https://docs.inrupt.com/developer-tools/javascript/client-libraries/tutorial/manage-access/)
+ * Access](https://docs.inrupt.com/sdk/javascript-sdktutorial/manage-access/)
  * :::
  *
  * This module can be imported as an object from the main package, which results

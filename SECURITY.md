@@ -13,7 +13,7 @@ the browser](https://www.npmjs.com/package/@inrupt/solid-client-authn-browser).
 The security policy for these libraries is available in the associated [GitHub repository](https://github.com/inrupt/solid-client-authn-js/blob/main/SECURITY.md).
 
 This library also exposes functions to modify data access permissions. We
-strive to make the API and [documentation](https://docs.inrupt.com/developer-tools/javascript/client-libraries/tutorial/manage-access/)
+strive to make the API and [documentation](https://docs.inrupt.com/sdk/javascript-sdktutorial/manage-access/)
 as clear and intuitive as possible, because misuse of these functions may result
 in exposing data beyond what is intended. Please do open an
 [issue](https://github.com/inrupt/solid-client-js/issues) if you face difficulties
