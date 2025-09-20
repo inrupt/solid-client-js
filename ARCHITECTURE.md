@@ -7,9 +7,9 @@ general concepts in solid-client; documentation about those can be found at the
 following Resources:
 
 - General documentation:
-  https://docs.inrupt.com/developer-tools/javascript/client-libraries/using-libraries/
+  https://docs.inrupt.com/sdk/javascript-sdkusing-libraries/
 - Glossary:
-  https://docs.inrupt.com/developer-tools/javascript/client-libraries/reference/glossary/
+  https://docs.inrupt.com/sdk/javascript-sdkreference/glossary/
 
 It can also be insightful to use `git blame` liberally. We've generally kept
 fairly good Git hygiene, so reading the commit that introduced some code can be
