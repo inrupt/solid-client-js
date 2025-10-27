@@ -30,7 +30,7 @@ jobs:
       - run: npm run test:unit:node
       - run: npm run test:webpack
       # Upload coverage for sonar (only matching OS and one node version required)
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: ${{ matrix.os == 'ubuntu-latest' && matrix.node-version == '22.x' }}
         with:
           name: code-coverage-${{matrix.os}}-${{matrix.node-version}}
