@@ -5,6 +5,11 @@ on:
     tags:
       - v[0-9]+.[0-9]+.[0-9]+
 
+# Getting an ID token is required for NPMJS trusted publishers
+permissions:
+  id-token: write  # Required for OIDC
+  contents: read
+
 env:
   CI: true
 jobs:
@@ -18,8 +23,7 @@ jobs:
           node-version-file: ".nvmrc"
           registry-url: "https://registry.npmjs.org"
           cache: "npm"
-
+      # Ensure npm 11.5.1 or later for trusted publishing
+      - run: npm install -g npm@latest
       - run: npm ci
-      - run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.INRUPT_NPM_TOKEN }}
+      - run: npm publish
