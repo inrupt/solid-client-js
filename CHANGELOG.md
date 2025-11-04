@@ -8,6 +8,8 @@ The following changes are pending, and will be applied on the next major release
 
 ## Unreleased changes
 
+## [3.0.0](https://github.com/inrupt/solid-client-js/releases/tag/v3.0.0) - 2025-11-03
+
 ### Breaking Changes
 
 - Support for Node.js v18.x has been dropped as that version has reached end-of-life.
