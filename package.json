@@ -197,7 +197,7 @@
     "webpack-cli": "^6.0.1"
   },
   "dependencies": {
-    "@inrupt/solid-client-errors": "^0.0.2",
+    "@inrupt/solid-client-errors": "^0.0.3",
     "@rdfjs/dataset": "^1.1.1",
     "buffer": "^6.0.3",
     "http-link-header": "^1.1.1",
