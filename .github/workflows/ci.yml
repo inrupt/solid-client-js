@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        node-version: ["22.x", "20.x"]
+        node-version: ["20.x", "22.x", "24.x"]
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -31,7 +31,7 @@ jobs:
       - run: npm run test:webpack
       # Upload coverage for sonar (only matching OS and one node version required)
       - uses: actions/upload-artifact@v5
-        if: ${{ matrix.os == 'ubuntu-latest' && matrix.node-version == '22.x' }}
+        if: ${{ matrix.os == 'ubuntu-latest' && matrix.node-version == '24.x' }}
         with:
           name: code-coverage-${{matrix.os}}-${{matrix.node-version}}
           path: coverage/
@@ -48,7 +48,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/download-artifact@v6
         with:
-          name: code-coverage-ubuntu-latest-22.x
+          name: code-coverage-ubuntu-latest-24.x
           path: coverage/
       - uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602 # v5
         env:

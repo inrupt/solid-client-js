@@ -207,7 +207,7 @@
     "uuid": "^11.0.1"
   },
   "engines": {
-    "node": "^20.0.0 || ^22.0.0"
+    "node": "^20.0.0 || ^22.0.0 || ^24.0.0"
   },
   "optionalDependencies": {
     "fsevents": "^2.3.3"
