@@ -61,6 +61,11 @@ import { isAcr } from "../acp/acp.internal";
  * This (currently internal) function fetches the ACL indicated in the [[WithServerResourceInfo]]
  * attached to a resource.
  *
+ * The resource ACL and the fallback ACL are fetched **in parallel** to reduce
+ * latency, especially when HTTP/2 multiplexing is in use. If the resource has
+ * its own ACL, the fallback result is discarded. Errors from the speculative
+ * fallback fetch are silently caught so they do not affect the happy path.
+ *
  * @internal
  * @param resourceInfo The Resource info with the ACL URL
  * @param options Optional parameter `options.fetch`: An alternative `fetch` function to make the HTTP request, compatible with the browser-native [fetch API](https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Parameters).
@@ -76,15 +81,21 @@ export async function internal_fetchAcl(
     };
   }
   try {
-    const resourceAcl = await internal_fetchResourceAcl(resourceInfo, options);
+    // Fetch resource ACL and fallback ACL in parallel. If the resource has its
+    // own ACL the fallback result is discarded. This trades a potentially
+    // unnecessary fallback fetch for eliminating a serial round-trip, which is
+    // especially beneficial with HTTP/2 multiplexing.
+    // The fallback is wrapped in a catch so that a failing speculative fetch
+    // does not break the happy path when the resource ACL exists.
+    const [resourceAcl, fallbackAcl] = await Promise.all([
+      internal_fetchResourceAcl(resourceInfo, options),
+      internal_fetchFallbackAcl(resourceInfo, options).catch(() => null),
+    ]);
 
     const acl =
-      resourceAcl === null
-        ? {
-            resourceAcl: null,
-            fallbackAcl: await internal_fetchFallbackAcl(resourceInfo, options),
-          }
-        : { resourceAcl, fallbackAcl: null };
+      resourceAcl !== null
+        ? { resourceAcl, fallbackAcl: null }
+        : { resourceAcl: null, fallbackAcl };
 
     return acl;
   } catch (e: unknown) {
