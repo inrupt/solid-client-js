@@ -712,9 +712,12 @@ describe("getSolidDatasetWithAcl", () => {
         .sourceIri,
     ).toBe("https://some.pod/resource.acl");
     expect(fetchedSolidDataset.internal_acl?.fallbackAcl).toBeNull();
-    expect(mockFetch.mock.calls).toHaveLength(2);
-    expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
-    expect(mockFetch.mock.calls[1][0]).toBe("https://some.pod/resource.acl");
+    // The resource ACL and fallback ACL are fetched in parallel, so more than
+    // 2 calls may be made, but the resource and its ACL are always fetched.
+    expect(mockFetch.mock.calls.length).toBeGreaterThanOrEqual(2);
+    const calledUrls = mockFetch.mock.calls.map((c) => c[0]);
+    expect(calledUrls).toContain("https://some.pod/resource");
+    expect(calledUrls).toContain("https://some.pod/resource.acl");
   });
 
   it("returns the Resource's Container's ACL if its own ACL is not available", async () => {
@@ -929,9 +932,12 @@ describe("getFileWithAcl", () => {
         .sourceIri,
     ).toBe("https://some.pod/resource.acl");
     expect(fetchedSolidDataset.internal_acl?.fallbackAcl).toBeNull();
-    expect(mockFetch.mock.calls).toHaveLength(2);
-    expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
-    expect(mockFetch.mock.calls[1][0]).toBe("https://some.pod/resource.acl");
+    // The resource ACL and fallback ACL are fetched in parallel, so more than
+    // 2 calls may be made, but the resource and its ACL are always fetched.
+    expect(mockFetch.mock.calls.length).toBeGreaterThanOrEqual(2);
+    const calledUrls = mockFetch.mock.calls.map((c) => c[0]);
+    expect(calledUrls).toContain("https://some.pod/resource");
+    expect(calledUrls).toContain("https://some.pod/resource.acl");
   });
 
   it("returns the Resource's Container's ACL if its own ACL is not available", async () => {
@@ -1113,9 +1119,12 @@ describe("getResourceInfoWithAcl", () => {
         .sourceIri,
     ).toBe("https://some.pod/resource.acl");
     expect(fetchedSolidDataset.internal_acl?.fallbackAcl).toBeNull();
-    expect(mockFetch.mock.calls).toHaveLength(2);
-    expect(mockFetch.mock.calls[0][0]).toBe("https://some.pod/resource");
-    expect(mockFetch.mock.calls[1][0]).toBe("https://some.pod/resource.acl");
+    // The resource ACL and fallback ACL are fetched in parallel, so more than
+    // 2 calls may be made, but the resource and its ACL are always fetched.
+    expect(mockFetch.mock.calls.length).toBeGreaterThanOrEqual(2);
+    const calledUrls = mockFetch.mock.calls.map((c) => c[0]);
+    expect(calledUrls).toContain("https://some.pod/resource");
+    expect(calledUrls).toContain("https://some.pod/resource.acl");
   });
 
   it("returns the Resource's Container's ACL if its own ACL is not available", async () => {

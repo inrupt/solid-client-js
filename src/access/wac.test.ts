@@ -2294,6 +2294,16 @@ describe("setAgentAccess", () => {
           },
           "https://some.pod/.acl",
         ),
+      )
+      // Save the ACL
+      .mockResolvedValueOnce(
+        mockResponse(
+          "",
+          {
+            status: 201,
+          },
+          "https://some.pod/resource.acl",
+        ),
       );
 
     const result = await setAgentResourceAccess(
@@ -3012,6 +3022,16 @@ describe("setGroupResourceAccess", () => {
           },
           "https://some.pod/.acl",
         ),
+      )
+      // Save the ACL
+      .mockResolvedValueOnce(
+        mockResponse(
+          "",
+          {
+            status: 201,
+          },
+          "https://some.pod/resource.acl",
+        ),
       );
 
     const result = await setGroupResourceAccess(
@@ -3694,6 +3714,16 @@ describe("setPublicResourceAccess", () => {
             headers: { "Content-Type": "text/turtle" },
           },
           "https://some.pod/.acl",
+        ),
+      )
+      // Save the ACL
+      .mockResolvedValueOnce(
+        mockResponse(
+          "",
+          {
+            status: 201,
+          },
+          "https://some.pod/resource.acl",
         ),
       );
 
