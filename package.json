@@ -204,7 +204,7 @@
     "jsonld-context-parser": "^3.0.0",
     "jsonld-streaming-parser": "^5.0.0",
     "n3": "^1.17.2",
-    "uuid": "^11.0.1"
+    "uuid": "^13.0.0"
   },
   "engines": {
     "node": "^20.0.0 || ^22.0.0 || ^24.0.0"
