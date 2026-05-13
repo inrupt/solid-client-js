@@ -19,9 +19,7 @@
 //
 
 import type { Config } from "jest";
-import {
-  createDefaultPreset
-} from "ts-jest";
+import { createDefaultPreset } from "ts-jest";
 
 type ArrayElement<MyArray> = MyArray extends Array<infer T> ? T : never;
 
