@@ -184,6 +184,7 @@
     "@types/rdfjs__dataset": "^1.0.5",
     "@types/uuid": "^10.0.0",
     "eslint": "^9.28.0",
+    "eslint-config-prettier": "^10.1.8",
     "fast-check": "^4.0.1",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^30.0.5",
