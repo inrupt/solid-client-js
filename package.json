@@ -191,6 +191,7 @@
     "rdf-namespaces": "^1.12.0",
     "rollup": "^4.9.1",
     "ts-jest": "^29.1.1",
+    "ts-node": "^10.9.2",
     "typedoc": "^0.28.0",
     "typescript": "^5.3.3",
     "webpack": "^5.89.0",
