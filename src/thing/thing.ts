@@ -18,6 +18,8 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 
+// The following module is present but ESM-only, which seems to confuse ESLint.
+// eslint-disable-next-line import/no-unresolved
 import { v4 as uuidv4 } from "uuid";
 import {
   isNamedNode,
