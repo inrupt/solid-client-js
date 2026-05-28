@@ -33,7 +33,6 @@ import {
 } from "@inrupt/solid-client-authn-browser";
 import SolidClient from "../components/solidClient";
 
-const REDIRECT_URL = window.location.href;
 const APP_NAME = "Solid client browser-based tests app";
 const DEFAULT_ISSUER = "https://login.inrupt.com/";
 
@@ -50,7 +49,7 @@ export default function AppContainer() {
       // Login will redirect the user away so that they can log in the OIDC issuer,
       // and back to the provided redirect URL (which should be controlled by your app).
       await login({
-        redirectUrl: REDIRECT_URL,
+        redirectUrl: window.location.href,
         oidcIssuer: issuer,
         clientName: APP_NAME,
       });
