@@ -28,7 +28,6 @@ import {
   jest,
 } from "@jest/globals";
 
-import type { Session } from "@inrupt/solid-client-authn-node";
 import {
   getNodeTestingEnvironment,
   getPodRoot,
@@ -93,7 +92,7 @@ if (
   describe.each(metadataHeaders)(
     "End-to-end application-defined request metadata: %s",
     (returnedHeaders: Record<string, string>) => {
-      let session: Session;
+      let session: Awaited<ReturnType<typeof getAuthenticatedSession>>;
       let pod: string;
       let profileUrl: string;
 
