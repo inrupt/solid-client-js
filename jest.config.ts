@@ -34,12 +34,17 @@ const baseConfig: ArrayElement<NonNullable<Config["projects"]>> = {
   transform: {
     ...defaultPreset.transform,
     // [\\\\/] expands to [\\/], which makes the regex Windows-compatible.
-    "node_modules[\\\\/]uuid.+\\.js$": [
+    // jose v6 ships as ESM only, and may be nested in a dependency's own
+    // node_modules (e.g. @inrupt/internal-test-env), so match it anywhere.
+    "node_modules[\\\\/](uuid|.*jose).+\\.js$": [
       "ts-jest",
       { tsconfig: { allowJs: true } },
     ],
   },
-  transformIgnorePatterns: ["node_modules[\\\\/](?!uuid)"],
+  // Ignore everything under node_modules except uuid and jose (the latter
+  // possibly nested in another package's node_modules), which ship ESM that
+  // must be transpiled before Jest can parse it.
+  transformIgnorePatterns: ["node_modules[\\\\/](?!(.*[\\\\/])?(uuid|jose)[\\\\/])"],
 };
 
 export default {
