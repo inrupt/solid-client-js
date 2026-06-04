@@ -31,8 +31,6 @@ import {
   it,
 } from "@jest/globals";
 
-import type { Session } from "@inrupt/solid-client-authn-node";
-
 import {
   getNodeTestingEnvironment,
   setupTestResources,
@@ -71,7 +69,7 @@ const TEST_SLUG = "solid-client-test-e2e-resource";
 
 describe("Authenticated end-to-end", () => {
   let fetchOptions: { fetch: typeof fetch };
-  let session: Session;
+  let session: Awaited<ReturnType<typeof getAuthenticatedSession>>;
   let sessionContainer: string;
   let sessionResource: string;
   let pod: string;
