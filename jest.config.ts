@@ -44,7 +44,9 @@ const baseConfig: ArrayElement<NonNullable<Config["projects"]>> = {
   // Ignore everything under node_modules except uuid and jose (the latter
   // possibly nested in another package's node_modules), which ship ESM that
   // must be transpiled before Jest can parse it.
-  transformIgnorePatterns: ["node_modules[\\\\/](?!(.*[\\\\/])?(uuid|jose)[\\\\/])"],
+  transformIgnorePatterns: [
+    "node_modules[\\\\/](?!(.*[\\\\/])?(uuid|jose)[\\\\/])",
+  ],
 };
 
 export default {
