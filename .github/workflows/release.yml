@@ -26,4 +26,5 @@ jobs:
       # Ensure npm 11.5.1 or later for trusted publishing
       - run: npm install -g npm@latest
       - run: npm ci
-      - run: npm publish
+      - run: npm stage publish
+      - run: echo "The package has been staged, go to https://www.npmjs.com to publish it."
