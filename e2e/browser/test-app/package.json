@@ -10,13 +10,13 @@
   },
   "dependencies": {
     "@inrupt/solid-client": "file:../../../",
-    "@inrupt/solid-client-authn-browser": "^4.0.0",
-    "next": "^16.2.6",
-    "react": "^19.2.6"
+    "@inrupt/solid-client-authn-browser": "^5.0.0",
+    "next": "^16.2.9",
+    "react": "^19.2.7"
   },
   "devDependencies": {
-    "@types/node": "^25.9.1",
-    "@types/react": "^19.2.15",
+    "@types/node": "^25.9.3",
+    "@types/react": "^19.2.17",
     "typescript": "^4.7.4"
   }
 }
