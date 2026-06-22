@@ -10,13 +10,17 @@ jobs:
   e2e-browser:
     # Ensure we timeout reasonably quickly:
     timeout-minutes: 30
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
+    # Use the official Playwright image so the browsers and their system
+    # dependencies are pre-installed, avoiding the slow (and flaky) timeouts of
+    # `npx playwright install --with-deps`. The tag must be kept in sync with the
+    # @playwright/test version in package.json.
+    container:
+      image: mcr.microsoft.com/playwright:v1.56.1-noble
     environment:
       name: ${{ matrix.environment-name }}
     strategy:
       matrix:
-        # Available OS's: https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
-        os: [ubuntu-latest, windows-latest]
         environment-name: ["ESS PodSpaces"]
     steps:
       - uses: actions/checkout@v7
@@ -27,7 +31,6 @@ jobs:
           cache-dependency-path: "**/package-lock.json"
       # install
       - run: npm ci --ignore-scripts
-      - run: npx playwright install --with-deps
       # build
       - run: npm run build
       # setup
