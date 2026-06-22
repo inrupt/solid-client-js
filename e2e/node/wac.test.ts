@@ -27,7 +27,6 @@ import {
   test,
 } from "@jest/globals";
 
-import type { Session } from "@inrupt/solid-client-authn-node";
 import {
   getNodeTestingEnvironment,
   getPodRoot,
@@ -63,7 +62,7 @@ if (env.features?.WAC === "false" || env.features?.WAC === "") {
 
 describe("Authenticated end-to-end WAC", () => {
   let options: { fetch: typeof global.fetch };
-  let session: Session;
+  let session: Awaited<ReturnType<typeof getAuthenticatedSession>>;
   let sessionResource: string;
   let pod: string;
 
