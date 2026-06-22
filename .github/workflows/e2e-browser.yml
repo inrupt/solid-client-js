@@ -17,6 +17,11 @@ jobs:
     # @playwright/test version in package.json.
     container:
       image: mcr.microsoft.com/playwright:v1.56.1-noble
+    # GitHub Actions overrides $HOME inside containers, but the Playwright image
+    # runs as root. Firefox refuses to launch unless $HOME is owned by the
+    # current user, so pin it back to /root.
+    env:
+      HOME: /root
     environment:
       name: ${{ matrix.environment-name }}
     strategy:
