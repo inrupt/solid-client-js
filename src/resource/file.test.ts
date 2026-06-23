@@ -562,7 +562,7 @@ describe("Write non-RDF data into a folder", () => {
       expect(fetch).toHaveBeenCalledWith("https://example.org/container/", {
         headers: {
           "Content-Type": "binary",
-          Slug: type === "file" ? "myFile.txt" : undefined,
+          ...(type === "file" ? { Slug: "myFile.txt" } : {}),
         },
         method: "POST",
         body: data,
@@ -594,7 +594,7 @@ describe("Write non-RDF data into a folder", () => {
       expect(mockFetch).toHaveBeenCalledWith("https://example.org/container/", {
         headers: {
           "Content-Type": "binary",
-          Slug: type === "file" ? "myFile.txt" : undefined,
+          ...(type === "file" ? { Slug: "myFile.txt" } : {}),
         },
         method: "POST",
         body: data,
@@ -826,7 +826,7 @@ describe("Write non-RDF data directly into a resource (potentially erasing previ
       expect(fetch).toHaveBeenCalledWith("https://example.org/resource", {
         headers: {
           "Content-Type": "binary",
-          Slug: type === "file" ? "myFile.txt" : undefined,
+          ...(type === "file" ? { Slug: "myFile.txt" } : {}),
         },
         method: "PUT",
         body: data,

@@ -32,7 +32,7 @@ describe("getResourceAcr", () => {
     (getAcrUrl as jest.Mocked<typeof getAcrUrl>).mockResolvedValueOnce(null);
     const x = await getResourceAcr({} as any);
     expect(getAcrUrl).toHaveBeenCalledTimes(1);
-    expect(getAcrUrl).toHaveBeenCalledWith({}, undefined);
+    expect(getAcrUrl).toHaveBeenCalledWith({} as any, undefined);
     expect(x).toBeNull();
   });
 
@@ -42,7 +42,7 @@ describe("getResourceAcr", () => {
     ).mockRejectedValueOnce("reject");
     const x = await getResourceAcr({} as any);
     expect(getAcrUrl).toHaveBeenCalledTimes(1);
-    expect(getAcrUrl).toHaveBeenCalledWith({}, undefined);
+    expect(getAcrUrl).toHaveBeenCalledWith({} as any, undefined);
     expect(getSolidDataset).toHaveBeenCalledTimes(1);
     expect(x).toBeNull();
   });
@@ -50,7 +50,7 @@ describe("getResourceAcr", () => {
   it("returns the resource with ACR", async () => {
     await getResourceAcr({} as any);
     expect(getAcrUrl).toHaveBeenCalledTimes(1);
-    expect(getAcrUrl).toHaveBeenCalledWith({}, undefined);
+    expect(getAcrUrl).toHaveBeenCalledWith({} as any, undefined);
     expect(getSolidDataset).toHaveBeenCalledTimes(1);
     // FIXME this tests too much internals
   });
