@@ -2380,7 +2380,6 @@ describe("createContainerInContainer", () => {
       headers: {
         "Content-Type": "text/turtle",
         Link: '<http://www.w3.org/ns/ldp#BasicContainer>; rel="type"',
-        slug: undefined,
       },
     });
   });
