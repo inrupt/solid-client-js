@@ -23,8 +23,9 @@ jobs:
           node-version-file: ".nvmrc"
           registry-url: "https://registry.npmjs.org"
           cache: "npm"
-      # Ensure npm 11.5.1 or later for trusted publishing
+      # Ensure npm 11.15.0 or later for staged publishing
       - run: npm install -g npm@latest
+      - run: npm --version
       - run: npm ci
       - run: npm stage publish
       - run: echo "The package has been staged, go to https://www.npmjs.com to publish it."
