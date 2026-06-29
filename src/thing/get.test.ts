@@ -68,13 +68,7 @@ function getMockThingWithLiteralFor(
   predicate: IriString,
   literalValue: string,
   literalType:
-    | "string"
-    | "integer"
-    | "decimal"
-    | "boolean"
-    | "dateTime"
-    | "date"
-    | "time",
+    "string" | "integer" | "decimal" | "boolean" | "dateTime" | "date" | "time",
 ): Thing {
   return {
     type: "Subject",
@@ -93,13 +87,7 @@ function getMockThingWithLiteralsFor(
   literal1Value: string,
   literal2Value: string,
   literalType:
-    | "string"
-    | "integer"
-    | "decimal"
-    | "boolean"
-    | "dateTime"
-    | "date"
-    | "time",
+    "string" | "integer" | "decimal" | "boolean" | "dateTime" | "date" | "time",
 ): Thing {
   return {
     type: "Subject",
