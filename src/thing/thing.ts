@@ -270,8 +270,7 @@ export type CreateThingPersistedOptions = {
  * - To have the URL determined during the save, pass [[CreateThingLocalOptions]].
  */
 export type CreateThingOptions =
-  | CreateThingLocalOptions
-  | CreateThingPersistedOptions;
+  CreateThingLocalOptions | CreateThingPersistedOptions;
 /**
  * Initialise a new [[Thing]] in memory with a given URL.
  *
