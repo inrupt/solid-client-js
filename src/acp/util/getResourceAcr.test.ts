@@ -22,17 +22,26 @@ import { jest, describe, it, expect } from "@jest/globals";
 import { getResourceAcr } from "./getResourceAcr";
 import { getAcrUrl } from "./getAcrUrl";
 import { getSolidDataset } from "../../resource/solidDataset";
+import type { WithServerResourceInfo } from "../../interfaces";
 
 jest.mock("./getAcrUrl");
 jest.mock("../../resource/solidDataset");
 jest.mock("../../resource/resource");
 
+const mockResource: WithServerResourceInfo = {
+  internal_resourceInfo: {
+    sourceIri: "https://some.pod/resource",
+    isRawData: false,
+    linkedResources: {},
+  },
+};
+
 describe("getResourceAcr", () => {
   it("returns null if the ACR URL can't be retrieved", async () => {
     (getAcrUrl as jest.Mocked<typeof getAcrUrl>).mockResolvedValueOnce(null);
-    const x = await getResourceAcr({} as any);
+    const x = await getResourceAcr(mockResource);
     expect(getAcrUrl).toHaveBeenCalledTimes(1);
-    expect(getAcrUrl).toHaveBeenCalledWith({} as any, undefined);
+    expect(getAcrUrl).toHaveBeenCalledWith(mockResource, undefined);
     expect(x).toBeNull();
   });
 
@@ -40,17 +49,17 @@ describe("getResourceAcr", () => {
     (
       getSolidDataset as jest.Mocked<typeof getSolidDataset>
     ).mockRejectedValueOnce("reject");
-    const x = await getResourceAcr({} as any);
+    const x = await getResourceAcr(mockResource);
     expect(getAcrUrl).toHaveBeenCalledTimes(1);
-    expect(getAcrUrl).toHaveBeenCalledWith({} as any, undefined);
+    expect(getAcrUrl).toHaveBeenCalledWith(mockResource, undefined);
     expect(getSolidDataset).toHaveBeenCalledTimes(1);
     expect(x).toBeNull();
   });
 
   it("returns the resource with ACR", async () => {
-    await getResourceAcr({} as any);
+    await getResourceAcr(mockResource);
     expect(getAcrUrl).toHaveBeenCalledTimes(1);
-    expect(getAcrUrl).toHaveBeenCalledWith({} as any, undefined);
+    expect(getAcrUrl).toHaveBeenCalledWith(mockResource, undefined);
     expect(getSolidDataset).toHaveBeenCalledTimes(1);
     // FIXME this tests too much internals
   });
