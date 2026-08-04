@@ -205,7 +205,7 @@
     "http-link-header": "^1.1.1",
     "jsonld-context-parser": "^3.0.0",
     "jsonld-streaming-parser": "^5.0.0",
-    "n3": "^1.17.2",
+    "n3": "^2.1.1",
     "uuid": "^14.0.0"
   },
   "engines": {
