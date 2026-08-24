@@ -181,7 +181,7 @@
     "@types/http-link-header": "^1.0.5",
     "@types/jest": "^30.0.0",
     "@types/n3": "^1.16.4",
-    "@types/rdfjs__dataset": "^1.0.5",
+    "@types/rdfjs__dataset": "^2.0.7",
     "@types/uuid": "^11.0.0",
     "eslint": "^9.28.0",
     "eslint-config-prettier": "^10.1.8",
@@ -200,7 +200,7 @@
   },
   "dependencies": {
     "@inrupt/solid-client-errors": "^0.0.4",
-    "@rdfjs/dataset": "^1.1.1",
+    "@rdfjs/dataset": "^2.0.3",
     "buffer": "^6.0.3",
     "http-link-header": "^1.1.1",
     "jsonld-context-parser": "^3.0.0",
