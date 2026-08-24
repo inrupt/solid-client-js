@@ -20,7 +20,7 @@
 
 import { describe, it, expect } from "@jest/globals";
 
-import { dataset } from "@rdfjs/dataset";
+import rdfjs from "@rdfjs/dataset";
 import { DataFactory } from "n3";
 import type {
   IriString,
@@ -49,6 +49,8 @@ import {
   ValidValueUrlExpectedError,
 } from "./thing";
 import { localNodeSkolemPrefix } from "../rdf.internal";
+
+const dataset = rdfjs.dataset;
 
 function getMockThingWithLiteralFor(
   predicate: IriString,

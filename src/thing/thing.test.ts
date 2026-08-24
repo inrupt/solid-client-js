@@ -21,7 +21,7 @@
 import { describe, it, expect } from "@jest/globals";
 
 import { DataFactory } from "n3";
-import { dataset } from "@rdfjs/dataset";
+import rdfjs from "@rdfjs/dataset";
 import {
   getThing,
   getThingAll,
@@ -61,6 +61,8 @@ import { mockSolidDatasetFrom } from "../resource/mock";
 import { internal_setAcl } from "../acl/acl.internal";
 import type { BlankNodeId, LocalNodeIri } from "../rdf.internal";
 import { localNodeSkolemPrefix } from "../rdf.internal";
+
+const dataset = rdfjs.dataset;
 
 describe("createThing", () => {
   it("automatically generates a unique name for the Thing", () => {

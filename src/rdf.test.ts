@@ -19,7 +19,7 @@
 //
 
 import { jest, describe, it, expect } from "@jest/globals";
-import { dataset } from "@rdfjs/dataset";
+import rdfjs from "@rdfjs/dataset";
 import * as fc from "fast-check";
 import { DataFactory as DF, Store } from "n3";
 import type {
@@ -42,6 +42,8 @@ import { addRdfJsQuadToDataset } from "./rdfjs.internal";
 import { fromRdfJsDataset, toRdfJsDataset } from "./rdfjs";
 import { asUrl, getThing, getThingAll } from "./thing/thing";
 import { getTermAll } from "./thing/get";
+
+const dataset = rdfjs.dataset;
 
 describe("fromRdfJsDataset", () => {
   const fcNamedNode = fc
