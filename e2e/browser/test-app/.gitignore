@@ -33,3 +33,10 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+
+# next 16.3+ generates these on `next dev`
+/AGENTS.md
+/CLAUDE.md
+
+# managed by Next.js, see https://nextjs.org/docs/app/api-reference/config/typescript#next-envdts
+next-env.d.ts

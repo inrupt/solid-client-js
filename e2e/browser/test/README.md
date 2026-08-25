@@ -16,9 +16,10 @@ There are two main parts:
 The system under test is a small NextJS app enabling basic interactions with the Pod.
 One thing to note is that its dependency on solid-client should be on the code
 _inside this repository_, rather than fetched from npm. This means that you will
-first need to run `npm run build` at the root of this repository, followed by
-`npm run test:e2e:browser:build`. You may run the app manually with `npm run dev`
-from the `../test-app` directory.
+first need to run `npm run build` at the root of this repository. The app is an
+npm workspace of this repository, so `npm ci` at the root installs its
+dependencies too. You may run the app manually with `npm run dev` from the
+`../test-app` directory.
 
 ## The test code
 
@@ -39,13 +40,12 @@ in to it. These can be set via environment variables, or by creating a file
 
 To run the tests, run at the root:
 
-1. `npm ci` to install the test runner and the dependencies of the local code.
+1. `npm ci` to install the test runner, the dependencies of the local code, and
+   those of the application under test.
 2. `npm run build` to build the local code for the tests to depend on.
 3. `npx playwright install` to download the latest versions of all browsers the
    tests run in.
-4. `npm run test:e2e:browser:build` to install the dependencies of the
-   application under test.
-5. `npm run test:e2e:browser` to run the tests.
+4. `npm run test:e2e:browser` to run the tests.
 
 If you want to actually see the interactive parts, set `headless: false` in
 `e2e/browser/test/playwright.config.ts`.

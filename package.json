@@ -3,6 +3,9 @@
   "description": "Make your web apps work with Solid Pods.",
   "version": "3.0.0",
   "license": "MIT",
+  "workspaces": [
+    "e2e/browser/test-app"
+  ],
   "scripts": {
     "build": "rollup --config rollup.config.mjs",
     "docs:clean": "cd docs/api; make clean-all",
@@ -22,7 +25,6 @@
     "test:e2e:node": "jest --selectProjects e2e-node --testTimeout 30000 --collectCoverage false",
     "test:e2e": "npm run test:e2e:node && npm run test:e2e:browser",
     "test:e2e:browser": "playwright test",
-    "test:e2e:browser:build": "cd e2e/browser/test-app && npm ci --omit=optional",
     "test:webpack": "npm run build && webpack --config e2e/bundle/webpack.config.js"
   },
   "keywords": [

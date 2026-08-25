@@ -6,6 +6,8 @@ updates:
     # Check the npm registry for updates once a week
     schedule:
       interval: "weekly"
+    # The following is required for workspaces to be updated: see https://github.com/dependabot/dependabot-core/issues/5226.
+    versioning-strategy: increase
     labels:
       - "dependencies"
       - "npm"
@@ -13,25 +15,6 @@ updates:
       - dependency-name: "eslint"
         update-types: ["version-update:semver-major"]
       - dependency-name: "typedoc-plugin-markdown"
-        update-types: ["version-update:semver-major"]
-    groups:
-      internal-tooling:
-        patterns:
-          - "@inrupt/internal-*"
-          - "@inrupt/base-*"
-          - "@inrupt/jest-*"
-          - "@inrupt/eslint-*"
-      external-types:
-        patterns:
-          - "@types/*"
-
-  # Enable weekly version updates for the test application
-  - package-ecosystem: "npm"
-    directory: "/e2e/browser/test-app"
-    schedule:
-      interval: "weekly"
-    ignore:
-      - dependency-name: "eslint"
         update-types: ["version-update:semver-major"]
     groups:
       internal-tooling:

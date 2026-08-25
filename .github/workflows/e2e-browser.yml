@@ -39,7 +39,6 @@ jobs:
       # build
       - run: npm run build
       # setup
-      - run: npm run test:e2e:browser:build
       # test
       - # Dependabot cannot access secrets, so it doesn't have a token to authenticate to ESS.
         # We want jobs in this workflow to be gating PRs, so the whole matrix must
