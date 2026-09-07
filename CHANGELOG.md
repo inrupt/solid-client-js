@@ -11,6 +11,9 @@ The following changes are pending, and will be applied on the next major release
 ### Breaking Changes
 
 - Support for Node.js v20.x has been dropped as that version has reached end-of-life.
+- If you are using a custom implementation of `DatasetCoreFactory`, ensure it implements the v2 signature.
+  The `ToRdfJsOptions.datasetFactory` argument of the `toRdfJsDataset` function has been updated to v2 of
+  `@rdfjs/types`, which adds new required members, `fromTerm` and `fromQuad`. 
 
 ## [3.0.0](https://github.com/inrupt/solid-client-js/releases/tag/v3.0.0) - 2025-11-03
 

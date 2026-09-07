@@ -179,7 +179,6 @@
     "@inrupt/solid-client-authn-node": "^5.0.0",
     "@next/eslint-plugin-next": "^16.3.4",
     "@playwright/test": "^1.44.0",
-    "@rdfjs/types": "^1.1.0",
     "@types/http-link-header": "^1.0.5",
     "@types/jest": "^30.0.0",
     "@types/n3": "^1.16.4",
@@ -203,6 +202,7 @@
   "dependencies": {
     "@inrupt/solid-client-errors": "^0.0.4",
     "@rdfjs/dataset": "^2.0.3",
+    "@rdfjs/types": "^2.0.1",
     "buffer": "^6.0.3",
     "http-link-header": "^1.1.1",
     "jsonld-context-parser": "^3.0.0",
