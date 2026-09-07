@@ -741,6 +741,8 @@ describe("toRdfJsDataset", () => {
       literal: jest.fn(DF.literal),
       blankNode: jest.fn(DF.blankNode),
       defaultGraph: jest.fn(DF.defaultGraph),
+      fromTerm: DF.fromTerm,
+      fromQuad: DF.fromQuad,
     } as DataFactory;
     const customDatasetFactory = {
       dataset: jest.fn((quads: Quad[]) => new Store(quads)),
