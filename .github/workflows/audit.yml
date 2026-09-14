@@ -5,6 +5,8 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # Run the required tests on the merge queue.
+  merge_group:
   schedule:
     - cron: "40 10 * * *"
 concurrency:
