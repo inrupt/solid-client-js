@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
-      - run: npm ci --ignore-scripts
+      - run: npm ci
       # Unit tests are separate because running both at the same time causes issues
       # to the CI runner.
       - run: npm run test:unit:browser

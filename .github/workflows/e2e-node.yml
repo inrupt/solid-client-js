@@ -33,7 +33,7 @@ jobs:
       - name: Install dependencies
         # FIXME: setup-node's caching seems to not restore correctly: https://github.com/actions/setup-node/pull/323/files
         # if: steps.setup-node.outputs.cache-hit != 'true'
-        run: npm ci --ignore-scripts
+        run: npm ci
 
       - # Dependabot cannot access secrets, so it doesn't have a token to authenticate to ESS.
         # We want jobs in this workflow to be gating PRs, so the whole matrix must

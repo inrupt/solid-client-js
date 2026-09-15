@@ -35,7 +35,7 @@ jobs:
           cache: "npm"
           cache-dependency-path: "**/package-lock.json"
       # install
-      - run: npm ci --ignore-scripts
+      - run: npm ci
       # build
       - run: npm run build
       # setup
