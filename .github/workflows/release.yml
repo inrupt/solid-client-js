@@ -27,5 +27,6 @@ jobs:
       - run: npm install -g npm@latest
       - run: npm --version
       - run: npm ci
+      - run: npm run build
       - run: npm stage publish
       - run: echo "The package has been staged, go to https://www.npmjs.com to publish it."

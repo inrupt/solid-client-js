@@ -18,7 +18,6 @@
     "lint:check": "npm run lint:eslint",
     "lint:eslint": "eslint --config eslint.config.mjs .",
     "list-licenses": "license-checker --production --csv --out LICENSE_DEPENDENCIES_ALL",
-    "prepublishOnly": "npm run build",
     "test": "jest --ignoreProjects e2e-node",
     "test:unit:browser": "jest --selectProjects browser-utc",
     "test:unit:node": "jest --selectProjects node",
