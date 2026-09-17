@@ -1,7 +1,6 @@
 name: CI
 
-# Run the required tests on the merge queue.
-on: [push, merge_group]
+on: [pull_request, merge_group]
 
 env:
   CI: true
