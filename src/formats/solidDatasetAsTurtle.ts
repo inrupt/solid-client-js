@@ -54,7 +54,8 @@ export async function solidDatasetAsTurtle(
       if (error) {
         reject(error);
       } else {
-        resolve(result);
+        // Without an output stream, N3 always passes the serialised document.
+        resolve(result ?? "");
       }
     });
   });
