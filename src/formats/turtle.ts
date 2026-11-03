@@ -89,7 +89,8 @@ export async function triplesToTurtle(
       if (error) {
         reject(error);
       } else {
-        resolve(result);
+        // Without an output stream, N3 always passes the serialised document.
+        resolve(result ?? "");
       }
     });
   });
