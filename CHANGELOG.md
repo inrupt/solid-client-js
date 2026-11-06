@@ -8,6 +8,10 @@ The following changes are pending, and will be applied on the next major release
 
 ## Unreleased changes
 
+### Patch changes
+
+- NodeJS 26 is now officially supported.
+
 ## [4.0.0](https://github.com/inrupt/solid-client-js/releases/tag/v4.0.0) - 2026-09-21
 
 ### Breaking Changes

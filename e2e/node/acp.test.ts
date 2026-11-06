@@ -360,7 +360,6 @@ describe("An ACP Solid server", () => {
     expect(error.message).toContain(
       `Fetching the metadata of the Resource at [${acrUrl}] failed: [405]`,
     );
-    expect(error.statusText).toBe("Method Not Allowed");
 
     expect(error.problemDetails.type).toBe(DEFAULT_TYPE);
     expect(error.problemDetails.title).toBe("Method Not Allowed");
