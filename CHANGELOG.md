@@ -8,6 +8,10 @@ The following changes are pending, and will be applied on the next major release
 
 ## Unreleased changes
 
+### New features
+
+- Expose `ParseOptions` on `getSolidDatasetWithAcl`, `getSolidDatasetWithAcr`, `getSolidDatasetWithAccessDatasets`, `getProfileAll`, `getPodUrlAll`, and `getWebIdDataset`.
+
 ### Patch changes
 
 - NodeJS 26 is now officially supported.

@@ -19,6 +19,7 @@
 //
 
 import type { Quad } from "@rdfjs/types";
+import type { ParseOptions } from "../resource/solidDataset";
 import { getSolidDataset } from "../resource/solidDataset";
 import type {
   IriString,
@@ -67,7 +68,7 @@ import { isAcr } from "../acp/acp.internal";
  */
 export async function internal_fetchAcl(
   resourceInfo: WithServerResourceInfo,
-  options?: { fetch?: typeof fetch },
+  options?: Partial<{ fetch: typeof fetch } & ParseOptions>,
 ): Promise<WithAcl["internal_acl"]> {
   if (!hasAccessibleAcl(resourceInfo)) {
     return {
@@ -103,7 +104,7 @@ export async function internal_fetchAcl(
 /** @internal */
 export async function internal_fetchResourceAcl(
   dataset: WithServerResourceInfo,
-  options?: { fetch?: typeof fetch },
+  options?: Partial<{ fetch: typeof fetch } & ParseOptions>,
 ): Promise<AclDataset | null> {
   if (!hasAccessibleAcl(dataset)) {
     return null;
@@ -135,7 +136,7 @@ export async function internal_fetchResourceAcl(
 /** @internal */
 export async function internal_fetchFallbackAcl(
   resource: WithAccessibleAcl,
-  options?: { fetch?: typeof fetch },
+  options?: Partial<{ fetch: typeof fetch } & ParseOptions>,
 ): Promise<AclDataset | null> {
   const resourceUrl = new URL(getSourceUrl(resource));
   const resourcePath = resourceUrl.pathname;
