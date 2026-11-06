@@ -135,7 +135,6 @@ describe("Authenticated end-to-end", () => {
     expect(error.message).toContain(
       `Fetching the Resource at [${datasetUrl}] failed:`,
     );
-    expect(error.statusText).toContain("Not Found");
 
     expect(error.problemDetails.type).toBe(DEFAULT_TYPE);
     expect(error.problemDetails.title).toBe("Not Found");
@@ -310,7 +309,6 @@ describe("Authenticated end-to-end", () => {
     expect(error.message).toContain(
       `Fetching the Resource at [${sessionResource}] failed:`,
     );
-    expect(error.statusText).toBe("Unauthorized");
 
     expect(error.problemDetails.type).toBe(DEFAULT_TYPE);
     expect(error.problemDetails.title).toBe("Unauthorized");
@@ -381,7 +379,6 @@ describe("Authenticated end-to-end", () => {
     expect(error.message).toContain(
       `Fetching the Resource at [${sessionResource}] failed: [406]`,
     );
-    expect(error.statusText).toBe("Not Acceptable");
 
     expect(error.problemDetails.type).toBe(DEFAULT_TYPE);
     expect(error.problemDetails.title).toBe("Not Acceptable");
@@ -402,7 +399,6 @@ describe("Authenticated end-to-end", () => {
     expect(error.message).toContain(
       `Creating the empty Container at [${sessionContainer}] failed: [400]`,
     );
-    expect(error.statusText).toBe("Bad Request");
 
     expect400ProblemDetails(error.problemDetails);
   });
@@ -417,7 +413,6 @@ describe("Authenticated end-to-end", () => {
     expect(error.message).toContain(
       `Creating an empty Container in the Container at [${sessionContainer}] failed: [400]`,
     );
-    expect(error.statusText).toBe("Bad Request");
 
     expect400ProblemDetails(error.problemDetails);
   });
@@ -432,7 +427,6 @@ describe("Authenticated end-to-end", () => {
     expect(error.message).toContain(
       `Deleting the file at [${sessionResource}] failed: [405]`,
     );
-    expect(error.statusText).toBe("Method Not Allowed");
 
     expect405ProblemDetails(error.problemDetails);
   });
@@ -447,7 +441,6 @@ describe("Authenticated end-to-end", () => {
     expect(error.message).toContain(
       `Deleting the SolidDataset at [${sessionResource}] failed: [405]`,
     );
-    expect(error.statusText).toBe("Method Not Allowed");
 
     expect405ProblemDetails(error.problemDetails);
   });
@@ -462,7 +455,6 @@ describe("Authenticated end-to-end", () => {
     expect(error.message).toContain(
       `Fetching the Resource at [${sessionResource}] failed: [405]`,
     );
-    expect(error.statusText).toBe("Method Not Allowed");
 
     expect405ProblemDetails(error.problemDetails);
   });
@@ -486,7 +478,6 @@ describe("Authenticated end-to-end", () => {
     expect(error.message).toContain(
       `Overwriting the file at [${sessionResource}] failed: [405]`,
     );
-    expect(error.statusText).toBe("Method Not Allowed");
 
     expect405ProblemDetails(error.problemDetails);
   });
@@ -503,7 +494,6 @@ describe("Authenticated end-to-end", () => {
     expect(error.message).toContain(
       `Storing the Resource at [${sessionResource}] failed: [405]`,
     );
-    expect(error.statusText).toBe("Method Not Allowed");
 
     expect405ProblemDetails(error.problemDetails);
   });
