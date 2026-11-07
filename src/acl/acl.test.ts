@@ -50,6 +50,7 @@ import {
 import type { WithServerResourceInfo, WithChangeLog } from "../interfaces";
 import { getFile } from "../resource/file";
 import { mockSolidDatasetFrom } from "../resource/mock";
+import type { Parser } from "../resource/solidDataset";
 import { createSolidDataset } from "../resource/solidDataset";
 import { createThing, getThingAll, setThing } from "../thing/thing";
 import { addIri, addStringNoLocale } from "../thing/add";
@@ -848,6 +849,49 @@ describe("getSolidDatasetWithAcl", () => {
     await expect(fetchPromise).rejects.toMatchObject({
       statusCode: 418,
       statusText: "I'm a teapot!",
+    });
+  });
+
+  it("forwards custom parsers to both resource and ACL dataset fetches", async () => {
+    const mockFetch = jest.fn<typeof fetch>((url) => {
+      const headers: HeadersInit =
+        url === "https://some.pod/resource"
+          ? {
+              Link: '<resource.acl>; rel="acl"',
+              "Content-Type": "application/trig",
+            }
+          : { "Content-Type": "text/turtle" };
+      return Promise.resolve(
+        mockResponse(undefined, { headers }, url as string),
+      );
+    });
+
+    const mockTrigParser: Parser = {
+      onComplete: jest
+        .fn()
+        .mockImplementation((completionCallback: any) => completionCallback()),
+      onQuad: jest.fn(),
+      parse: jest.fn(),
+      onError: jest.fn(),
+    };
+
+    const fetchedSolidDataset = await getSolidDatasetWithAcl(
+      "https://some.pod/resource",
+      {
+        fetch: mockFetch,
+        parsers: { "application/trig": mockTrigParser },
+      },
+    );
+
+    expect(fetchedSolidDataset.internal_resourceInfo.sourceIri).toBe(
+      "https://some.pod/resource",
+    );
+    expect(mockTrigParser.parse).toHaveBeenCalledTimes(1);
+    expect(mockFetch.mock.calls[0][1]).toEqual({
+      headers: { Accept: "application/trig" },
+    });
+    expect(mockFetch.mock.calls[1][1]).toEqual({
+      headers: { Accept: "application/trig" },
     });
   });
 });
