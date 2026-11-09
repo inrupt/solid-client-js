@@ -19,6 +19,7 @@
 //
 
 import type {
+  ParseOptions,
   SolidDataset,
   UrlString,
   WebId,
@@ -89,11 +90,14 @@ export async function getProfileAll<
   options?: {
     fetch?: typeof fetch;
     webIdProfile?: T;
-  },
+  } & Partial<ParseOptions>,
 ): Promise<ProfileAll<T>>;
 export async function getProfileAll(
   webId: WebId,
-  options?: { fetch?: typeof fetch; webIdProfile: undefined },
+  options?: {
+    fetch?: typeof fetch;
+    webIdProfile: undefined;
+  } & Partial<ParseOptions>,
 ): Promise<ProfileAll<SolidDataset & WithServerResourceInfo>>;
 export async function getProfileAll<
   T extends SolidDataset & WithServerResourceInfo,
@@ -102,17 +106,19 @@ export async function getProfileAll<
   options?: {
     fetch?: typeof fetch;
     webIdProfile?: T;
-  },
+  } & Partial<ParseOptions>,
 ): Promise<ProfileAll<T | (SolidDataset & WithServerResourceInfo)>> {
   const authFetch = options?.fetch ?? fetch;
+  const unauthenticatedOptions = { ...options };
+  delete unauthenticatedOptions.fetch;
   const webIdProfile =
     options?.webIdProfile ??
     // This should always use an unauthenticated fetch.
-    (await getSolidDataset(webId));
+    (await getSolidDataset(webId, unauthenticatedOptions));
   const altProfileAll = (
     await Promise.allSettled(
       getAltProfileUrlAllFrom(webId, webIdProfile).map((uniqueProfileIri) =>
-        getSolidDataset(uniqueProfileIri, { fetch: authFetch }),
+        getSolidDataset(uniqueProfileIri, { ...options, fetch: authFetch }),
       ),
     )
   )
@@ -146,7 +152,7 @@ export async function getProfileAll<
  */
 export async function getPodUrlAll(
   webId: WebId,
-  options?: { fetch?: typeof fetch },
+  options?: Partial<{ fetch?: typeof fetch } & ParseOptions>,
 ): Promise<UrlString[]> {
   const profiles = await getProfileAll(webId, options);
   return getPodUrlAllFrom(profiles, webId);
@@ -200,6 +206,7 @@ export function getPodUrlAllFrom(
  */
 export async function getWebIdDataset(
   webId: WebId,
+  options?: Partial<ParseOptions>,
 ): Promise<ReturnType<typeof getSolidDataset>> {
-  return getSolidDataset(webId);
+  return getSolidDataset(webId, options);
 }
